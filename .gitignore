@@ -8,5 +8,8 @@ build/
 dist/
 data/
 *.sqlite3
+# Синтетические базы для теста совместимости хранилища (тестовый ключ, не ПДн): без них
+# набор tests/core падает в чистой копии репо
+!python/tests/fixtures/stores/*.sqlite3
 .env
 node_modules/
