@@ -2,6 +2,22 @@
 
 Формат: semver. Ломающее изменение — новая major-версия.
 
+## 0.2.0 (не выпущено)
+
+Источник: labops-ai-assistant `origin/feature/media-ocr-text-tokens` (`0c4085f`, часть
+`media-masker/`; TS-часть `pii-proxy` остаётся в проекте до фазы 2).
+
+- `media.mask`: `recognized {text, codes[], hidden_text}` в ответе `/mask_image` и на
+  страницах-растрах `/extract_document`; поле необязательное, старые клиенты работают.
+- `media.mask.codes`: поиск и расшифровка QR и штрихкодов (OpenCV), разбор vCard и MECARD по
+  полям, вырезание пароля и имени сети из Wi-Fi.
+- `media.mask.unreadable`: закраска нераспознанной рукописи, `MEDIA_MASKER_HIDE_UNREADABLE`
+  (по умолчанию вкл.), порог 20 % площади кадра.
+- `stats`: добавлены `codes` и `unreadable_boxes`; коды ошибок `code_detection_failed` и
+  `unreadable_scan_failed` (500).
+- Тесты: `tests/media/test_text_codes.py`, `tests/media/synthetic.py` (синтетические).
+- Одинаково для всех профилей; `gate` и эталонные снимки не менялись.
+
 ## 0.1.0 — начальное сведение (фаза 1, Python)
 
 Источники: labops-ai-assistant `e271609` (`pseudonymizer/`, `media-masker/`), pragmatica-ai

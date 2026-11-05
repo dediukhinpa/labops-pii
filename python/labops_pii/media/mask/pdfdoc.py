@@ -9,7 +9,9 @@ from dataclasses import dataclass
 import pypdfium2 as pdfium
 
 from labops_pii.media.mask.config import MAX_IMAGE_PIXELS
-from labops_pii.media.mask.imaging import ImageMasker, MaskedImage, MaskStats, MediaRefusedError
+from labops_pii.media.mask.imaging import (
+    ImageMasker, MaskedImage, MaskStats, MediaRefusedError, Recognized,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -32,6 +34,7 @@ class PageResult:
     index: int
     text: str | None
     image: MaskedImage | None
+    recognized: Recognized = Recognized()
 
 
 @dataclass(frozen=True, slots=True)
@@ -97,6 +100,8 @@ class PdfProcessor:
                     total.masked_boxes + stats.masked_boxes,
                     total.faces + stats.faces,
                     total.low_conf_boxes + stats.low_conf_boxes,
+                    total.codes + stats.codes,
+                    total.unreadable_boxes + stats.unreadable_boxes,
                 )
             texts = sum(1 for p in pages if p.text is not None)
             kind = "text" if texts == count else "images" if texts == 0 else "mixed"
@@ -119,6 +124,7 @@ class PdfProcessor:
                 image = page.render(scale=scale, may_draw_forms=False).to_pil().convert("RGB")
         except (pdfium.PdfiumError, ValueError, OverflowError) as exc:
             raise MediaRefusedError(422, "pdf_page_failed") from exc
-        masked, stats = self._masker.mask_image(image)
+        masked, stats, recognized = self._masker.mask_image_ex(image)
         media_type, payload = self._masker.encode(masked, SOURCE_FORMAT_RASTER)
-        return PageResult(index, None, MaskedImage(media_type, payload, stats)), stats
+        image_out = MaskedImage(media_type, payload, stats, recognized)
+        return PageResult(index, None, image_out, recognized), stats

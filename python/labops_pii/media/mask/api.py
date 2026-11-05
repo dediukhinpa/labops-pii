@@ -20,7 +20,8 @@ from labops_pii.body_guard import BodyGuardMiddleware
 from labops_pii.detector import PiiDetector
 from labops_pii.media.mask.config import MAX_BODY_BYTES, MAX_FILE_BYTES, Settings
 from labops_pii.media.mask.faces import FaceBlurrer
-from labops_pii.media.mask.imaging import ImageMasker, MaskStats, MediaRefusedError
+from labops_pii.media.mask.codes import CodeFinder
+from labops_pii.media.mask.imaging import ImageMasker, MaskStats, MediaRefusedError, Recognized
 from labops_pii.media.mask.jsonlog import (
     EVENT_MASK_DONE,
     EVENT_MASK_REFUSED,
@@ -61,6 +62,26 @@ class StatsOut(BaseModel):
     masked_boxes: int
     faces: int
     low_conf_boxes: int
+    codes: int = 0
+    unreadable_boxes: int = 0
+
+
+class CodeOut(BaseModel):
+    """Содержимое QR-кода или штрихкода (расшифровано локально)."""
+
+    kind: Literal["qr", "barcode"]
+    text: str
+
+
+class RecognizedOut(BaseModel):
+    """Распознанное на картинке: текст, коды, признак скрытого нераспознанного текста.
+
+    Тексты отдаются как есть, со всеми ПДн: сервис локальный, ПДн в них заменяет прокси.
+    """
+
+    text: str = ""
+    codes: list[CodeOut] = []
+    hidden_text: bool = False
 
 
 class MaskImageResponse(BaseModel):
@@ -69,6 +90,7 @@ class MaskImageResponse(BaseModel):
     media_type: str
     data: str
     stats: StatsOut
+    recognized: RecognizedOut = RecognizedOut()
 
 
 class PageOut(BaseModel):
@@ -77,6 +99,7 @@ class PageOut(BaseModel):
     index: int
     text: str | None
     image: ImageOut | None
+    recognized: RecognizedOut | None = None
 
 
 class ExtractResponse(BaseModel):
@@ -93,6 +116,16 @@ def _stats_out(stats: MaskStats) -> StatsOut:
         masked_boxes=stats.masked_boxes,
         faces=stats.faces,
         low_conf_boxes=stats.low_conf_boxes,
+        codes=stats.codes,
+        unreadable_boxes=stats.unreadable_boxes,
+    )
+
+
+def _recognized_out(rec: Recognized) -> RecognizedOut:
+    return RecognizedOut(
+        text=rec.text,
+        codes=[CodeOut(kind=c.kind, text=c.text) for c in rec.codes],  # type: ignore[arg-type]
+        hidden_text=rec.hidden_text,
     )
 
 
@@ -121,6 +154,7 @@ def _document_out(result: DocumentResult) -> ExtractResponse:
                 media_type=p.image.media_type,
                 data=base64.b64encode(p.image.data).decode("ascii"),
             ),
+            recognized=None if p.image is None else _recognized_out(p.recognized),
         )
         for p in result.pages
     ]
@@ -139,7 +173,9 @@ def create_app(settings: Settings) -> FastAPI:
     )
     ocr.check_ready()
     detector = PiiDetector(settings.mask_legal_entity, settings.contacts)
-    masker = ImageMasker(ocr, detector, FaceBlurrer())
+    masker = ImageMasker(
+        ocr, detector, FaceBlurrer(), settings.hide_unreadable, CodeFinder()
+    )
     pdf = PdfProcessor(masker, settings.max_pdf_pages)
     slots = asyncio.Semaphore(settings.max_concurrency)
     expected = settings.api_token.encode()
@@ -189,11 +225,13 @@ def create_app(settings: Settings) -> FastAPI:
         log_event(
             logger, EVENT_MASK_DONE, route="/mask_image",
             words=s.words, masked_boxes=s.masked_boxes, faces=s.faces,
+            codes=s.codes, unreadable_boxes=s.unreadable_boxes,
         )
         return MaskImageResponse(
             media_type=result.media_type,
             data=base64.b64encode(result.data).decode("ascii"),
             stats=_stats_out(s),
+            recognized=_recognized_out(result.recognized),
         )
 
     @app.post("/extract_document", response_model=None)
