@@ -28,3 +28,14 @@ for suite in "${SUITES[@]}"; do
   echo "=== $suite"
   "$PY" -m pytest "$suite" -q -p no:cacheprovider "$@"
 done
+
+# TS-часть: тесты и строгая проверка типов (пропуск, если bun не установлен)
+if command -v bun >/dev/null 2>&1; then
+  echo "=== ts"
+  cd "$ROOT/ts"
+  [ -d node_modules ] || bun install --frozen-lockfile
+  bun test
+  bun run typecheck
+else
+  echo "пропуск (нет bun): ts"
+fi
