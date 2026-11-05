@@ -67,15 +67,47 @@ ORG_INN = "7707083893"  # 10 цифр, контрольная сумма вер�
 PERSON_INN = "500100732259"  # 12 цифр, ИНН физлица или ИП
 
 
-def test_org_inn_not_blocked_in_pragmatika() -> None:
-    """pragmatika: guard_block_org_inn выкл., ИНН организации не блокируется (в т.ч. штрихкод)."""
-    assert "inn" not in detector.find_pii_types(f"Поставщик ИНН {ORG_INN}")
-    assert "inn" not in detector.find_pii_types(f"Макароны LA PASTA {ORG_INN} 250г")
+@pytest.mark.parametrize("profile", ["labops", "pragmatika", "webapp_v2"])
+def test_inn_of_any_length_blocked_in_every_profile(
+    monkeypatch: pytest.MonkeyPatch, profile: str
+) -> None:
+    """ИНН организации и физлица - ПДн во всех профилях (решение владельца 05.11.26)."""
+    monkeypatch.setenv("LABOPS_PII_PROFILE", profile)
+    assert "inn" in detector.find_pii_types(f"Поставщик ИНН {ORG_INN}")
     assert "inn" in detector.find_pii_types(f"ИП, ИНН {PERSON_INN}")
 
 
-def test_org_inn_blocked_where_profile_asks(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    monkeypatch.setenv("LABOPS_PII_PROFILE", "webapp_v2")
-    assert "inn" in detector.find_pii_types(f"Поставщик ИНН {ORG_INN}")
+# --- Списки через «/»: линейное время и тот же результат ---------------------------------
+
+# Порог с запасом в десятки раз: прежнее выражение без предела повторов на таком теле
+# откатывалось квадратично и не укладывалось в минуты
+HOSTILE_SLASH_SECONDS = 5.0
+HOSTILE_SLASH_REPEAT = 100_000
+
+
+@pytest.mark.parametrize("unit", ["7/ ", "1234/", "1/x", "a 1/2/3 "])
+def test_slash_list_split_is_linear_on_hostile_body(unit: str) -> None:
+    import time
+
+    text = unit * HOSTILE_SLASH_REPEAT
+    started = time.perf_counter()
+    result = detector._split_slash_lists(text)
+    assert time.perf_counter() - started < HOSTILE_SLASH_SECONDS
+    assert len(result) == len(text)
+
+
+def test_slash_list_split_keeps_semantics() -> None:
+    split = detector._split_slash_lists
+    assert split("Кружка 450/750/1000 мл") == "Кружка 450;750;1000 мл"
+    assert split("M.2 2280/2260/2242/2230") == "M.2 2280;2260;2242;2230"
+    assert split("тел 8/916/123/45/67") == "тел 8/916/123/45/67"
+    assert split("1/2/3 мясо") == "1/2/3 мясо"  # не единица измерения
+    assert split("x 450/750/1000 млечный") == "x 450/750/1000 млечный"
+    # Список на границе длинного тела находится так же, как в коротком
+    pad = "x" * 300_000
+    assert split(f"{pad} 450/750/1000 мл").endswith(" 450;750;1000 мл")
+
+
+def test_slash_list_longer_than_limit_is_left_as_is() -> None:
+    items = "/".join(["450"] * (detector.SLASH_LIST_MAX_ITEMS + 1))
+    assert detector._split_slash_lists(f"{items} мл") == f"{items} мл"

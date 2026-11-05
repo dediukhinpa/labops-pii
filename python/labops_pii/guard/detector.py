@@ -28,7 +28,6 @@ from labops_pii.pii_patterns import (
     is_snils_checksum_valid,
     normalize_text,
 )
-from labops_pii.profiles import get_profile
 
 # Предел анализируемого тела по умолчанию (байт). Отдельной настройки у детектора нет:
 # приложение передаёт в scan_body свой предел тела (MAX_BODY_BYTES), поэтому предел
@@ -127,21 +126,79 @@ DIGITS_RUN_RE = re.compile(r"(?<!\d)\d{10,12}(?!\d)")
 # Здесь «/» в таких списках меняется на «;» до нормализации (длина та же), чтобы группы не
 # склеивались. Телефон «8/916/123/45/67» не трогается: в нём нет единицы измерения после
 # списка и группы не по 4 цифры. Unicode-косые («⁄», «∕», «／») не трогаются вовсе.
+# Предел элементов списка: без него на «7/ 7/ 7/ …» без единицы в конце поиск откатывался
+# квадратично (часы на мегабайте). Списки размеров в названиях короче; длиннее - не трогаются.
+SLASH_LIST_MAX_ITEMS = 12
+_SLASH_LIST_MAX_TAIL = SLASH_LIST_MAX_ITEMS - 1
 _SLASH_LIST_UNIT_RE = re.compile(
-    r"(?<![\d/])\d+(?:[.,]\d+)?(?:\s?/\s?\d+(?:[.,]\d+)?){2,}"
+    r"(?<![\d/])\d+(?:[.,]\d+)?(?:\s?/\s?\d+(?:[.,]\d+)?)"
+    rf"{{2,{_SLASH_LIST_MAX_TAIL}}}"
     r"(?=\s?(?:мл|л|г|гр|кг|мг|мм|см|м|шт|л\.|ml|l|g|kg|mm|cm|m|W|Вт|В|V|А|A)\b)",
     re.IGNORECASE,
 )
-_SLASH_LIST_FOUR_RE = re.compile(r"(?<![\d/])\d{4}(?:/\d{4}){2,}(?![\d/])")
+_SLASH_LIST_FOUR_RE = re.compile(
+    rf"(?<![\d/])\d{{4}}(?:/\d{{4}}){{2,{_SLASH_LIST_MAX_TAIL}}}(?![\d/])"
+)
+
+
+# Участок-кандидат вокруг каждой «/»: цифры, «/», пробелы и «.,» подряд. «/» ищется
+# str.find, вправо участок дочитывается выражением без отката (*+), влево - циклом не дальше
+# SLASH_RUN_MAX_CHARS: всё линейно, и ни один вызов не держит GIL на всё тело. Полное
+# выражение списка запускается только на коротком участке (длиннее SLASH_RUN_MAX_CHARS - не
+# список размеров из названия, остаётся как есть).
+_SLASH_RUN_TAIL_RE = re.compile(r"[\d.,/\s]*+")
+# «/» между цифрами - иначе это не список чисел (фиксированная длина, поиск без откатов)
+_SLASH_BETWEEN_DIGITS_RE = re.compile(r"\d\s?/\s?\d")
+_SLASH_RUN_PUNCT = frozenset("./,")
+SLASH_RUN_MAX_CHARS = 256
+# После участка - единица измерения: буквы до первой не-буквы (не больше предела)
+_UNIT_TAIL_RE = re.compile(r"[^\W\d_]{0,8}")
+
+
+def _is_run_char(char: str) -> bool:
+    """Символ участка-кандидата (как [\\d.,/\\s] в выражении)."""
+    return char.isdecimal() or char.isspace() or char in _SLASH_RUN_PUNCT
 
 
 def _split_slash_lists(text: str) -> str:
-    """Меняет «/» на «;» в списках размеров и объёмов (длина строки не меняется)."""
+    """Меняет «/» на «;» в списках размеров и объёмов (длина строки не меняется).
 
-    def _semi(match: re.Match[str]) -> str:
-        return match.group(0).replace("/", ";")
+    Прямой re.sub по всему телу держал GIL целиком и откатывался на «7/ 7/ 7/ …» (секунды на
+    мегабайте, цикл событий стоял). Здесь тяжёлое выражение видит только короткий участок
+    с «/» и следующую за ним единицу измерения.
+    """
+    parts: list[str] = []
+    done = 0
+    size = len(text)
+    hit = _SLASH_BETWEEN_DIGITS_RE.search(text) if "/" in text else None
+    while hit is not None:
+        slash = text.index("/", hit.start())
+        tail = _SLASH_RUN_TAIL_RE.match(text, slash)
+        end = tail.end() if tail is not None else slash + 1
+        start = slash
+        floor = max(0, end - SLASH_RUN_MAX_CHARS - 1)
+        while start > floor and _is_run_char(text[start - 1]):
+            start -= 1
+        if end - start <= SLASH_RUN_MAX_CHARS:
+            unit = _UNIT_TAIL_RE.match(text, end)
+            stop = unit.end() if unit is not None else end
+            # Символ после единицы нужен для \b; до участка - не цифра и не «/» по построению
+            segment = text[start : min(stop + 1, size)]
+            replaced = _SLASH_LIST_UNIT_RE.sub(_semicolons, segment)
+            replaced = _SLASH_LIST_FOUR_RE.sub(_semicolons, replaced)
+            if replaced != segment:
+                parts.append(text[done:start])
+                parts.append(replaced[: end - start])
+                done = end
+        hit = _SLASH_BETWEEN_DIGITS_RE.search(text, end)
+    if not parts:
+        return text
+    parts.append(text[done:])
+    return "".join(parts)
 
-    return _SLASH_LIST_FOUR_RE.sub(_semi, _SLASH_LIST_UNIT_RE.sub(_semi, text))
+
+def _semicolons(match: re.Match[str]) -> str:
+    return match.group(0).replace("/", ";")
 UNICODE_ESCAPE_RE = re.compile(r"\\u([0-9a-fA-F]{4})")
 
 
@@ -259,15 +316,6 @@ def is_valid_inn(digits: str) -> bool:
     return False
 
 
-def _inn_is_pii(digits: str) -> bool:
-    """Блокировать ли найденный ИНН: физлица (12 цифр) - всегда, организации - по профилю.
-
-    10-значный ИНН - организации, не персональные данные; профиль решает, блокировать ли его
-    (`Profile.guard_block_org_inn`). ИНН ИП - 12 цифр, ловится всегда.
-    """
-    return len(digits) == INN_LEN_PERSON or get_profile().guard_block_org_inn
-
-
 def is_valid_snils(digits: str) -> bool:
     """Проверяет СНИЛС (11 цифр) по контрольному числу (общее правило pii_patterns)."""
     return is_snils_checksum_valid(digits)
@@ -285,7 +333,9 @@ def _find_digit_types(clean: str, start: int, end: int) -> set[str]:
         found.add(PHONE)
     for match in DIGITS_RUN_RE.finditer(clean, start, end):
         digits = match.group(0)
-        if len(digits) != SNILS_LEN and is_valid_inn(digits) and _inn_is_pii(digits):
+        # ИНН любой длины (организации тоже) - ПДн во всех профилях: решение владельца
+        # 05.11.26, отменившее исключение для 10-значного ИНН в pragmatika (0.7.0)
+        if len(digits) != SNILS_LEN and is_valid_inn(digits):
             found.add(INN)
     # СНИЛС по общему правилу: псевдонимизатор маскирует ровно эти находки (R9-A4-04)
     if find_snils_spans(clean, start, end):
@@ -339,9 +389,9 @@ STRING_CACHE_MAX_CHARS = 4 * 1024 * 1024
 STRING_CACHE_MIN_CHARS = 64
 
 
-def _scan_modes() -> tuple[NamesMode, AddressMode, bool]:
-    """Режимы и профиль, от которых зависит результат find_pii_types (ключ актуальности кэша)."""
-    return names_mode(), address_mode(), get_profile().guard_block_org_inn
+def _scan_modes() -> tuple[NamesMode, AddressMode]:
+    """Режимы, от которых зависит результат find_pii_types (ключ актуальности кэша)."""
+    return names_mode(), address_mode()
 
 
 class _StringScanCache:

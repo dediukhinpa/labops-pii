@@ -30,8 +30,7 @@ def test_email_found() -> None:
 def test_inn_valid_checksum() -> None:
     assert is_valid_inn(INN10)
     assert is_valid_inn(INN12)
-    # Профиль pragmatika не маскирует реквизиты юрлиц: 10-значный ИНН организации не ПДн
-    assert find_pii_types(f"ИНН {INN10}") == set()
+    assert find_pii_types(f"ИНН {INN10}") == {"inn"}
     assert find_pii_types(f"ИНН {INN12}") == {"inn"}
 
 
@@ -67,7 +66,7 @@ def test_nested_json_and_number() -> None:
 
 
 def test_non_json_scanned() -> None:
-    assert scan_body(f"ИНН {INN12}".encode()) == {"inn"}
+    assert scan_body("ИНН 7707083893".encode()) == {"inn"}
 
 
 def test_invalid_utf8_does_not_crash() -> None:
@@ -159,7 +158,7 @@ def test_scan_limit_default_equals_default_body_limit() -> None:
 
 
 def test_all_types_still_detected_in_one_body() -> None:
-    text = f"тел 8 916 123 45 67, a@b.ru, ИНН {INN12}, СНИЛС {SNILS}"
+    text = f"тел 8 916 123 45 67, a@b.ru, ИНН {INN10}, СНИЛС {SNILS}"
     assert find_pii_types(text) == {"phone", "email", "inn", "snils"}
 
 
@@ -168,11 +167,10 @@ def test_all_types_still_detected_in_one_body() -> None:
 # Синтетические значения: случайные цифры внутри дают ИНН/СНИЛС/телефон. Вырезать «похожее
 # на хеш» нельзя: так же выглядит ИНН, приклеенный к hex-строке. Строки с длинными цифровыми
 # сериями не должно отправлять модели само ядро.
-# ИНН физлица в середине: 10-значный ИНН организации профиль pragmatika ПДн не считает
-HASH_WITH_INN = f"2790bb018cd5d187a9fda2ef65322a48cbbc6c9f{INN12}dd5c0a1b9f3e"
+HASH_WITH_INN = "2790bb018cd5d187a9fda2ef65322a48cbbc6c9419f48c75687dd5121032888d"
 HASH_WITH_SNILS = "5d35b0b9601e21f2cf8442ea04f304b2d15deeccb7427c20819162454d31d862"
 UUID_WITH_PHONE = "a4c4aff9-4ab6-44d8-8053-5688084e5c92"
-HEX_GLUED_INN = f"deadbeefdeadbeefdeadbe{INN12}"  # 22 hex-символа и ИНН физлица
+HEX_GLUED_INN = "deadbeefdeadbeefdeadbe7707083893"  # 22 hex-символа и ИНН 7707083893
 
 
 def test_inn_glued_to_hex_string_is_found() -> None:
@@ -193,13 +191,13 @@ def test_hash_and_uuid_with_digit_runs_are_reported(token: str, expected: str) -
 
 
 def test_pii_next_to_hash_is_found() -> None:
-    assert "inn" in find_pii_types(f"{HASH_WITH_INN} ИНН {INN12}")
+    assert "inn" in find_pii_types(f"{HASH_WITH_INN} ИНН {INN10}")
     assert "phone" in find_pii_types(f"{UUID_WITH_PHONE} звоните +7 916 123 45 67")
     assert "email" in find_pii_types(f"{HASH_WITH_INN}@example.ru")
 
 
 def test_short_digit_runs_in_words_still_found() -> None:
-    assert find_pii_types(f"id{INN12}") == {"inn"}
+    assert find_pii_types(f"id{INN10}") == {"inn"}
     assert find_pii_types(f"abcdef-{INN12}-abcdef") == {"inn"}
 
 
@@ -230,7 +228,7 @@ def test_utf16_and_utf32_bodies_decoded(encoding: str) -> None:
 
 
 def test_utf16_with_inn_in_value() -> None:
-    assert "inn" in scan_body(f'{{"c": "ИНН {INN12}"}}'.encode("utf-16"))
+    assert "inn" in scan_body(f'{{"c": "ИНН {INN10}"}}'.encode("utf-16"))
 
 
 def test_broken_json_still_expands_unicode_escapes() -> None:
@@ -319,9 +317,7 @@ def test_phone_not_confused_with_numbers(text: str) -> None:
 
 
 def test_inn_still_reported_as_inn_not_phone() -> None:
-    assert find_pii_types(f"ИНН {INN12}") == {"inn"}
-    # 10-значный ИНН организации в pragmatika не ПДн и не должен всплыть как телефон
-    assert find_pii_types(f"ИНН {INN10}") == set()
+    assert find_pii_types(f"ИНН {INN10}") == {"inn"}
 
 
 def test_r9_snils_rule_shared_with_pseudonymizer() -> None:

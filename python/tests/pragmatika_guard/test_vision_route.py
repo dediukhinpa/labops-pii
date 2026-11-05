@@ -20,7 +20,7 @@ from labops_pii.guard.litellm.vision_route import (
     parse_vision_models,
 )
 
-PII_TEXT = "владелец ИНН 500100732259, звонить +7 916 123 45 67"
+PII_TEXT = "владелец ИНН 7707083893, звонить +7 916 123 45 67"
 PROMPT = "Опиши изделие на фото: материал, размеры, нанесение."
 
 
@@ -341,8 +341,8 @@ async def test_system_text_allowed() -> None:
 
 async def test_base64_not_scanned_as_text() -> None:
     """Цифровые серии внутри base64 не дают ложного отказа ПДн (в отличие от основного)."""
-    digits_png = _png() + b"500100732259" * 5  # base64 может нести любые серии цифр
-    raw_text = "ИНН 500100732259"
+    digits_png = _png() + b"7707083893" * 5  # base64 может нести любые серии цифр
+    raw_text = "ИНН 7707083893"
     body = _body(messages=[{"role": "user", "content": [
         {"type": "image", "source": {
             "type": "base64", "media_type": "image/png", "data": _b64(digits_png)}}]}])
@@ -496,7 +496,7 @@ async def test_logs_have_no_image_content(caplog: pytest.LogCaptureFixture) -> N
         await c.post(VISION_ROUTE_PATH, json=_body())
         await c.post(VISION_ROUTE_PATH, json=_body(tools=[]))
     assert _b64(raw) not in caplog.text
-    assert "500100732259" not in caplog.text
+    assert "7707083893" not in caplog.text
     assert PROMPT not in caplog.text
     records = [r for r in caplog.records if getattr(r, "event", None) == "vision_images"]
     assert len(records) == 1
