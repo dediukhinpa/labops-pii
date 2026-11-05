@@ -1,0 +1,31 @@
+{
+ "key": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+ "rows": [
+  [
+   "agent:7",
+   "[PERSON_1]",
+   "PERSON",
+   "иванов иван",
+   "Иванов Иван"
+  ],
+  [
+   "agent:7",
+   "[PHONE_1]",
+   "PHONE",
+   "79161234567",
+   "+7 916 123-45-67"
+  ],
+  [
+   "plain-thread",
+   "[EMAIL_1]",
+   "EMAIL",
+   "a@b.ru",
+   "a@b.ru"
+  ]
+ ],
+ "hashes": {
+  "agent:7|иванов иван": "v2:8b0d23d37905451b3cc849f1c5b5db78bfa130630bbf733008e3d9a56b918fee",
+  "agent:7|79161234567": "v2:ff33672770aed93260214b975682c8e24f2b0fdaa7aa3c6afe0880d01c5cef84",
+  "plain-thread|a@b.ru": "v2:bca709283b796e379e06f52a60412167201ce70f7a36831304aa3faac5e64209"
+ }
+}
