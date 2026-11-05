@@ -82,3 +82,25 @@ def test_ts_part_combines_with_python_parts(tmp_path: Path) -> None:
     assert (vendor_dir / "labops_pii" / "service.py").is_file()
     assert (vendor_dir / "ts" / "src" / "masker.ts").is_file()
     _load_example(vendor_dir).test_vendored_files_unchanged()
+
+
+
+# Аннотированный тег библиотеки: на нём rev-parse без ^{commit} даёт хеш объекта тега
+ANNOTATED_TAG = "v0.8.0"
+
+
+def test_vendor_records_commit_of_annotated_tag(tmp_path: Path) -> None:
+    """У аннотированного тега в VERSION - хеш коммита, а не объекта тега."""
+    found = subprocess.run(
+        ["git", "-C", str(ROOT), "rev-parse", "-q", "--verify", f"{ANNOTATED_TAG}^{{commit}}"],
+        capture_output=True, text=True,
+    )
+    if found.returncode != 0:
+        pytest.skip(f"в клоне нет тега {ANNOTATED_TAG}")
+    subprocess.run(
+        [sys.executable, str(TOOL), "--dest", str(tmp_path), "--ref", ANNOTATED_TAG,
+         "--parts", "guard"],
+        check=True, capture_output=True,
+    )
+    version = (tmp_path / "vendor" / "labops-pii" / "VERSION").read_text(encoding="utf-8")
+    assert f"commit: {found.stdout.strip()}\n" in version

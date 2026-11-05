@@ -160,7 +160,9 @@ def main() -> int:
     if not args.dest.is_dir():
         print(f"нет каталога проекта: {args.dest}", file=sys.stderr)
         return 2
-    commit = run_git("rev-parse", args.ref).decode().strip()
+    # ^{commit}: у аннотированного тега rev-parse без суффикса даёт хеш объекта тега, а в
+    # VERSION нужен коммит (до 0.8.0 туда попадал хеш тега, и сверка с git log не сходилась)
+    commit = run_git("rev-parse", f"{args.ref}^{{commit}}").decode().strip()
     files = collect(args.ref, parts)
     if not files:
         print("нечего вендорить: проверьте --ref и --parts", file=sys.stderr)
