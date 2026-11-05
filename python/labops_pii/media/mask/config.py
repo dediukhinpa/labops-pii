@@ -31,7 +31,7 @@ DEFAULT_MAX_PDF_PAGES = 20
 DEFAULT_MAX_CONCURRENCY = 2
 DEFAULT_OCR_TIMEOUT_S = 60.0
 
-# Предел декодированного файла (картинка или PDF), байт; Anthropic API принимает PDF до 32 МБ
+# Предел декодированного файла (картинка или PDF), байт; API модели принимает PDF до 32 МБ
 MAX_FILE_BYTES = 32 * 1024 * 1024
 # base64 раздувает данные на 4/3; запас на JSON-обвязку
 BASE64_RATIO_NUM = 4

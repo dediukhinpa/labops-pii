@@ -62,7 +62,7 @@ FETCH_MAX_USES_LIMIT = 5
 FETCH_MAX_CONTENT_TOKENS_LIMIT = 50000
 # Сообщение fetch-запроса: адреса и короткая инструкция. Адресов немного: один кандидат - один сайт.
 FETCH_MAX_URLS = 3
-FETCH_URL_MAX_LEN = 250  # предел самого Anthropic (url_too_long)
+FETCH_URL_MAX_LEN = 250  # предел самого провайдера (url_too_long)
 FETCH_INSTRUCTION_MAX_BYTES = 1024  # текст сообщения без адресов
 FETCH_DOMAIN_MAX_LEN = 253
 ALLOWED_FETCH_TOOL_KEYS = frozenset(

@@ -41,7 +41,7 @@ HTTP_INTERNAL = 500
 
 
 class MediaRequest(BaseModel):
-    """Файл в base64 (как source.data блока image/document в API Anthropic)."""
+    """Файл в base64 (как source.data блока image/document в API модели)."""
 
     media_type: str
     data: str

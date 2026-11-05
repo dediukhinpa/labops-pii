@@ -73,10 +73,10 @@ DEFAULT_VISION_MODEL = "agent-main"
 VISION_MAX_IMAGES_ENV = "VISION_MAX_IMAGES"
 DEFAULT_MAX_IMAGES = 10
 VISION_MAX_IMAGE_B64_BYTES_ENV = "VISION_MAX_IMAGE_B64_BYTES"
-# Предел Anthropic на одну картинку - 5 МБ; считаем длину base64-строки.
+# Предел провайдера модели на одну картинку - 5 МБ; считаем длину base64-строки.
 DEFAULT_MAX_IMAGE_B64_BYTES = 5 * 1024 * 1024
 VISION_MAX_IMAGE_SIDE_ENV = "VISION_MAX_IMAGE_SIDE"
-# Больше 1568 px модель всё равно уменьшает сама (документация Anthropic по vision), а токены и
+# Больше 1568 px модель всё равно уменьшает сама (документация провайдера по vision), а токены и
 # трафик тратятся впустую; нормализацию до этой стороны делает вызывающий (сервис documents).
 DEFAULT_MAX_IMAGE_SIDE = 1568
 VISION_MAX_BODY_BYTES_ENV = "VISION_MAX_BODY_BYTES"

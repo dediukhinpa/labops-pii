@@ -13,7 +13,7 @@ web-app-v2 и pragmatica-ai. Один код вместо трёх расход�
 | сервис | FastAPI: `/pseudonymize`, `/pseudonymize_batch`, `/restore`, `/check`, `DELETE /threads/{id}`, `/inflect_signatory`, `/health` |
 | `labops_pii.guard` | режим «только проверка»: ФИО, адреса, телефоны и др.; `off / log_only / enforce`; метрики с закрытым списком меток. Две поверхности: `guard.litellm` (бывший gateway/pii-guard Прагматики) и `guard.edge` (бывший services/pii-guard web-app-v2) |
 | `labops_pii.media` | `mask` (закраска ПДн на фото и PDF) и `gate` (есть ли текст на картинке). Чистый Python API без FastAPI; HTTP-обёртки отдельно. Extras `media` |
-| `ts/` | фаза 2 (клиент, SSE, обход тела запроса Anthropic) — см. `ts/README.md` |
+| `ts/` | фаза 2 (клиент, SSE, обход тела запроса к модели) — см. `ts/README.md` |
 
 ## Профили
 

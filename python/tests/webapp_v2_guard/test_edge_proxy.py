@@ -1,4 +1,4 @@
-"""Режим прокси для `claude -p` на edge: апстримы, токены, thinking, режимы block/log."""
+"""Режим прокси для CLI-песочницы на edge: апстримы, токены, thinking, режимы block/log."""
 
 import json
 

@@ -75,7 +75,7 @@ def parse_upstreams(
     """Разбирает список апстримов `имя=адрес,имя=адрес`.
 
     Args:
-        raw: Значение PII_GUARD_UPSTREAMS; None или пусто - только Anthropic API.
+        raw: Значение PII_GUARD_UPSTREAMS; None или пусто - только штатный апстрим (anthropic).
         account_email_raw: Значение PII_GUARD_ACCOUNT_EMAIL_UPSTREAMS (имена через запятую);
             None - «anthropic», пустая строка - ни одного.
 

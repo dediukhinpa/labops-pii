@@ -158,7 +158,7 @@ SKIP_RESPONSE_HEADERS = frozenset(
 
 
 def _error(status: int, kind: str, message: str, **extra: Any) -> JSONResponse:
-    """Формирует ошибку в формате Anthropic API."""
+    """Формирует ошибку в формате API модели (type=error, error.type, error.message)."""
     payload: dict[str, Any] = {
         "type": "error",
         "error": {"type": kind, "message": message},
