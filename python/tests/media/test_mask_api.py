@@ -79,7 +79,9 @@ def test_mask_image_endpoint(client: TestClient, auth: dict[str, str]) -> None:
     assert body["stats"]["masked_boxes"] >= 3
     assert base64.b64decode(body["data"]) != raw
     # Значения в ответе только в виде картинки: счётчики числовые
-    assert set(body["stats"]) == {"words", "masked_boxes", "faces", "low_conf_boxes"}
+    assert set(body["stats"]) == {
+        "words", "masked_boxes", "faces", "low_conf_boxes", "codes", "unreadable_boxes",
+    }
 
 
 def test_gif_becomes_png(client: TestClient, auth: dict[str, str]) -> None:
