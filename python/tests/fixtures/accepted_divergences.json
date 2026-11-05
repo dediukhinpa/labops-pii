@@ -189,28 +189,5 @@
     272
    ]
   }
- },
- "pragmatika_guard": {
-  "reason": "0.7.0: в профиле pragmatika guard не блокирует 10-значный ИНН организации (guard_block_org_inn=False, решение владельца 05.11.26). Элемент 50 «тел 7707083893» раньше блокировался как ИНН; телефоном он не считается (код 770 не российский мобильный).",
-  "divergences": {
-   "/modes/default/bodies": [
-    50
-   ],
-   "/modes/default/http": [
-    50
-   ],
-   "/modes/default/types": [
-    50
-   ],
-   "/modes/enforce/bodies": [
-    50
-   ],
-   "/modes/enforce/http": [
-    50
-   ],
-   "/modes/enforce/types": [
-    50
-   ]
-  }
  }
 }
