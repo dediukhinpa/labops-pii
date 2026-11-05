@@ -10,7 +10,8 @@
            (без natasha и pymorphy: образ шлюза остаётся лёгким);
   service  ядро и HTTP-сервис псевдонимизации (всё, кроме guard/ и media/);
   media    labops_pii/media/ (extras: Pillow, OpenCV, pypdfium2);
-  ts       TS-пакет @labops/pii: ts/src, ts/package.json, ts/LICENSE (в vendor/labops-pii/ts/).
+  ts       TS-пакет @labops/pii: ts/src, ts/package.json, ts/bun.lock, ts/LICENSE
+           (в vendor/labops-pii/ts/; зависимости ставит проект: bun install --production там же).
 По умолчанию: guard,service,media (ts берётся только по явной просьбе: нужен лишь TS-проектам).
 
 Пример:
@@ -37,8 +38,10 @@ DEFAULT_REF = "origin/prod"
 ALL_PARTS = ("guard", "service", "media", "ts")
 DEFAULT_PARTS = ("guard", "service", "media")
 TS_DIR = "ts"
-# Из ts/ вендорятся только исходники и манифест: тесты, node_modules и lock остаются в библиотеке
-TS_FILES = ("ts/package.json",)
+# Из ts/ вендорятся исходники, манифест и lock: тесты и node_modules остаются в библиотеке.
+# Lock нужен проекту, чтобы `bun install --frozen-lockfile` в vendor/labops-pii/ts ставил zod
+# той же версии: без node_modules рядом вендоренный код не находит zod.
+TS_FILES = ("ts/package.json", "ts/bun.lock")
 TS_SRC_PREFIX = "ts/src/"
 # Файлы верхнего уровня пакета, нужные guard без морфологии
 GUARD_TOP_FILES = frozenset({"__init__.py", "profiles.py", "pii_patterns.py"})
@@ -73,7 +76,7 @@ def wanted(relative: PurePosixPath, parts: set[str]) -> bool:
 
 
 def collect_ts(ref: str) -> dict[str, bytes]:
-    """Файлы TS-части из git: ts/src/**, ts/package.json и копия LICENSE как ts/LICENSE."""
+    """Файлы TS-части из git: ts/src/**, package.json, bun.lock и копия LICENSE как ts/LICENSE."""
     archive = run_git("archive", "--format=tar", ref, TS_DIR, *EXTRA_FILES)
     files: dict[str, bytes] = {}
     with tarfile.open(fileobj=io.BytesIO(archive)) as tar:

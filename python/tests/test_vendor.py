@@ -64,14 +64,14 @@ def test_guard_part_does_not_need_morphology(tmp_path: Path) -> None:
 
 
 def test_ts_part_vendors_sources_only(tmp_path: Path) -> None:
-    """Часть ts: исходники, манифест и лицензия; тесты и node_modules не вендорятся."""
+    """Часть ts: исходники, манифест, lock и лицензия; тесты и node_modules не вендорятся."""
     vendor_dir = _vendor(tmp_path, "ts")
     names = {
         str(p.relative_to(vendor_dir)) for p in vendor_dir.rglob("*") if p.is_file()
     }
-    assert {"ts/package.json", "ts/LICENSE", "ts/src/index.ts", "VERSION"} <= names
+    assert {"ts/package.json", "ts/bun.lock", "ts/LICENSE", "ts/src/index.ts", "VERSION"} <= names
     assert not any(n.startswith("labops_pii/") for n in names)
-    assert not any("tests/" in n or "node_modules" in n or n.endswith("bun.lock") for n in names)
+    assert not any("tests/" in n or "node_modules" in n for n in names)
     version = (vendor_dir / "VERSION").read_text(encoding="utf-8")
     assert "parts: ts" in version and "ts/src/index.ts" in version
     _load_example(vendor_dir).test_vendored_files_unchanged()
