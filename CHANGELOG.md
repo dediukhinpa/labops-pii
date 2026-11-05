@@ -2,7 +2,46 @@
 
 Формат: semver. Ломающее изменение — новая major-версия.
 
-## Не выпущено
+## 1.0.0
+
+- **Ломающее: профили удалены.** `labops_pii/profiles.py`, `ts/src/detector/profiles.ts` и
+  переменная `LABOPS_PII_PROFILE` больше не существуют; вся настройка — переменные окружения с
+  нейтральными значениями по умолчанию. Если `LABOPS_PII_PROFILE` задана, псевдонимизатор, оба
+  guard и media не стартуют с подсказкой (ссылка на `docs/MIGRATION.md`); в TS параметр
+  `profile` настроек детектора — `LegacyProfileError`. Таблица «бывший профиль → переменные» и
+  готовые блоки env для labops, web-app v2 и Прагматики — в `docs/MIGRATION.md`.
+- Новая обязательная при `PSEUDONYMIZER_STORE=sqlite` переменная `PSEUDONYMIZER_KEY_SCHEME`
+  (`v2` или `v3`; относится и к `python -m labops_pii.rekey`): без неё или с иным значением
+  сервис не стартует. Защита от молчаливой записи в формате, который другая версия кода не
+  прочтёт. Читаются по-прежнему все схемы.
+- Новые флаги маршрутов, по умолчанию выключены: `PSEUDONYMIZER_ENABLE_INFLECT_SIGNATORY`,
+  `PSEUDONYMIZER_ENABLE_DELETE_THREADS`, `PSEUDONYMIZER_ENABLE_EXPOSE_BOOT_ID`,
+  `PSEUDONYMIZER_ENABLE_CASE_LABELS`. Потребители, которые полагались на умолчания
+  профиля `labops`, включают нужные явно.
+- Умолчания, изменившиеся относительно профиля `labops`: четыре флага выше выключены; режимы
+  guard `PII_GUARD_NAMES_MODE` и `PII_GUARD_ADDRESS_MODE` — `off` (у `pragmatika` было
+  `log_only`: задайте явно). `Settings` потерял поле `profile`, получил `key_scheme` и
+  `enable_*`.
+- Слова-исключения: `ALLOWED_WORDS_DEFAULT` пуст, слова — только из `PII_ALLOWED_WORDS`.
+  «прагматик» и «пудовъ» убраны из кода и перенесены в блоки env потребителей. TS-детектор:
+  слова и режим адресов приходят параметрами `allowedWords` и `maskAddresses` (по умолчанию
+  пусто и выкл.).
+- Тесты: наборы, выбиравшие профиль, переведены на наборы переменных
+  (`python/tests/env_sets.py`), `tools/run_tests.sh` передаёт их через `env`. Эталон: до
+  удаления профилей снято поведение каждого (`python/tests/fixtures/profiles/*.json`,
+  `tools/reference_snapshot.py --env-set`), `test_profile_snapshots.py` проверяет побайтно, что
+  те же комбинации переменных дают прежние ответы сервиса, обоих guard и настройки. Добавлены
+  `test_startup_errors.py` (схема ключей, `LABOPS_PII_PROFILE`, флаги маршрутов) и проверки
+  `test_store_compat.py` для v2 и v3 через окружение. Изменены из-за смены поведения:
+  умолчания режимов guard (`test_names*.py`, `test_address_mode.py` pragmatika_guard),
+  `test_env_switch` и `test_settings_repr_hides_key` и `test_retention_settings` (pragmatika),
+  конфигурационные тесты sqlite набора labops (схема ключей добавлена в окружение),
+  `test_allowlist.py`, `test_guard_real_names_fp.py`.
+- `tools/vendor.py` и `vendor.sh` принимают коммит (полный или короткий хеш), а не только тег;
+  покрыто тестами. Часть `guard` теперь содержит `labops_pii/errors.py` вместо `profiles.py`.
+- `tools/vendor.py`: в `VERSION` поле `commit` — хеш коммита. Раньше у аннотированных тегов туда
+  попадал хеш объекта тега (v0.6.0: `0385b456…`, v0.8.0: `e2b7d537…` вместо `0e814ab…`).
+  Уже завендоренные копии остаются рабочими: тест проекта сверяет файлы, а не это поле.
 
 - `tools/vendor.py`: в `VERSION` поле `commit` — хеш коммита. Раньше у аннотированных тегов туда
   попадал хеш объекта тега (v0.6.0: `0385b456…`, v0.8.0: `e2b7d537…` вместо `0e814ab…`).

@@ -56,7 +56,7 @@ export function detectPersons(text: string, options?: DetectorOptions): Detected
 }
 
 /**
- * Находит адреса уровня дома (улица + дом), независимо от флага профиля.
+ * Находит адреса уровня дома (улица + дом), независимо от `maskAddresses`.
  *
  * @param text Исходный текст.
  */
@@ -66,11 +66,11 @@ export function detectAddresses(text: string): DetectedSpan[] {
 
 /**
  * Находит ФИО и адреса вместе. Адрес сильнее ФИО: название улицы по фамилии
- * («ул. Ленина, д. 5») остаётся одним адресом, а не ФИО внутри адреса. Адреса ищутся,
- * только если их маскирует профиль (или `maskAddresses: true`).
+ * («ул. Ленина, д. 5») остаётся одним адресом, а не ФИО внутри адреса. Адреса ищутся
+ * только при `maskAddresses: true`.
  *
  * @param text Исходный текст.
- * @param options Профиль и белый список.
+ * @param options Флаг адресов и белый список.
  * @returns Непересекающиеся находки по возрастанию позиции.
  */
 export function detectNamesAndAddresses(

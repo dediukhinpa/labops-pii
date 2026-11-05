@@ -333,7 +333,7 @@ def _find_digit_types(clean: str, start: int, end: int) -> set[str]:
         found.add(PHONE)
     for match in DIGITS_RUN_RE.finditer(clean, start, end):
         digits = match.group(0)
-        # ИНН любой длины (организации тоже) - ПДн во всех профилях: решение владельца
+        # ИНН любой длины (организации тоже) - ПДн при любых настройках: решение владельца
         # 05.11.26, отменившее исключение для 10-значного ИНН в pragmatika (0.7.0)
         if len(digits) != SNILS_LEN and is_valid_inn(digits):
             found.add(INN)

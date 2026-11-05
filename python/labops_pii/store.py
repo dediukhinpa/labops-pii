@@ -346,7 +346,7 @@ class SqliteReplacementStore:
     def find_token(self, thread_id: str, pii_type: str, key: str) -> str | None:
         with self._lock:
             # Сначала индекс схемы записи, затем остальные (v3, v2, v1): строки, ещё не прошедшие
-            # rekey, и файлы другого профиля остаются находимыми
+            # rekey, и файлы другой схемы ключей остаются находимыми
             for key_hash in dict.fromkeys((
                 self._hash(thread_id, key),
                 self._v3_hash(thread_id, key),

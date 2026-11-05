@@ -24,7 +24,7 @@ ENV_OCR_TIMEOUT = "MEDIA_MASKER_OCR_TIMEOUT_S"
 ENV_MASK_LEGAL = "MEDIA_MASKER_MASK_LEGAL_ENTITY"
 ENV_CONTACTS = "MEDIA_MASKER_CONTACTS_FILE"
 ENV_HIDE_UNREADABLE = "MEDIA_MASKER_HIDE_UNREADABLE"
-# Адреса на картинках: свой флаг, иначе флаг сервиса псевдонимизации, иначе профиль.
+# Адреса на картинках: свой флаг, иначе флаг сервиса псевдонимизации, иначе выкл.
 # Без этого при PSEUDONYMIZER_ADDRESS_MASK=on адрес становился токеном в тексте, но
 # оставался видимым на самой картинке (найдено при переходе labops на библиотеку).
 ENV_ADDRESS_MASK = "MEDIA_MASKER_ADDRESS_MASK"

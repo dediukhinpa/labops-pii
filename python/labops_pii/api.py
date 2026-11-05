@@ -54,7 +54,7 @@ HTTP_BUSY = 503
 BEARER_SCHEME = "bearer"
 # Пути с телом JSON: токен и размер тела проверяются в BodyGuardMiddleware до его чтения
 GUARDED_PATHS = ("/pseudonymize", "/pseudonymize_batch", "/restore", "/check")
-# Подписант (профиль pragmatika): должность и ФИО в родительном падеже без участия модели
+# Подписант (PSEUDONYMIZER_ENABLE_INFLECT_SIGNATORY): должность и ФИО в родительном падеже без участия модели
 SIGNATORY_ROUTE = "/inflect_signatory"
 # Должность и ФИО - короткие строки; длиннее - явно не подписант
 MAX_SIGNATORY_FIELD_CHARS = 200

@@ -1,8 +1,8 @@
 """Эталон для TS-детектора: Python-детектор (Natasha + правила) на общих корпусах.
 
-Прогоняет `PiiDetector` профиля pragmatika (адреса включены, юрлица нет) на корпусах из
-`python/tests/fixtures` и тестов, сохраняет найденные спаны ФИО (PERSON) и адресов (ADDRESS)
-в `ts/tests/fixtures/detector_parity.json`. TS-тест сравнивает свой детектор с этим эталоном
+Прогоняет `PiiDetector` с настройкой бывшего профиля pragmatika (адреса включены, юрлица
+нет) на корпусах из `python/tests/fixtures` и тестов, сохраняет найденные спаны ФИО (PERSON)
+и адресов (ADDRESS) в `ts/tests/fixtures/detector_parity.json`. TS-тест сравнивает свой детектор с этим эталоном
 по перекрытию спанов и проверяет пороги полноты и ложных срабатываний.
 
 Запуск: .venv/bin/python tools/build_ts_detector_fixture.py
