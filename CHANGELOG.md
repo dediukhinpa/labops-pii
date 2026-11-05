@@ -2,9 +2,9 @@
 
 Формат: semver. Ломающее изменение — новая major-версия.
 
-## 0.4.0 (не выпущено)
+## 0.5.0 (не выпущено)
 
-### TS: детектор ФИО и адресов (`ts/src/detector/`)
+TS: детектор ФИО и адресов (`ts/src/detector/`).
 
 Запрос Прагматики (журнал, раздел 7, пробел №1): `web-page-sanitize.ts` не ловил ФИО без
 отчества и инициалов («Иванов Иван»), а шаблоны ФИО и адресов дублировали библиотеку.
@@ -21,6 +21,24 @@
   (`ts/tests/fixtures/detector_parity.json`); TS-тест фиксирует пороги полноты и ложных.
 - Хуже Python/Natasha: одиночная фамилия без слова-признака, иностранные фамилии без
   инициалов, ФИО в именах файлов, ФИО со склонением вне словаря.
+
+## 0.4.0
+
+Источник: labops-ai-assistant `main` (`d981522`, `pii-proxy/src`). Поведение побайтно прежнее.
+
+- `ts/`: перенесено ядро pii-proxy. Клиент сервиса псевдонимизации (`pseudonymizer-client`,
+  разбор `boot_id`, таймауты) и media-masker (`media-client`, `media`, `media-text`); буфер
+  границы токена, SSE и восстановление потока (`token-boundary-buffer`, `sse`,
+  `stream-restore`, `restorer`, `json-restore`); обход тела запроса (`request-walker`,
+  `json-leaves`, `text-split`, `masker`); кэш масок и память восстановлений (`mask-cache`);
+  `errors`, `constants`, `log` (только интерфейс `Logger`, `nullLogger`, отпечаток сессии).
+- Тип `ImagePolicy` вынесен из env-конфига в `image-policy.ts`: библиотека не читает окружение.
+  В проекте остаются `config.ts`, HTTP-сервер, `session-stuck`, stderr-журнал, хуки и
+  константы сервера (порты, лимит тела, пороги «застряла»).
+- `tools/vendor.py`: часть `ts` кладёт `ts/src`, `ts/package.json`, `ts/bun.lock` и `ts/LICENSE` в
+  `vendor/labops-pii/ts/`, хеши в VERSION как у остальных частей. По умолчанию не включена. Проект ставит zod
+  командой `bun install --production --frozen-lockfile` в `vendor/labops-pii/ts`.
+- Тесты: `ts/tests` (клиент сервиса, восстановление, деление текста, буфер, кэш, SSE).
 
 ## 0.3.0
 
