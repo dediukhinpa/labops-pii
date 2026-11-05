@@ -29,9 +29,8 @@ OUT = ROOT / "ts" / "src" / "detector" / "dictionary" / "name-dictionary-data.ts
 ROLE_SURNAME = 1
 ROLE_NAME = 2
 GRAMME_ROLES = (("Surn", ROLE_SURNAME), ("Name", ROLE_NAME))
-# Слабое слово: главный разбор леммы не имя/фамилия (Вера, Роман, Мельник). Одно такое
-# слово без соседей-имён ФИО не доказывает.
-FLAG_WEAK = 4
+# Пустая основа (парадигма на одно слово: «пётр», «петра», ...) пишется этим знаком
+EMPTY_STEM = "∅"
 
 
 def form_role(tag: object) -> int:
@@ -60,14 +59,19 @@ def main() -> None:
     logger.info("парадигм с именами/фамилиями: %d", len(paradigms))
 
     stems: dict[int, set[str]] = defaultdict(set)
+    skipped = 0
     for word, (pid, idx) in dic.words.items():
         if idx != 0 or pid not in paradigms:
             continue
-        suffix0 = paradigms[pid][0][0]
-        if suffix0 and not word.endswith(suffix0):
+        # Слова и окончания сравниваются без «ё»: иначе «Пётр», «Фёдор», «Артём» пропадали
+        suffix0 = paradigms[pid][0][0].replace("ё", "е")
+        plain = word.replace("ё", "е")
+        if suffix0 and not plain.endswith(suffix0):
+            skipped += 1
             continue
-        stems[pid].add(word[: len(word) - len(suffix0)].replace("ё", "е"))
-    logger.info("лексем: %d", sum(len(s) for s in stems.values()))
+        stems[pid].add(plain[: len(plain) - len(suffix0)])
+    logger.info("лексем: %d, пропущено без совпадения окончания: %d",
+                sum(len(s) for s in stems.values()), skipped)
 
     # Нумерация парадигм по порядку, окончания без ё; пустые роли отбрасываются
     lines_paradigms: list[str] = []
@@ -101,8 +105,8 @@ def main() -> None:
                 best = morph.parse(form)[0]
                 if form_role(best.tag) == 0:
                     weak_forms.add(form)
-        lines_strong.append(" ".join(strong))
-        lines_weak.append(" ".join(weak))
+        lines_strong.append(" ".join(EMPTY_STEM if st == "" else st for st in strong))
+        lines_weak.append(" ".join(EMPTY_STEM if st == "" else st for st in weak))
         _ = new_id
     body = [
         "// Сгенерировано tools/gen_ts_name_dictionary.py из словаря pymorphy3. Не править руками.",

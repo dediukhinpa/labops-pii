@@ -41,6 +41,8 @@ interface DictionaryIndex {
 const ENTRY_SEPARATOR = ',';
 const ROLE_SEPARATOR = ':';
 const STEM_SEPARATOR = ' ';
+/** Знак пустой основы в данных (парадигмы на одно слово). */
+const EMPTY_STEM = '∅';
 /** Размер кэша результатов; при переполнении очищается целиком (дёшево и без утечек). */
 const LOOKUP_CACHE_MAX = 20000;
 
@@ -65,9 +67,10 @@ function buildIndex(): DictionaryIndex {
   const add = (lines: readonly string[], weak: boolean): void => {
     lines.forEach((line, paradigm) => {
       for (const stem of line.split(STEM_SEPARATOR)) {
+        const key = stem === EMPTY_STEM ? '' : stem;
         if (stem === '') continue;
-        const list = stems.get(stem);
-        if (list === undefined) stems.set(stem, [{ paradigm, weak }]);
+        const list = stems.get(key);
+        if (list === undefined) stems.set(key, [{ paradigm, weak }]);
         else list.push({ paradigm, weak });
       }
     });
@@ -87,7 +90,7 @@ function lookupUncached(low: string): WordLookup | null {
   const index = cachedIndex;
   let roles = 0;
   let strong = false;
-  const firstSplit = Math.max(1, low.length - index.maxEndingLength);
+  const firstSplit = Math.max(0, low.length - index.maxEndingLength);
   for (let cut = firstSplit; cut <= low.length; cut += 1) {
     const entries = index.stems.get(low.slice(0, cut));
     if (entries === undefined) continue;
