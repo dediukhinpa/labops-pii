@@ -32,6 +32,7 @@ ROOT = Path(__file__).resolve().parents[1]
 PACKAGE_DIR = "python/labops_pii"
 VENDOR_SUBDIR = Path("vendor") / "labops-pii"
 VERSION_FILE = "VERSION"
+DEFAULT_REF = "origin/prod"
 ALL_PARTS = ("guard", "service", "media")
 # Файлы верхнего уровня пакета, нужные guard без морфологии
 GUARD_TOP_FILES = frozenset({"__init__.py", "profiles.py", "pii_patterns.py"})
@@ -116,7 +117,8 @@ def main() -> int:
     """Точка входа."""
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--dest", type=Path, required=True, help="корень проекта-потребителя")
-    parser.add_argument("--ref", default="HEAD", help="тег или коммит библиотеки")
+    # Базовая ветка репозитория - prod (main нет): по умолчанию вендорится она
+    parser.add_argument("--ref", default=DEFAULT_REF, help="тег или коммит библиотеки")
     parser.add_argument("--parts", default=",".join(ALL_PARTS))
     args = parser.parse_args()
     parts = {p.strip() for p in args.parts.split(",") if p.strip()}

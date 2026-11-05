@@ -12,6 +12,7 @@ from enum import StrEnum
 from natasha import Doc, NewsEmbedding, NewsNERTagger, Segmenter
 
 from labops_pii import checksums
+from labops_pii.allowlist import is_allowed_fragment
 from labops_pii.morph import (
     WORD_RE,
     common_lemma,
@@ -42,6 +43,9 @@ from labops_pii.profiles import get_profile
 from labops_pii.tech_tokens import find_tech_spans
 
 logger = logging.getLogger(__name__)
+
+# Типы находок, к которым применяется белый список слов
+ALLOWLIST_TYPES = frozenset({"PERSON", "ORG", "CONTACT"})
 
 INITIAL_TAIL_RE = re.compile(r"[ \t]*[А-ЯЁ]\.[ \t]?(?:[А-ЯЁ]\.)?")
 INITIAL_HEAD_RE = re.compile(r"[А-ЯЁ]\.[ \t]?(?:[А-ЯЁ]\.)?[ \t]*$")
@@ -349,6 +353,13 @@ class PiiDetector:
         found += self._detect_tech_names(text, tech, known_lemmas)
         if self._mask_legal:
             found += self._detect_orgs(text)
+        # Слова белого списка («Прагматика») не ПДн: ни ФИО, ни организация
+        found = [
+            d for d in found
+            if not (
+                d.pii_type in ALLOWLIST_TYPES and is_allowed_fragment(text[d.start:d.end])
+            )
+        ]
         return _with_preposition_genders(text, _resolve_overlaps(found, text))
 
     # --- регулярные детекторы -------------------------------------------------

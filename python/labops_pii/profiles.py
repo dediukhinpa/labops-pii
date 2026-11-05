@@ -25,6 +25,9 @@ KEY_SCHEME_V2 = "v2"
 KEY_SCHEME_V3 = "v3"
 
 HOURS_PER_DAY = 24
+# «Прагматика» - название проекта, а не ФИО: во всех падежах не маскируется ни в одном профиле
+# (решение владельца 05.11; ложное PERSON на «Прагматику» видели в живом трафике labops)
+ALLOWED_WORDS_DEFAULT = ("прагматик",)
 GUARD_MODE_OFF = "off"
 GUARD_MODE_LOG_ONLY = "log_only"
 GUARD_MODE_ENFORCE = "enforce"
@@ -51,6 +54,7 @@ class Profile:
         accept_case_labels: Принимает ли /pseudonymize флаг case_labels (падежные метки).
         guard_names_mode: Режим проверки ФИО в guard по умолчанию.
         guard_address_mode: Режим проверки адресов в guard по умолчанию.
+        allowed_words: Основы слов-исключений (не маскируются ни как ФИО, ни как организация).
         guard_names_morph: Искать ФИО в guard с морфологией (extras, тяжёлые зависимости).
         contacts: Белый список имён по умолчанию (дополняется файлом контактов сервиса).
     """
@@ -68,6 +72,8 @@ class Profile:
     guard_names_mode: str
     guard_address_mode: str
     guard_names_morph: bool = False
+    # Основы слов, которые не ПДн (название проекта): см. labops_pii.allowlist
+    allowed_words: tuple[str, ...] = ALLOWED_WORDS_DEFAULT
     contacts: tuple[str, ...] = ()
 
 

@@ -32,7 +32,10 @@ web-app-v2 и pragmatica-ai. Один код вместо трёх расход�
 | guard: ФИО и адреса | off | log_only | off |
 
 Морфология ФИО в guard — опция (`PII_GUARD_NAMES_MORPH=on`, нужны natasha и pymorphy3);
-выключена во всех профилях. Белые списки имён (агенты, названия) — файл контактов сервиса
+выключена во всех профилях. Белый список слов (`labops_pii/allowlist.py`): «Прагматика» (название проекта, все падежи,
+с кавычками и без) не маскируется как ФИО или организация ни в сервисе, ни в guard, во всех
+профилях; список — `Profile.allowed_words` плюс `PII_ALLOWED_WORDS` (основы через запятую).
+Имена агентов (Tony, Carmella) в список не входят. Словарь контактов сервиса —
 `PSEUDONYMIZER_CONTACTS_FILE` либо `Profile.contacts`.
 
 ## Установка и запуск
@@ -64,7 +67,7 @@ tools/vendor.sh /путь/к/проекту v0.1.0 guard        # части: gu
 
 Файлы попадают в `vendor/labops-pii/` вместе с `VERSION` (тег, коммит, sha256 каждого файла).
 Тест проекта (`examples/test_vendored_unchanged.py`) падает, если файлы правили руками.
-Правки — только здесь: PR, тег, затем `vendor.sh` в проектах. Миграция баз —
+Базовая ветка репозитория — `prod`. Правки — только здесь: PR в `prod`, тег, затем `vendor.sh` в проектах. Миграция баз —
 [docs/MIGRATION.md](docs/MIGRATION.md).
 
 ## English summary
