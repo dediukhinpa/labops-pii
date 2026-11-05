@@ -41,6 +41,11 @@ GUARD_MODES = {
     "enforce": {"PII_GUARD_NAMES_MODE": "enforce", "PII_GUARD_ADDRESS_MODE": "enforce"},
 }
 GUARD_EDGE_MODES = {"default": {}}
+# Расширенный набор режимов для снимков бывших профилей (--all-modes)
+GUARD_ALL_MODES = {
+    **GUARD_MODES,
+    "log_only": {"PII_GUARD_NAMES_MODE": "log_only", "PII_GUARD_ADDRESS_MODE": "log_only"},
+}
 UPSTREAM_STUB = "http://upstream.test"
 GUARD_FORWARDED = "forwarded"
 
@@ -188,16 +193,43 @@ def snapshot_guard(kind: str, impl: str, modes: dict[str, dict[str, str]]) -> di
     return out
 
 
+def snapshot_config() -> dict[str, Any]:
+    """Снимок эффективных настроек бывшего профиля (значения полей и производные от них)."""
+    from dataclasses import asdict
+
+    from cryptography.fernet import Fernet
+
+    from labops_pii import allowlist, config
+    from labops_pii.guard import address, names
+    from labops_pii.profiles import get_profile
+
+    profile = asdict(get_profile())
+    settings = config.Settings(key=Fernet.generate_key().decode(), api_token=API_TOKEN)
+    effective = asdict(settings)
+    for secret in ("key", "api_token"):
+        effective.pop(secret)
+    effective["db_path"] = str(effective["db_path"])
+    return {
+        "profile": profile,
+        "settings": effective,
+        "allowed_stems": list(allowlist.allowed_stems()),
+        "guard_names_mode": names.default_names_mode().value,
+        "guard_address_mode": address.default_address_mode().value,
+    }
+
+
 def main() -> None:
     """Точка входа."""
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--kind", choices=("pseudonymizer", "guard-litellm", "guard-edge"),
+    parser.add_argument("--kind", choices=("pseudonymizer", "guard-litellm", "guard-edge", "config"),
                         required=True)
     parser.add_argument("--impl", choices=("original", "library"), required=True)
     parser.add_argument("--src", type=Path, help="каталог исходной копии (для original)")
     parser.add_argument("--profile", help="профиль библиотеки")
     parser.add_argument("--with-case-labels", action="store_true")
     parser.add_argument("--with-signatory", action="store_true")
+    parser.add_argument("--all-modes", action="store_true",
+                        help="guard: режимы default, enforce и log_only")
     parser.add_argument("--out", type=Path, required=True)
     args = parser.parse_args()
     if args.impl == "original":
@@ -208,13 +240,17 @@ def main() -> None:
         sys.path.insert(0, str(ROOT / "python"))
         if args.profile:
             os.environ["LABOPS_PII_PROFILE"] = args.profile
-    if args.kind == "pseudonymizer":
+    if args.kind == "config":
+        result = snapshot_config()
+    elif args.kind == "pseudonymizer":
         pkg = MODULES[(args.kind, args.impl)]["pkg"]
         result = snapshot_pseudonymizer(
             pkg, args.with_case_labels, args.with_signatory
         )
     else:
         modes = GUARD_MODES if args.kind == "guard-litellm" else GUARD_EDGE_MODES
+        if args.all_modes:
+            modes = GUARD_ALL_MODES
         result = snapshot_guard(args.kind, args.impl, modes)
     args.out.write_text(
         json.dumps(result, ensure_ascii=False, indent=1, sort_keys=True) + "\n", encoding="utf-8"

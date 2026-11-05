@@ -1,0 +1,43 @@
+{
+ "allowed_stems": [
+  "прагматик",
+  "пудовъ"
+ ],
+ "guard_address_mode": "log_only",
+ "guard_names_mode": "log_only",
+ "profile": {
+  "accept_case_labels": false,
+  "allowed_words": [
+   "прагматик",
+   "пудовъ"
+  ],
+  "contacts": [],
+  "enable_delete_threads": false,
+  "enable_inflect_signatory": true,
+  "expose_boot_id": false,
+  "guard_address_mode": "log_only",
+  "guard_names_mode": "log_only",
+  "key_scheme": "v2",
+  "mask_addresses": true,
+  "mask_legal_entity_requisites": false,
+  "name": "pragmatika",
+  "retention_hours": 2160,
+  "store_backend": "sqlite"
+ },
+ "settings": {
+  "busy_timeout_seconds": 4.0,
+  "contacts": [],
+  "db_path": "data/pseudonymizer.sqlite3",
+  "host": "127.0.0.1",
+  "mask_addresses": true,
+  "mask_legal_entity_requisites": false,
+  "max_batch_items": 500,
+  "max_concurrency": 2,
+  "max_restore_tokens": 5000,
+  "max_text_chars": 70000,
+  "port": 8300,
+  "profile": "pragmatika",
+  "retention_hours": 2160,
+  "store_backend": "sqlite"
+ }
+}
