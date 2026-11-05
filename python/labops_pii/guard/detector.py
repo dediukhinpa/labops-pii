@@ -10,6 +10,7 @@ import threading
 from collections import OrderedDict
 from typing import Any
 
+from labops_pii.allowlist import strip_allowed_words
 from labops_pii.guard.address import ADDRESS_TYPE, AddressMode, address_mode
 from labops_pii.guard.names import NAME_TYPE, NamesMode, has_person_name, names_mode
 from labops_pii.guard.names_morph import has_person_morph, names_morph_enabled
@@ -272,12 +273,14 @@ def find_pii_types(text: str) -> set[str]:
     search_names = names_mode() is not NamesMode.OFF
     search_address = address_mode() is not AddressMode.OFF
     morph = search_names and names_morph_enabled()
+    # Белый список слов («Прагматика» - не ФИО): слова затираются пробелами той же длины
+    name_text = strip_allowed_words(clean) if search_names else clean
     for start, end in _windows(clean):
         found |= _find_digit_types(clean, start, end)
         # Окна общие с цифровыми детекторами: длинный текст не держит GIL одним проходом
         if search_names and NAME not in found and (
-            has_person_name(clean, start, end)
-            or (morph and has_person_morph(clean[start:end]))
+            has_person_name(name_text, start, end)
+            or (morph and has_person_morph(name_text[start:end]))
         ):
             found.add(NAME)
         # Токены [ADDRESS_n] уже вырезаны выше; перекрытие окон больше любого адреса,
