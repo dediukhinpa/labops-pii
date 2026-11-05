@@ -262,8 +262,8 @@ def load_env_sets() -> Any:
 def main() -> None:
     """Точка входа."""
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--kind", choices=("pseudonymizer", "guard-litellm", "guard-edge", "config"),
-                        required=True)
+    parser.add_argument("--kind", required=True,
+                        choices=("pseudonymizer", "guard-litellm", "guard-edge", "config"))
     parser.add_argument("--impl", choices=("original", "library"), required=True)
     parser.add_argument("--src", type=Path, help="каталог исходной копии (для original)")
     parser.add_argument("--env-set", help="набор переменных из tests/env_sets.py")
