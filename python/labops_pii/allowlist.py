@@ -1,7 +1,7 @@
 """Белый список слов, которые не являются ПДн (названия проектов и т.п.).
 
-Механизм общий для сервиса и guard и не зашит в шаблоны: список слов задаётся профилем
-(`Profile.allowed_words`) и расширяется переменной PII_ALLOWED_WORDS (через запятую).
+Механизм общий для сервиса и guard и не зашит в код: список слов по умолчанию пуст, слова
+задаёт только переменная PII_ALLOWED_WORDS (основы через запятую).
 Слово записывается основой («прагматик»; так же в PII_ALLOWED_WORDS). Допустимы любые
 падежные формы: основа плюс до ALLOWED_ENDING_MAX букв окончания («Прагматика»,
 «Прагматике», «Прагматикой»), в кавычках и без. Совпадать должно слово целиком;
@@ -13,9 +13,10 @@ from __future__ import annotations
 import os
 import re
 
-from labops_pii.profiles import get_profile
 
 ALLOWED_WORDS_ENV = "PII_ALLOWED_WORDS"
+# Слов по умолчанию нет: название проекта потребитель задаёт в PII_ALLOWED_WORDS
+ALLOWED_WORDS_DEFAULT: tuple[str, ...] = ()
 # Падежное окончание после основы: «прагматик» + «а/у/е/ой/ами/...»
 ALLOWED_ENDING_MAX = 3
 WORD_RE = re.compile(r"[А-Яа-яЁёA-Za-z]+(?:-[А-Яа-яЁёA-Za-z]+)*")
@@ -25,9 +26,9 @@ GLUED_INITIAL_LEN = 2
 
 
 def allowed_stems() -> tuple[str, ...]:
-    """Основы разрешённых слов: профиль плюс переменная окружения (нижний регистр)."""
+    """Основы разрешённых слов из PII_ALLOWED_WORDS (нижний регистр, без повторов)."""
     extra = [w.strip() for w in os.environ.get(ALLOWED_WORDS_ENV, "").split(",")]
-    stems = (*get_profile().allowed_words, *(w for w in extra if w))
+    stems = (*ALLOWED_WORDS_DEFAULT, *(w for w in extra if w))
     return tuple(dict.fromkeys(s.lower().replace("ё", "е") for s in stems))
 
 

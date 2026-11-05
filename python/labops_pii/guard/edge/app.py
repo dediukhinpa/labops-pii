@@ -25,6 +25,7 @@ from fastapi import FastAPI, Request, Response
 from fastapi.responses import JSONResponse, StreamingResponse
 from starlette.types import Receive, Scope, Send
 
+from labops_pii.errors import reject_legacy_profile
 from labops_pii.guard.detector import (
     DEFAULT_MAX_SCAN_BYTES,
     BodyNotJsonError,
@@ -237,7 +238,9 @@ def create_app(
 
     Raises:
         ValueError: Недопустимые MAX_BODY_BYTES, PII_GUARD_UPSTREAMS или PII_GUARD_MODE.
+        ConfigError: Задана прежняя LABOPS_PII_PROFILE.
     """
+    reject_legacy_profile()
     routes = dict(upstreams) if upstreams is not None else load_upstreams()
     guard_mode = mode if mode is not None else load_mode()
     max_body = _max_body_bytes()

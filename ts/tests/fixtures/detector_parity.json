@@ -1,5 +1,8 @@
 {
- "profile": "pragmatika",
+ "env": {
+  "PSEUDONYMIZER_ADDRESS_MASK": "on",
+  "PII_ALLOWED_WORDS": "прагматик"
+ },
  "items": [
   {
    "source": "names_negative",

@@ -13,6 +13,7 @@ from natasha import Doc, NewsEmbedding, NewsNERTagger, Segmenter
 
 from labops_pii import checksums
 from labops_pii.allowlist import is_allowed_fragment
+from labops_pii.config import env_mask_addresses
 from labops_pii.morph import (
     WORD_RE,
     common_lemma,
@@ -39,7 +40,6 @@ from labops_pii.pii_patterns import (
     find_snils_spans,
     normalize_text,
 )
-from labops_pii.profiles import get_profile
 from labops_pii.tech_tokens import find_tech_spans
 
 logger = logging.getLogger(__name__)
@@ -300,11 +300,12 @@ class PiiDetector:
                 независимо от значения: иначе вторая линия защиты (pii-guard) отклоняет запрос.
             contacts: Словарь контактов (точное совпадение без учёта регистра).
             mask_addresses: Маскировать ли адрес (улица + дом, индекс). Выключатель отката
-                PSEUDONYMIZER_ADDRESS_MASK=off: поведение до этапа Г. None - из профиля.
+                PSEUDONYMIZER_ADDRESS_MASK=off: поведение до этапа Г. None - из окружения
+                (PSEUDONYMIZER_ADDRESS_MASK, по умолчанию выключено).
         """
         self._mask_legal = mask_legal_entity_requisites
-        # None - значение профиля (labops/webapp_v2: выкл., pragmatika: вкл.)
-        self._mask_addresses = get_profile().mask_addresses if mask_addresses is None else (
+        # None - значение PSEUDONYMIZER_ADDRESS_MASK (по умолчанию выкл.)
+        self._mask_addresses = env_mask_addresses() if mask_addresses is None else (
             mask_addresses
         )
         self._segmenter = Segmenter()

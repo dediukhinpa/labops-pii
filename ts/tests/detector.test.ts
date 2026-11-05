@@ -8,7 +8,8 @@ import {
   type DetectorOptions,
 } from '../src/index';
 
-const PRAGMATIKA: DetectorOptions = { profile: 'pragmatika' };
+// Бывший профиль pragmatika: адреса ищутся, «прагматик» в белом списке
+const PRAGMATIKA: DetectorOptions = { maskAddresses: true, allowedWords: ['прагматик'] };
 
 /** Тексты найденных ФИО. */
 function persons(text: string, options: DetectorOptions = PRAGMATIKA): string[] {
@@ -106,14 +107,13 @@ describe('адреса', () => {
     expect(spans.map((s) => [s.kind, s.text])).toEqual([['address', 'ул. Ивана Франко, д. 4']]);
   });
 
-  test('профиль задаёт, ищутся ли адреса; параметр перекрывает профиль', () => {
+  test('флаг maskAddresses задаёт, ищутся ли адреса (по умолчанию нет)', () => {
     const text = 'ул. Ленина, д. 5';
-    expect(detectNamesAndAddresses(text, { profile: 'labops' })).toEqual([]);
-    expect(detectNamesAndAddresses(text, { profile: 'webapp_v2' })).toEqual([]);
+    expect(detectNamesAndAddresses(text)).toEqual([]);
+    expect(detectNamesAndAddresses(text, {})).toEqual([]);
+    expect(detectNamesAndAddresses(text, { maskAddresses: false })).toEqual([]);
     expect(detectNamesAndAddresses(text, PRAGMATIKA)).toHaveLength(1);
-    expect(detectNamesAndAddresses(text, { profile: 'labops', maskAddresses: true })).toHaveLength(
-      1,
-    );
+    expect(detectNamesAndAddresses(text, { maskAddresses: true })).toHaveLength(1);
   });
 
   test('цифры других систем и NBSP не сдвигают границы', () => {
@@ -137,9 +137,17 @@ describe('интерфейс', () => {
     expect(() => detectAddresses(null as unknown as string)).toThrow();
   });
 
-  test('неизвестный профиль — ошибка, а не молчаливая подмена', () => {
-    expect(() => detectPersons('Иванов Иван', { profile: 'nope' } as unknown as DetectorOptions))
-      .toThrow();
+  test('параметр profile удалён — ошибка с подсказкой, а не молчаливая подмена', () => {
+    for (const profile of ['pragmatika', 'labops', 'nope']) {
+      const options = { profile } as unknown as DetectorOptions;
+      expect(() => detectPersons('Иванов Иван', options)).toThrow(/MIGRATION/);
+      expect(() => detectNamesAndAddresses('Иванов Иван', options)).toThrow(/MIGRATION/);
+    }
+  });
+
+  test('слов белого списка по умолчанию нет: исключение появляется только из параметра', () => {
+    expect(persons('Менеджер Алексей', {})).not.toEqual([]);
+    expect(persons('Менеджер Алексей', { allowedWords: ['алексе'] })).toEqual([]);
   });
 
   test('длинный текст страницы обрабатывается быстро', () => {

@@ -25,7 +25,9 @@ PY_DIR = ROOT / "python"
 FIXTURES = PY_DIR / "tests" / "fixtures"
 TS_FIXTURES = ROOT / "ts" / "tests" / "fixtures"
 OUT = TS_FIXTURES / "detector_parity.json"
-PROFILE = "pragmatika"
+# Настройка, с которой снят паритет (бывший профиль pragmatika): адреса ищутся, «прагматик» в
+# белом списке; те же значения тесты TS-части передают параметрами детектора
+DETECTOR_ENV = {"PSEUDONYMIZER_ADDRESS_MASK": "on", "PII_ALLOWED_WORDS": "прагматик"}
 KINDS = {"PERSON": "person", "ADDRESS": "address"}
 # Символы вне BMP: позиции в UTF-16 и в кодовых точках Python разошлись бы
 BMP_MAX = 0xFFFF
@@ -71,9 +73,9 @@ def collect_corpora() -> list[dict[str, object]]:
 def main() -> None:
     """Строит фикстуру паритета."""
     logging.basicConfig(level=logging.INFO, format="%(message)s")
-    os.environ["LABOPS_PII_PROFILE"] = PROFILE
+    os.environ.update(DETECTOR_ENV)
     sys.path.insert(0, str(PY_DIR))
-    from labops_pii.detector import PiiDetector  # noqa: PLC0415 (профиль задан выше)
+    from labops_pii.detector import PiiDetector  # noqa: PLC0415 (окружение задано выше)
 
     detector = PiiDetector()
     result: list[dict[str, object]] = []
@@ -89,7 +91,7 @@ def main() -> None:
             if kind is not None:
                 spans[kind].append([found.start, found.end])
         result.append({"source": item["source"], "text": text, **spans})
-    OUT.write_text(json.dumps({"profile": PROFILE, "items": result}, ensure_ascii=False,
+    OUT.write_text(json.dumps({"env": DETECTOR_ENV, "items": result}, ensure_ascii=False,
                               indent=1) + "\n", encoding="utf-8")
     logger.info("записано %d текстов в %s", len(result), OUT)
 

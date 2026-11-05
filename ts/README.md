@@ -21,7 +21,7 @@
 ```ts
 import { detectNamesAndAddresses, replaceSpans } from '@labops/pii';
 
-const spans = detectNamesAndAddresses(text, { profile: 'pragmatika' });
+const spans = detectNamesAndAddresses(text, { maskAddresses: true, allowedWords: ['прагматик'] });
 const clean = replaceSpans(text, spans, (s) => (s.kind === 'person' ? '[ФИО]' : '[адрес]'));
 ```
 

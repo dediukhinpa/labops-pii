@@ -7,6 +7,7 @@ import contextlib
 import hashlib
 import hmac
 import logging
+import os
 import sqlite3
 import threading
 import time
@@ -20,7 +21,36 @@ from cryptography.fernet import Fernet
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF
 
-from labops_pii.profiles import KEY_SCHEME_V2, KEY_SCHEME_V3, get_profile
+from labops_pii.errors import ConfigError
+
+ENV_KEY_SCHEME = "PSEUDONYMIZER_KEY_SCHEME"
+# Схема шифрования строк SQLite при записи. v2: ключи не зависят от префикса треда, файл
+# читается и прежним кодом Прагматики. v3: ключи выводятся по префиксу треда (labops).
+KEY_SCHEME_V2 = "v2"
+KEY_SCHEME_V3 = "v3"
+KEY_SCHEMES = (KEY_SCHEME_V2, KEY_SCHEME_V3)
+
+
+def resolve_key_scheme(raw: str | None) -> str:
+    """Схема ключей записи из значения PSEUDONYMIZER_KEY_SCHEME.
+
+    Args:
+        raw: Значение переменной (None или пусто - не задана).
+
+    Returns:
+        "v2" или "v3".
+
+    Raises:
+        ConfigError: Не задана или не из v2/v3. Умолчания нет намеренно: молчаливая запись в
+            формате, который другая версия кода не прочтёт, необратима без перешифрования.
+    """
+    value = (raw or "").strip().lower()
+    if value not in KEY_SCHEMES:
+        raise ConfigError(
+            f"Не задана или неверна переменная {ENV_KEY_SCHEME} (нужна одна из: "
+            f"{', '.join(KEY_SCHEMES)}): при store=sqlite сервис не стартует без схемы ключей"
+        )
+    return value
 
 logger = logging.getLogger(__name__)
 
@@ -185,10 +215,18 @@ class SqliteReplacementStore:
             key_cache_entries: Размер кэша расшифрованных ключей list_keys.
             key_scheme: Схема ключей при ЗАПИСИ: "v3" (ключи по префиксу треда, labops) или
                 "v2" (общий ключ, формат Прагматики: файл читается и прежним кодом).
-                По умолчанию из профиля. Читаются всегда все схемы (v3, v2, v1).
+                По умолчанию из PSEUDONYMIZER_KEY_SCHEME (нет переменной - ConfigError).
+                Читаются всегда все схемы (v3, v2, v1).
+
+        Raises:
+            ConfigError: Схема не задана ни аргументом, ни окружением.
+            ValueError: Схема не из v2/v3.
         """
-        scheme = key_scheme or get_profile().key_scheme
-        if scheme not in (KEY_SCHEME_V2, KEY_SCHEME_V3):
+        if key_scheme is None:
+            scheme = resolve_key_scheme(os.environ.get(ENV_KEY_SCHEME))
+        else:
+            scheme = key_scheme
+        if scheme not in KEY_SCHEMES:
             raise ValueError(f"key_scheme должна быть v2 или v3, получено {scheme!r}")
         self._write_v2 = scheme == KEY_SCHEME_V2
         master = base64.urlsafe_b64decode(fernet_key.encode())

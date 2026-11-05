@@ -2,7 +2,7 @@
 
 Сам шаблон «улица + номер дома» и «индекс + улица» общий с псевдонимизатором и живёт в
 labops_pii.pii_patterns (копия shared/pii_patterns.py). Здесь только тип находки и режим,
-по образцу labops_pii.guard.names: off / log_only / enforce, по умолчанию log_only.
+по образцу labops_pii.guard.names: off / log_only / enforce, по умолчанию off.
 """
 
 from __future__ import annotations
@@ -10,7 +10,6 @@ from __future__ import annotations
 import os
 from enum import Enum
 
-from labops_pii.profiles import get_profile
 
 # Переменная окружения режима и тип находки (он же метка метрики из закрытого списка)
 ADDRESS_MODE_ENV = "PII_GUARD_ADDRESS_MODE"
@@ -25,18 +24,20 @@ class AddressMode(str, Enum):
     ENFORCE = "enforce"
 
 
-DEFAULT_ADDRESS_MODE = AddressMode.LOG_ONLY
+# Нейтральное значение по умолчанию: адреса в guard не ищутся, пока потребитель не задал
+# PII_GUARD_ADDRESS_MODE (log_only или enforce)
+DEFAULT_ADDRESS_MODE = AddressMode.OFF
 
 
 def default_address_mode() -> AddressMode:
-    """Режим адресов по умолчанию для активного профиля (pragmatika - log_only, иначе off)."""
-    return AddressMode(get_profile().guard_address_mode)
+    """Режим адресов по умолчанию (когда PII_GUARD_ADDRESS_MODE не задана)."""
+    return DEFAULT_ADDRESS_MODE
 
 
 def parse_address_mode(raw: str | None) -> AddressMode:
     """Разбирает значение PII_GUARD_ADDRESS_MODE строго.
 
-    Пусто или не задано - режим по умолчанию (log_only). Неизвестное значение - ошибка:
+    Пусто или не задано - режим по умолчанию (off). Неизвестное значение - ошибка:
     приложение при старте не запускается, чтобы опечатка не стала молча выключенной защитой.
 
     Raises:

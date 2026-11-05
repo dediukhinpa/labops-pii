@@ -20,6 +20,7 @@ from fastapi import FastAPI, Request, Response
 from fastapi.responses import JSONResponse, StreamingResponse
 from starlette.types import Receive, Scope, Send
 
+from labops_pii.errors import reject_legacy_profile
 from labops_pii.guard.address import ADDRESS_MODE_ENV, parse_address_mode
 from labops_pii.guard.detector import (
     DEFAULT_MAX_SCAN_BYTES,
@@ -287,7 +288,9 @@ def create_app(
     Raises:
         ValueError: Недопустимое значение MAX_BODY_BYTES, VISION_MAX_* или
             PII_GUARD_NAMES_MODE или PII_GUARD_ADDRESS_MODE.
+        ConfigError: Задана прежняя LABOPS_PII_PROFILE.
     """
+    reject_legacy_profile()
     base = (upstream_url or os.environ.get(UPSTREAM_URL_ENV, DEFAULT_UPSTREAM)).rstrip("/")
     max_body = _max_body_bytes()
     # Неизвестный режим ФИО - ошибка старта, а не тихое отключение защиты (см. parse_names_mode)

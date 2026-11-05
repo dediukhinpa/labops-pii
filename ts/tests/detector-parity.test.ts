@@ -2,7 +2,10 @@ import { describe, expect, test } from 'bun:test';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { detectAddresses, detectPersons } from '../src/index';
+import { detectAddresses, detectPersons, type DetectorOptions } from '../src/index';
+
+// Бывший профиль pragmatika: адреса ищутся, «прагматик» в белом списке
+const PRAGMATIKA: DetectorOptions = { maskAddresses: true, allowedWords: ['прагматик'] };
 
 /** Один текст корпуса с эталонными спанами Python-детектора. */
 interface ParityItem {
@@ -54,7 +57,7 @@ describe('паритет с Python-детектором на корпусе', ()
     let hit = 0;
     const missed: string[] = [];
     for (const item of items.filter((i) => POSITIVE_SOURCES.has(i.source))) {
-      const found = detectPersons(item.text, { profile: 'pragmatika' });
+      const found = detectPersons(item.text, PRAGMATIKA);
       for (const span of item.person) {
         total += 1;
         if (found.some((f) => overlaps(span, f.start, f.end))) hit += 1;
@@ -69,7 +72,7 @@ describe('паритет с Python-детектором на корпусе', ()
   test('ложные срабатывания ФИО на текстах без ФИО', () => {
     const negatives = items.filter((i) => NEGATIVE_SOURCES.has(i.source));
     const wrong = negatives.filter(
-      (i) => detectPersons(i.text, { profile: 'pragmatika' }).length > 0,
+      (i) => detectPersons(i.text, PRAGMATIKA).length > 0,
     );
     console.log(`[замер] ложных ФИО: ${wrong.length} из ${negatives.length}`);
     expect(wrong.length / negatives.length).toBeLessThanOrEqual(MAX_FALSE_POSITIVE_RATE);
