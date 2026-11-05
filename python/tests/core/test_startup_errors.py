@@ -216,3 +216,17 @@ def test_routes_present_when_flags_on(monkeypatch: pytest.MonkeyPatch) -> None:
                                                        "full_name": "Иванов Иван Иванович"})
     assert response.status_code == 200
     assert "boot_id" in client.get("/health").json()
+
+
+def test_rekey_requires_scheme_and_rejects_legacy_profile(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    from labops_pii import rekey
+
+    db = tmp_path / "r.sqlite3"
+    db.write_bytes(b"")
+    monkeypatch.setenv(ENV_KEY, Fernet.generate_key().decode())
+    assert rekey.main(["--db", str(db), "--dry-run"]) == rekey.EXIT_USAGE  # нет схемы
+    monkeypatch.setenv(ENV_KEY_SCHEME, "v3")
+    monkeypatch.setenv(LEGACY_PROFILE_ENV, "pragmatika")
+    assert rekey.main(["--db", str(db), "--dry-run"]) == rekey.EXIT_USAGE

@@ -39,15 +39,18 @@ def test_store_roundtrip_and_wrong_key(tmp_path: Path, fernet_key: str) -> None:
 
 
 def test_no_key_refuses_to_start() -> None:
-    with pytest.raises(ConfigError):
-        load_settings({})
-    with pytest.raises(ConfigError):
-        load_settings({ENV_KEY: "   "})
+    sqlite = {**ENV_SETS["pragmatika"], ENV_API_TOKEN: "tok"}
+    with pytest.raises(ConfigError, match=ENV_KEY):
+        load_settings(sqlite)
+    with pytest.raises(ConfigError, match=ENV_KEY):
+        load_settings({**sqlite, ENV_KEY: "   "})
 
 
 def test_invalid_key_refused_without_leaking_it() -> None:
     with pytest.raises(ConfigError) as info:
-        load_settings({ENV_KEY: "not-a-fernet-key-SECRETVALUE"})
+        load_settings({
+            **ENV_SETS["pragmatika"], ENV_API_TOKEN: "tok", ENV_KEY: "not-a-fernet-key-SECRETVALUE"
+        })
     assert "SECRETVALUE" not in str(info.value)
 
 

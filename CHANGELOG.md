@@ -36,7 +36,10 @@
   умолчания режимов guard (`test_names*.py`, `test_address_mode.py` pragmatika_guard),
   `test_env_switch` и `test_settings_repr_hides_key` и `test_retention_settings` (pragmatika),
   конфигурационные тесты sqlite набора labops (схема ключей добавлена в окружение),
-  `test_allowlist.py`, `test_guard_real_names_fp.py`.
+  `test_allowlist.py`, `test_guard_real_names_fp.py`, `test_no_key_refuses_to_start` и
+  `test_invalid_key_refused_without_leaking_it` (pragmatika: явно sqlite), TS-тесты
+  `detector.test.ts` и `detector-parity.test.ts` (параметры вместо `profile`), фикстура
+  `detector_parity.json` (ключ `profile` → `env`), `test_vendor.py` (без переменной профиля).
 - `tools/vendor.py` и `vendor.sh` принимают коммит (полный или короткий хеш), а не только тег;
   покрыто тестами. Часть `guard` теперь содержит `labops_pii/errors.py` вместо `profiles.py`.
 - `tools/vendor.py`: в `VERSION` поле `commit` — хеш коммита. Раньше у аннотированных тегов туда

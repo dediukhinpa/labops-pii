@@ -29,7 +29,7 @@ interface ResolvedOptions {
 
 function resolve(options: DetectorOptions | undefined): ResolvedOptions {
   // Прежний параметр `profile` удалён: молча игнорировать его нельзя (другие слова и режим)
-  if (options !== undefined && options !== null && 'profile' in options) {
+  if (typeof options === 'object' && options !== null && 'profile' in options) {
     throw new LegacyProfileError();
   }
   const parsed = DetectorOptionsSchema.parse(options ?? {});

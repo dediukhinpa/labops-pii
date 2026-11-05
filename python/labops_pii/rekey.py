@@ -32,6 +32,7 @@ from labops_pii.config import (
     ConfigError,
     load_settings,
 )
+from labops_pii.errors import reject_legacy_profile
 from labops_pii.store import SqliteReplacementStore
 
 logger = logging.getLogger("pseudonymizer.rekey")
@@ -109,6 +110,11 @@ def main(argv: Sequence[str] | None = None) -> int:
     """Точка входа. Код возврата: 0 успех, 1 ошибка (база не изменена), 2 неверный запуск."""
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
     args = _parse(argv)
+    try:
+        reject_legacy_profile()
+    except ConfigError as exc:
+        logger.error("%s", exc)
+        return EXIT_USAGE
     try:
         settings = load_settings(
             {
