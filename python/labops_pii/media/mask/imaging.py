@@ -9,9 +9,11 @@ from dataclasses import dataclass
 from PIL import Image, ImageDraw, ImageOps, UnidentifiedImageError
 
 from labops_pii.detector import PiiDetector
+from labops_pii.media.mask.codes import CodeFinder, CodeHit
 from labops_pii.media.mask.config import MAX_IMAGE_PIXELS
 from labops_pii.media.mask.faces import FaceBlurrer
 from labops_pii.media.mask.ocr import OcrError, OcrWord, TesseractOcr
+from labops_pii.media.mask.unreadable import find_unreadable
 
 logger = logging.getLogger(__name__)
 
@@ -37,6 +39,8 @@ JPEG_QUALITY = 90
 MEDIA_JPEG = "image/jpeg"
 MEDIA_PNG = "image/png"
 ALPHA_BACKGROUND = (255, 255, 255)
+# Предел распознанного текста одной картинки в ответе, символов (дальше - обрезка по строке)
+MAX_RECOGNIZED_CHARS = 30_000
 
 
 class MediaRefusedError(Exception):
@@ -68,15 +72,48 @@ class MaskStats:
     masked_boxes: int = 0
     faces: int = 0
     low_conf_boxes: int = 0
+    codes: int = 0
+    unreadable_boxes: int = 0
+
+
+@dataclass(frozen=True, slots=True)
+class CodeText:
+    """Содержимое найденного кода (область на картинке закрашена в любом случае).
+
+    Attributes:
+        kind: qr или barcode.
+        text: Расшифровка в читаемом виде; пусто, если расшифровать не удалось.
+    """
+
+    kind: str
+    text: str
+
+
+@dataclass(frozen=True, slots=True)
+class Recognized:
+    """Что нашли на картинке локально. Идёт прокси, который заменит ПДн метками.
+
+    Attributes:
+        text: Распознанный текст в порядке чтения (строки через перевод строки). Слова с
+            низкой уверенностью OCR не включаются: на картинке они закрашены.
+        codes: Содержимое QR-кодов и штрихкодов.
+        hidden_text: Часть текста нераспознана (рукопись, подпись, нечитаемые слова) и
+            закрашена.
+    """
+
+    text: str = ""
+    codes: tuple[CodeText, ...] = ()
+    hidden_text: bool = False
 
 
 @dataclass(frozen=True, slots=True)
 class MaskedImage:
-    """Результат: перекодированная картинка и счётчики."""
+    """Результат: перекодированная картинка, счётчики и распознанное содержимое."""
 
     media_type: str
     data: bytes
     stats: MaskStats
+    recognized: Recognized = Recognized()
 
 
 def build_text(words: list[OcrWord]) -> tuple[str, list[tuple[int, int]]]:
@@ -116,14 +153,23 @@ class ImageMasker:
 
     Args:
         ocr: Распознаватель текста.
-        detector: Детектор ПДн из пакета pseudonymizer.
+        detector: Детектор ПДн из пакета labops_pii.
         faces: Размыватель лиц.
     """
 
-    def __init__(self, ocr: TesseractOcr, detector: PiiDetector, faces: FaceBlurrer) -> None:
+    def __init__(
+        self,
+        ocr: TesseractOcr,
+        detector: PiiDetector,
+        faces: FaceBlurrer,
+        hide_unreadable: bool = True,
+        codes: CodeFinder | None = None,
+    ) -> None:
         self._ocr = ocr
         self._detector = detector
         self._faces = faces
+        self._hide_unreadable = hide_unreadable
+        self._codes = codes if codes is not None else CodeFinder()
 
     def mask_bytes(self, data: bytes) -> MaskedImage:
         """Декодирует, маскирует и перекодирует изображение.
@@ -132,15 +178,28 @@ class ImageMasker:
             MediaRefusedError: Не декодируется, слишком большое или сбой любого шага.
         """
         image, source_format = self._decode(data)
-        masked, stats = self.mask_image(image)
+        masked, stats, recognized = self.mask_image_ex(image)
         out_type, out = self.encode(masked, source_format)
-        return MaskedImage(out_type, out, stats)
+        return MaskedImage(out_type, out, stats, recognized)
 
     def mask_image(self, image: Image.Image) -> tuple[Image.Image, MaskStats]:
-        """Маскирует RGB-изображение (возвращает новое).
+        """Маскирует RGB-изображение (возвращает новое), без распознанного содержимого.
 
         Raises:
             MediaRefusedError: Сбой OCR/лиц или ПДн остались после MAX_PASSES.
+        """
+        masked, stats, _recognized = self.mask_image_ex(image)
+        return masked, stats
+
+    def mask_image_ex(self, image: Image.Image) -> tuple[Image.Image, MaskStats, Recognized]:
+        """Маскирует RGB-изображение и отдаёт распознанное содержимое.
+
+        Порядок: лица, поворот, коды (закрашиваются всегда), OCR с детектором ПДн, поиск
+        нераспознанного текста (закрашивается). Распознанный текст берётся с первого прохода,
+        до закраски: прокси сам заменит в нём ПДн метками.
+
+        Raises:
+            MediaRefusedError: Сбой OCR/лиц/кодов или ПДн остались после MAX_PASSES.
         """
         image = image.copy()
         try:
@@ -155,20 +214,67 @@ class ImageMasker:
         rotation = self._rotation(image)
         if rotation:
             image = image.rotate(-rotation, expand=True)
-        total_boxes = total_low = 0
-        for _ in range(MAX_PASSES):
+        codes = self._hide_codes(image)
+        total_boxes = total_low = unreadable = 0
+        recognized = Recognized()
+        for attempt in range(MAX_PASSES):
             words, rects, low = self._find_rects(image)
+            if attempt == 0:
+                extra = self._unreadable_rects(image, words, codes)
+                unreadable = len(extra)
+                rects = rects + extra
+                recognized = self._recognized(words, codes, low > 0 or bool(extra))
             if not rects:
                 # Чистый проход: words - всё, что осталось читаемым после заливки
                 if rotation:
                     image = image.rotate(rotation, expand=True)
-                return image, MaskStats(len(words), total_boxes, len(boxes), total_low)
+                stats = MaskStats(
+                    len(words), total_boxes, len(boxes), total_low, len(codes), unreadable
+                )
+                return image, stats, recognized
             total_boxes += len(rects)
             total_low += low
             draw = ImageDraw.Draw(image)
             for rect in rects:
                 draw.rectangle(rect, fill=FILL_COLOR)
         raise MediaRefusedError(422, "pii_remains_after_masking")
+
+    def _hide_codes(self, image: Image.Image) -> list[CodeHit]:
+        """Находит QR и штрихкоды и закрашивает их на месте (содержимое возвращается)."""
+        try:
+            hits = self._codes.find(image)
+        except Exception as exc:  # cv2.error и др.: код не проверить - отказ
+            logger.error("code detection failed", extra={"exc_type": type(exc).__name__})
+            raise MediaRefusedError(500, "code_detection_failed") from exc
+        draw = ImageDraw.Draw(image)
+        for hit in hits:
+            draw.rectangle(hit.rect, fill=FILL_COLOR)
+        return hits
+
+    def _unreadable_rects(
+        self, image: Image.Image, words: list[OcrWord], codes: list[CodeHit]
+    ) -> list[tuple[int, int, int, int]]:
+        """Области с признаками письма, которые OCR не распознал (рукопись, подпись)."""
+        if not self._hide_unreadable:
+            return []
+        known = [(w.left, w.top, w.left + w.width, w.top + w.height) for w in words]
+        known += [hit.rect for hit in codes]
+        try:
+            return find_unreadable(image, known).rects
+        except Exception as exc:  # cv2.error и др.: проверить нельзя - отказ
+            logger.error("unreadable scan failed", extra={"exc_type": type(exc).__name__})
+            raise MediaRefusedError(500, "unreadable_scan_failed") from exc
+
+    @staticmethod
+    def _recognized(words: list[OcrWord], codes: list[CodeHit], hidden: bool) -> Recognized:
+        """Распознанное содержимое: надёжные слова в порядке чтения и тексты кодов."""
+        # Слова ниже порога на картинке закрашены (или это короткий мусор): в текст не идут
+        readable = [w for w in words if w.conf >= LOW_CONF]
+        text, _offsets = build_text(readable)
+        if len(text) > MAX_RECOGNIZED_CHARS:
+            text = text[:MAX_RECOGNIZED_CHARS].rsplit("\n", 1)[0]
+        found = tuple(CodeText(c.kind, c.text) for c in codes)
+        return Recognized(text.strip(), found, hidden)
 
     def _rotation(self, image: Image.Image) -> int:
         """Поворот страницы по OSD (на уменьшенной копии)."""
