@@ -19,7 +19,7 @@ from labops_pii.guard.litellm.webpage_route import (
 
 INSTRUCTION = "Достань город и контакты поставщика из текста страницы."
 CONTACTS = "Директор Иванов Пётр Сергеевич, тел. +7 (495) 123-45-67, sales@example.ru"
-INN_TEXT = "реквизиты: ИНН 7707083893"
+INN_TEXT = "реквизиты: ИНН 500100732259"
 SNILS_TEXT = "СНИЛС 112-233-445 95"
 CARD_TEXT = "оплата на карту 4111 1111 1111 1111"
 
@@ -259,7 +259,7 @@ async def test_logs_have_no_content(caplog: pytest.LogCaptureFixture) -> None:
     async with _client(seen) as c:
         await c.post(WEBPAGE_ROUTE_PATH, json=_body())
         await c.post(WEBPAGE_ROUTE_PATH, json=_body(f"{CONTACTS}\n{INN_TEXT}"))
-    assert "7707083893" not in caplog.text
+    assert "500100732259" not in caplog.text
     assert "Иванов" not in caplog.text
     assert "sales@example.ru" not in caplog.text
     assert "webpage_request" in caplog.text

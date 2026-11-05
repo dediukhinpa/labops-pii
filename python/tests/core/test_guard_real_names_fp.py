@@ -11,7 +11,8 @@ import pytest
 from labops_pii.guard import detector
 from labops_pii.guard.names import NAME_TYPE
 
-# Каждая строка блокировалась морфологией v0.6.0 (проверено), причина в комментарии
+# Каждая строка блокировалась морфологией v0.6.0 (проверено); морфология убрана в 0.7.0, и
+# старая переменная PII_GUARD_NAMES_MORPH=on больше ничего не включает
 MORPH_PRODUCT_NAMES = (
     "Н-р тарелок «Гранд» 18 пр.",  # сокращение «Н-р» шло как инициал
     "Вода т.бут 0,5 л",  # «т.бут» - как инициал
@@ -41,7 +42,9 @@ def _pragmatika_enforce(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 @pytest.mark.parametrize("text", MORPH_PRODUCT_NAMES)
-def test_morph_does_not_flag_product_names(text: str, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_removed_morph_env_does_not_flag_product_names(
+    text: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
     monkeypatch.setenv("PII_GUARD_NAMES_MORPH", "on")
     assert NAME_TYPE not in detector.find_pii_types(text)
 
@@ -56,6 +59,23 @@ def test_brand_with_glued_initial_is_not_a_name() -> None:
 
 
 @pytest.mark.parametrize(("text", "kind"), REAL_PII)
-def test_real_pii_still_found(text: str, kind: str, monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv("PII_GUARD_NAMES_MORPH", "on")
+def test_real_pii_still_found(text: str, kind: str) -> None:
     assert kind in detector.find_pii_types(text)
+
+
+ORG_INN = "7707083893"  # 10 цифр, контрольная сумма верна
+PERSON_INN = "500100732259"  # 12 цифр, ИНН физлица или ИП
+
+
+def test_org_inn_not_blocked_in_pragmatika() -> None:
+    """pragmatika: guard_block_org_inn выкл., ИНН организации не блокируется (в т.ч. штрихкод)."""
+    assert "inn" not in detector.find_pii_types(f"Поставщик ИНН {ORG_INN}")
+    assert "inn" not in detector.find_pii_types(f"Макароны LA PASTA {ORG_INN} 250г")
+    assert "inn" in detector.find_pii_types(f"ИП, ИНН {PERSON_INN}")
+
+
+def test_org_inn_blocked_where_profile_asks(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("LABOPS_PII_PROFILE", "webapp_v2")
+    assert "inn" in detector.find_pii_types(f"Поставщик ИНН {ORG_INN}")

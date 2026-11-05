@@ -54,8 +54,9 @@ class Profile:
         accept_case_labels: Принимает ли /pseudonymize флаг case_labels (падежные метки).
         guard_names_mode: Режим проверки ФИО в guard по умолчанию.
         guard_address_mode: Режим проверки адресов в guard по умолчанию.
+        guard_block_org_inn: Блокирует ли guard 10-значный ИНН организации (12-значный ИНН
+            физлица блокируется всегда). Сервис маскирует ИНН любой длины независимо от этого.
         allowed_words: Основы слов-исключений (не маскируются ни как ФИО, ни как организация).
-        guard_names_morph: Искать ФИО в guard с морфологией (extras, тяжёлые зависимости).
         contacts: Белый список имён по умолчанию (дополняется файлом контактов сервиса).
     """
 
@@ -71,10 +72,11 @@ class Profile:
     accept_case_labels: bool
     guard_names_mode: str
     guard_address_mode: str
-    guard_names_morph: bool = False
     # Основы слов, которые не ПДн (название проекта): см. labops_pii.allowlist
     allowed_words: tuple[str, ...] = ALLOWED_WORDS_DEFAULT
     contacts: tuple[str, ...] = ()
+    # ИНН организации не ПДн; блокировать его или нет - решение проекта, а не детектора
+    guard_block_org_inn: bool = True
 
 
 PROFILES: dict[str, Profile] = {
@@ -110,6 +112,9 @@ PROFILES: dict[str, Profile] = {
         # Торговая марка «С.ПУДОВЪ» (замер на 75 752 названиях БД Прагматики, 05.11.26): с
         # инициалом guard видел в ней ФИО. Основа с «ъ» не совпадает с фамилией «Пудов».
         allowed_words=(*ALLOWED_WORDS_DEFAULT, "пудовъ"),
+        # ИНН поставщиков - рабочие данные Прагматики, не ПДн; 10-значные штрихкоды с верной
+        # контрольной суммой ИНН блокировались как ИНН (замер 05.11.26, решение владельца)
+        guard_block_org_inn=False,
     ),
     # web-app-v2: своего псевдонимизатора не было (план: общий сервис labops); guard искал
     # только цифровые типы, поэтому ФИО и адреса в guard выключены

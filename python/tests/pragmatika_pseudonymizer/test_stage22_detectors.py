@@ -55,16 +55,21 @@ def test_pseudonymizer_and_guard_agree_on_corpus(legal: PiiDetector) -> None:
         assert not (guard.find_pii_types(text) & STRICT_TYPES), text
 
 
-@pytest.mark.parametrize("digits", ["7707083893", "500100732259"])
+@pytest.mark.parametrize(
+    ("digits", "guard_blocks"), [("7707083893", False), ("500100732259", True)]
+)
 def test_valid_inn_without_word_guard_parity_default_detector(
-    detector: PiiDetector, digits: str
+    detector: PiiDetector, digits: str, guard_blocks: bool
 ) -> None:
-    """ИНН без слова: guard видит `inn`, детектор по умолчанию маскирует, после маски пусто."""
+    """ИНН без слова: детектор по умолчанию маскирует любой, после маски guard молчит.
+
+    10-значный ИНН организации профиль pragmatika в guard не блокирует (guard_block_org_inn).
+    """
     guard = _guard_detector()
     if guard is None:
         pytest.skip("pii-guard недоступен (отдельный образ)")
     text = f"реквизиты {digits} пришли"
-    assert "inn" in guard.find_pii_types(text)
+    assert ("inn" in guard.find_pii_types(text)) is guard_blocks
     assert "inn" in _types(detector, text)
     masked = "реквизиты [INN_1] пришли"
     assert not guard.find_pii_types(masked)

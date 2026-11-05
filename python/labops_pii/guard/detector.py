@@ -5,6 +5,8 @@
 
 import hashlib
 import json
+import logging
+import os
 import re
 import threading
 from collections import OrderedDict
@@ -13,7 +15,6 @@ from typing import Any
 from labops_pii.allowlist import strip_allowed_words
 from labops_pii.guard.address import ADDRESS_TYPE, AddressMode, address_mode
 from labops_pii.guard.names import NAME_TYPE, NamesMode, has_person_name, names_mode
-from labops_pii.guard.names_morph import has_person_morph, names_morph_enabled
 from labops_pii.pii_patterns import (
     ACCOUNT_RE,
     BARE_PHONE_RE,
@@ -27,6 +28,7 @@ from labops_pii.pii_patterns import (
     is_snils_checksum_valid,
     normalize_text,
 )
+from labops_pii.profiles import get_profile
 
 # Предел анализируемого тела по умолчанию (байт). Отдельной настройки у детектора нет:
 # приложение передаёт в scan_body свой предел тела (MAX_BODY_BYTES), поэтому предел
@@ -107,6 +109,17 @@ def strip_tokens(text: str) -> str:
 # Email ищется в два шага (поиск «@», затем ограниченные соседние части), а не одним
 # регулярным выражением: прежний шаблон давал квадратичное время на длинных телах (S-04).
 AT_RE = re.compile("@")
+# Морфология ФИО (Natasha + pymorphy) убрана из guard в 0.7.0: на размеченном корпусе не нашла
+# ни одного ФИО сверх эвристики, а на 75 752 реальных названиях БД Прагматики добавила 396
+# ложных блокировок (известные люди, персонажи, сорта, сокращения). Переменная не действует.
+NAMES_MORPH_ENV_REMOVED = "PII_GUARD_NAMES_MORPH"
+_ENV_OFF_VALUES = frozenset({"", "0", "false", "no", "off"})
+if os.environ.get(NAMES_MORPH_ENV_REMOVED, "").strip().lower() not in _ENV_OFF_VALUES:
+    logging.getLogger(__name__).warning(
+        "%s больше не действует (морфология ФИО убрана из guard в labops-pii 0.7.0)",
+        NAMES_MORPH_ENV_REMOVED,
+    )
+
 DIGITS_RUN_RE = re.compile(r"(?<!\d)\d{10,12}(?!\d)")
 # Списки чисел через ASCII «/» в названиях товаров: объёмы и размеры («425/660/1000 мл»,
 # «M.2 2280/2260/2242/2230»). Нормализация делает из «/» дефис, и такой список выглядел
@@ -246,6 +259,15 @@ def is_valid_inn(digits: str) -> bool:
     return False
 
 
+def _inn_is_pii(digits: str) -> bool:
+    """Блокировать ли найденный ИНН: физлица (12 цифр) - всегда, организации - по профилю.
+
+    10-значный ИНН - организации, не персональные данные; профиль решает, блокировать ли его
+    (`Profile.guard_block_org_inn`). ИНН ИП - 12 цифр, ловится всегда.
+    """
+    return len(digits) == INN_LEN_PERSON or get_profile().guard_block_org_inn
+
+
 def is_valid_snils(digits: str) -> bool:
     """Проверяет СНИЛС (11 цифр) по контрольному числу (общее правило pii_patterns)."""
     return is_snils_checksum_valid(digits)
@@ -263,7 +285,7 @@ def _find_digit_types(clean: str, start: int, end: int) -> set[str]:
         found.add(PHONE)
     for match in DIGITS_RUN_RE.finditer(clean, start, end):
         digits = match.group(0)
-        if len(digits) != SNILS_LEN and is_valid_inn(digits):
+        if len(digits) != SNILS_LEN and is_valid_inn(digits) and _inn_is_pii(digits):
             found.add(INN)
     # СНИЛС по общему правилу: псевдонимизатор маскирует ровно эти находки (R9-A4-04)
     if find_snils_spans(clean, start, end):
@@ -293,16 +315,12 @@ def find_pii_types(text: str) -> set[str]:
         found.add(EMAIL)
     search_names = names_mode() is not NamesMode.OFF
     search_address = address_mode() is not AddressMode.OFF
-    morph = search_names and names_morph_enabled()
     # Белый список слов («Прагматика» - не ФИО): слова затираются пробелами той же длины
     name_text = strip_allowed_words(clean) if search_names else clean
     for start, end in _windows(clean):
         found |= _find_digit_types(clean, start, end)
         # Окна общие с цифровыми детекторами: длинный текст не держит GIL одним проходом
-        if search_names and NAME not in found and (
-            has_person_name(name_text, start, end)
-            or (morph and has_person_morph(name_text[start:end]))
-        ):
+        if search_names and NAME not in found and has_person_name(name_text, start, end):
             found.add(NAME)
         # Токены [ADDRESS_n] уже вырезаны выше; перекрытие окон больше любого адреса,
         # позиции наружу не отдаются
@@ -322,8 +340,8 @@ STRING_CACHE_MIN_CHARS = 64
 
 
 def _scan_modes() -> tuple[NamesMode, AddressMode, bool]:
-    """Режимы, от которых зависит результат find_pii_types (ключ актуальности кэша)."""
-    return names_mode(), address_mode(), names_morph_enabled()
+    """Режимы и профиль, от которых зависит результат find_pii_types (ключ актуальности кэша)."""
+    return names_mode(), address_mode(), get_profile().guard_block_org_inn
 
 
 class _StringScanCache:
