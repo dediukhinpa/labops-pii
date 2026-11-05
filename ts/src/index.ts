@@ -22,3 +22,4 @@ export * from './sse';
 export * from './stream-restore';
 export * from './text-split';
 export * from './token-boundary-buffer';
+export * from './detector/index';

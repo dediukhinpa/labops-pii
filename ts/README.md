@@ -15,3 +15,15 @@
    общим корпусом `python/tests/fixtures/common_corpus.json`.
 
 Из этого собираются pii-proxy (labops), `PseudonymizingModelGateway` (Прагматика), turn-pii (v2).
+
+## Детектор ФИО и адресов (`src/detector/`)
+
+```ts
+import { detectNamesAndAddresses, replaceSpans } from '@labops/pii';
+
+const spans = detectNamesAndAddresses(text, { profile: 'pragmatika' });
+const clean = replaceSpans(text, spans, (s) => (s.kind === 'person' ? '[ФИО]' : '[адрес]'));
+```
+
+Синхронно, без сети. Словарь имён генерируется `tools/gen_ts_name_dictionary.py`, эталон для
+паритета — `tools/build_ts_detector_fixture.py` (оба запускаются в `.venv` репозитория).

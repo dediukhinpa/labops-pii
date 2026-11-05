@@ -1,0 +1,2869 @@
+{
+ "profile": "pragmatika",
+ "items": [
+  {
+   "source": "names_negative",
+   "text": "Иван",
+   "person": [
+    [
+     0,
+     4
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "Иванов",
+   "person": [
+    [
+     0,
+     6
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "Мария",
+   "person": [
+    [
+     0,
+     5
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "ООО Ромашка",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "АО «Металлторг»",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "ПАО Сбербанк",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "ИП ИНН 500100732259",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "генеральный директор",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "Менеджер по закупкам",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "Главный бухгалтер",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "Исполнительный директор компании",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "ул. Александра Невского, д. 5",
+   "person": [],
+   "address": [
+    [
+     0,
+     29
+    ]
+   ]
+  },
+  {
+   "source": "names_negative",
+   "text": "улица Ленина 5",
+   "person": [],
+   "address": [
+    [
+     0,
+     14
+    ]
+   ]
+  },
+  {
+   "source": "names_negative",
+   "text": "проспект Ленина",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "Москва, Тверская улица",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "школа имени Ивана Петрова",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "площадь Гагарина",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "Лада Веста",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "Магазин Камин",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "Sony Bravia 55",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "Цемент М500 ГОСТ 10178-85",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "Арматура А500С d12 мм",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "Швеллер 12П, 40 тонн",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "Петр Первый",
+   "person": [
+    [
+     0,
+     11
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "Это практична и логична",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "Королевна Мария",
+   "person": [
+    [
+     0,
+     15
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "Позвони Ивану. Петрович придёт позже",
+   "person": [
+    [
+     8,
+     13
+    ],
+    [
+     15,
+     23
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "Мария. Иванов пришёл",
+   "person": [
+    [
+     0,
+     5
+    ],
+    [
+     7,
+     13
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "John Smith",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "Металлопрокат_прайс.xlsx",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "Счёт_на_оплату_2026.pdf",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "Коммерческое_предложение_v2.docx",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "Шаблон_договора_поставки.docx",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "Спецификация_Арматура.docx",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "Закупки_Урал_2026.pdf",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "Прайс_Сибирь_июнь.xlsx",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "Акт_сверки_взаиморасчётов.xlsx",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "Накладная_№5_от_01.09.2026.pdf",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "Протокол_разногласий.docx",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "Реестр_платежей_Август.xlsx",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "Каталог_Крепёж_Центр.pdf",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "Сводная-таблица.Закупки.csv",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "/srv/data/Металлопрокат/прайс.xlsx",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "/home/user/Документы/Прайсы/Цемент_М500.xlsx",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "C:\\Users\\Менеджер\\Загрузки\\Заявка_на_закупку.docx",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "./out/Склад/Остатки_на_складе.csv",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "Техническое_задание_Стройматериалы_опт.docx",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "Отчёт_итоговый_Q3.pdf",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "Приложение_1_Форма_заявки.docx",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "ТЕХМЕТАЛЛ СЕРВИС",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "РОМАШКА ТРЕЙД",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "ЗАО МЕТАЛЛТОРГ",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "ГЕНЕРАЛЬНЫЙ ДИРЕКТОР ДЕЙСТВУЕТ НА ОСНОВАНИИ УСТАВА",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "ОБЩЕСТВО С ОГРАНИЧЕННОЙ ОТВЕТСТВЕННОСТЬЮ СИБИРЬ СНАБ",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "СПЕЦИФИКАЦИЯ НА ПОСТАВКУ МЕТАЛЛОПРОКАТА",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "ДОГОВОР ПОСТАВКИ № 5 ОТ 01.09.2026",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "КОММЕРЧЕСКОЕ ПРЕДЛОЖЕНИЕ НА АРМАТУРУ",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "СТАЛЬ ИНВЕСТ ГРУПП",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "УРАЛ СТРОЙ ТОРГ",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "АКТ СВЕРКИ ВЗАИМОРАСЧЁТОВ",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "поставка арматуры и проволоки",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "ТЦ ЦЕНТР ТОРГ",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "АЛЬФА ПЛЮС",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "ВЕРА НАДЕЖДА ЛЮБОВЬ",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "АБ-12 д.5",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "Артикул АБ-12 д.5 по ТУ",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "размер 10x20",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "ГОСТ 12345-2014",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "стр. 5 договора",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "д. 5 мм",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "лит. А, корп. 2",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "Светильник ул. LED 50W",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "Прожектор ул. Серия 5000",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "пр. 10",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "Примечание: пр. 10 штук",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "Цена 1500 руб, итого 12000",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "Счёт 40702810400000012345",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "г. Москва, Заказ 5.",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "в г. Москве",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "на улице Ленина",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "ул. Ленина 5 коробок",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "ул. Ленина д. 5 шт",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "Тираж 100000 экз., Санкт-Петербург",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "Серия 123456",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "1234567890",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "119019, цена 5",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "Позиция 119019 в прайсе",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "Лист 10x20 мм, ГОСТ 12345-2014",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "см. стр. 5 договора",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "Труба d 20, д. 5 мм",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "Светильник ул. LED 50W, 12 шт",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "Примечание: пр. 10 штук в упаковке",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "Итого 12000 руб, счёт 40702810400000012345",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "Склад в г. Москва, Заказ 5.",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "Доставка на улице Ленина возможна",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "Партия 119019 отгружена",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "Заказ 12345, 250 шт, цена 1999.90 руб, артикул AB-100500",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "артикул 9991234567",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "тел 7707083893",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "сумма 1 500 000 00 00",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "заказ 123 456 78 90",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "3,89991234567",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "дата 12.09.2026",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "партия 1234567890123",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "срок 12/05/2024",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "срок поставки 10–15 дней",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "версия 1.2.3.4",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "адрес 192.168.100.200",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "артикул 1234 5678 9012 3456",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "партия 1234567890123456",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "счёт 12345678901234567890",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "ТУ 14-1-5555-2012",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "кол-во 2 500 000 00 00",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "отношение 3/4 и 5-6",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "ceny@ i @ptr",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "1 234 567,89 руб",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "+1 234 567 руб",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "12 345 678",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "Арт. 123-456-789",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "итого 12 345 678 руб",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "цена 1 234 567.89",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "сумма +12 345 678 руб",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "партия 123 456 789 шт",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "размер 12 34 56 78 мм",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "00 123 456 789 шт",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "№ 0012 3456 789",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "арт 12 34 56 78 90",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "10 20 30 40 50 60 шт",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "итого +1 200 000 000 руб",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_negative",
+   "text": "допуск +3 15 20 25 30",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_positive",
+   "text": "Иванов Иван Иванович",
+   "person": [
+    [
+     0,
+     20
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_positive",
+   "text": "Иванова Мария Ивановна",
+   "person": [
+    [
+     0,
+     22
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_positive",
+   "text": "СИДОРОВ ПЕТР ИВАНОВИЧ",
+   "person": [
+    [
+     0,
+     21
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_positive",
+   "text": "Позвоните Ивану Петровичу",
+   "person": [
+    [
+     10,
+     25
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_positive",
+   "text": "Передайте Ольге Николаевне Смирновой",
+   "person": [
+    [
+     10,
+     36
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_positive",
+   "text": "Скажи Марии Сергеевне, что товар пришёл",
+   "person": [
+    [
+     6,
+     21
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_positive",
+   "text": "Мария Никитична",
+   "person": [
+    [
+     0,
+     15
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_positive",
+   "text": "Мария Ильинична",
+   "person": [
+    [
+     0,
+     15
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_positive",
+   "text": "Владимир Ильич",
+   "person": [
+    [
+     0,
+     14
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_positive",
+   "text": "Договор подписал Кузнецов Алексей Петрович",
+   "person": [
+    [
+     17,
+     42
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_positive",
+   "text": "иван иванович",
+   "person": [
+    [
+     0,
+     13
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_positive",
+   "text": "Петров Сергей",
+   "person": [
+    [
+     0,
+     13
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_positive",
+   "text": "Анна Петрова",
+   "person": [
+    [
+     0,
+     12
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_positive",
+   "text": "Толстая Любовь Сергеевна",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_positive",
+   "text": "Достоевского Фёдора Михайловича",
+   "person": [
+    [
+     0,
+     31
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_positive",
+   "text": "Шевчук Мария",
+   "person": [
+    [
+     0,
+     12
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_positive",
+   "text": "Ткаченко Игорь",
+   "person": [
+    [
+     0,
+     14
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_positive",
+   "text": "Смирнова-Петрова Анна Игоревна",
+   "person": [
+    [
+     0,
+     30
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_positive",
+   "text": "Иванов И.И.",
+   "person": [
+    [
+     0,
+     11
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_positive",
+   "text": "Иванов И. И.",
+   "person": [
+    [
+     0,
+     12
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_positive",
+   "text": "И.И. Иванов",
+   "person": [
+    [
+     0,
+     11
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_positive",
+   "text": "И. И. Иванов",
+   "person": [
+    [
+     0,
+     12
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_positive",
+   "text": "Иванов И.",
+   "person": [
+    [
+     0,
+     9
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_positive",
+   "text": "Цой В.Р.",
+   "person": [
+    [
+     0,
+     8
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_positive",
+   "text": "Заказ у Петрова О.И. оформлен",
+   "person": [
+    [
+     8,
+     20
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_positive",
+   "text": "Сидоров А.В., тел. снизу",
+   "person": [
+    [
+     0,
+     12
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_positive",
+   "text": "ИП Иванов",
+   "person": [
+    [
+     0,
+     9
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_positive",
+   "text": "ИП Иванов И.И.",
+   "person": [
+    [
+     0,
+     14
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_positive",
+   "text": "Поставщик ИП Петров Пётр",
+   "person": [
+    [
+     10,
+     24
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_positive",
+   "text": "Индивидуальный предприниматель Петров",
+   "person": [
+    [
+     0,
+     37
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_positive",
+   "text": "Генеральный директор Дудорова Марина Евгеньевна",
+   "person": [
+    [
+     21,
+     47
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_positive",
+   "text": "Директор: Иванов Иван Иванович",
+   "person": [
+    [
+     10,
+     30
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_positive",
+   "text": "{\"owner\": \"Сидоров А.В.\"}",
+   "person": [
+    [
+     11,
+     22
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_positive",
+   "text": "Нужен цемент М500, 40 тонн. Контакт: Иван Иванов.",
+   "person": [
+    [
+     37,
+     48
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_positive",
+   "text": "Иванов Пётр Сергеевич приедет завтра",
+   "person": [
+    [
+     0,
+     21
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_positive",
+   "text": "Контакт: Сидоров А.В., тел. снизу",
+   "person": [
+    [
+     9,
+     21
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_positive",
+   "text": "Менеджер Мария Петровна Смирнова ответила",
+   "person": [
+    [
+     9,
+     32
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_positive",
+   "text": "Здравствуйте, Мария Петровна!",
+   "person": [
+    [
+     14,
+     28
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_positive",
+   "text": "Директор Орлов О.О. подтвердил заказ",
+   "person": [
+    [
+     9,
+     19
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_positive",
+   "text": "Счёт выставил Козлов Иван",
+   "person": [
+    [
+     14,
+     25
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_positive",
+   "text": "Закупщик Фёдоров Дмитрий Николаевич на связи",
+   "person": [
+    [
+     0,
+     35
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_positive",
+   "text": "Ответственный: Никитина Ольга Владимировна",
+   "person": [
+    [
+     15,
+     42
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_positive",
+   "text": "Поставщик ИП Смирнов Алексей Петрович",
+   "person": [
+    [
+     10,
+     37
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_positive",
+   "text": "От Васильева Андрея Игоревича пришло письмо",
+   "person": [
+    [
+     3,
+     29
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_positive",
+   "text": "Подпись: Морозов В.П.",
+   "person": [
+    [
+     9,
+     21
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_positive",
+   "text": "Кладовщик Захаров Сергей отгрузил цемент",
+   "person": [
+    [
+     0,
+     24
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_positive",
+   "text": "Бухгалтер Павлова Елена Сергеевна",
+   "person": [
+    [
+     0,
+     33
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_positive",
+   "text": "Вчера звонил Алексей Михайлович Громов",
+   "person": [
+    [
+     13,
+     38
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_positive",
+   "text": "Контактное лицо: Белов Артём",
+   "person": [
+    [
+     17,
+     28
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_positive",
+   "text": "Заказчик Тихонов Роман Олегович",
+   "person": [
+    [
+     9,
+     31
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_positive",
+   "text": "Получатель Крылова Анна",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "names_positive",
+   "text": "ФИО: Соколов Максим Андреевич",
+   "person": [
+    [
+     5,
+     29
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_positive",
+   "text": "Подписант Лебедев И.И. отсутствует",
+   "person": [
+    [
+     0,
+     21
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_positive",
+   "text": "позвони Петрову, пожалуйста",
+   "person": [
+    [
+     8,
+     15
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_positive",
+   "text": "Передайте Иванову, что счёт оплачен",
+   "person": [
+    [
+     10,
+     17
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_positive",
+   "text": "Письмо от Ивановой получено",
+   "person": [
+    [
+     10,
+     18
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_positive",
+   "text": "Отправь счёт Кузнецовой Анне Викторовне",
+   "person": [
+    [
+     13,
+     39
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_positive",
+   "text": "Согласуй с Сидоровым и Козловым",
+   "person": [
+    [
+     11,
+     20
+    ],
+    [
+     23,
+     31
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_positive",
+   "text": "Мы говорили с Дмитрием Николаевичем вчера",
+   "person": [
+    [
+     14,
+     35
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_positive",
+   "text": "Скажи Ольге Владимировне, что товар пришёл",
+   "person": [
+    [
+     6,
+     24
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_positive",
+   "text": "Спроси у Смирнова про отгрузку",
+   "person": [
+    [
+     9,
+     17
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_positive",
+   "text": "Передай привет Алексею Громову",
+   "person": [
+    [
+     15,
+     30
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_positive",
+   "text": "Это заказ для Никитиной О.В.",
+   "person": [
+    [
+     14,
+     28
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_positive",
+   "text": "Письмо подписано Васильевым А.И.",
+   "person": [
+    [
+     17,
+     32
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_positive",
+   "text": "Свяжись с Тихоновым Р.О. по цене",
+   "person": [
+    [
+     10,
+     24
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_positive",
+   "text": "Менеджер сказал, что Морозов не приедет",
+   "person": [
+    [
+     21,
+     28
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_positive",
+   "text": "Позвонил Захаров, спросил про счёт",
+   "person": [
+    [
+     9,
+     16
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_positive",
+   "text": "Для Крыловой А. подготовить КП",
+   "person": [
+    [
+     4,
+     15
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_positive",
+   "text": "По вопросу оплаты обращайтесь к Павловой Елене",
+   "person": [
+    [
+     32,
+     46
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_positive",
+   "text": "На встрече были Белов и Соколова",
+   "person": [
+    [
+     16,
+     21
+    ],
+    [
+     24,
+     32
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_positive",
+   "text": "Наш закупщик Сидоров А.В., тел. 8-902-555-12-34",
+   "person": [
+    [
+     13,
+     25
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_positive",
+   "text": "Кузнецов К.К. просил перенести срок",
+   "person": [
+    [
+     0,
+     13
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_positive",
+   "text": "Файл прислал Иванов И.И. вчера вечером",
+   "person": [
+    [
+     13,
+     24
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_positive",
+   "text": "Файл Иванов Пётр прислал вчера",
+   "person": [
+    [
+     5,
+     16
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_positive",
+   "text": "Заявку подготовила Орлова Т.",
+   "person": [
+    [
+     19,
+     28
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_positive",
+   "text": "Договор с Фёдоровым Д.Н. подписан",
+   "person": [
+    [
+     10,
+     24
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_positive",
+   "text": "Привет, Сергей! Как дела?",
+   "person": [
+    [
+     8,
+     14
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "names_positive",
+   "text": "Лебедеву Игорю Петровичу направлено уведомление",
+   "person": [
+    [
+     0,
+     24
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "caps_pii",
+   "text": "ИВАНОВ ИВАН ИВАНОВИЧ",
+   "person": [
+    [
+     0,
+     20
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "caps_pii",
+   "text": "СИДОРОВ АЛЕКСЕЙ НИКОЛАЕВИЧ",
+   "person": [
+    [
+     0,
+     26
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "caps_pii",
+   "text": "иванов и.и.",
+   "person": [
+    [
+     0,
+     11
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "caps_pii",
+   "text": "ИВАНОВ И.И.",
+   "person": [
+    [
+     0,
+     11
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "caps_pii",
+   "text": "Подписант: ПЕТРОВ СЕРГЕЙ АНДРЕЕВИЧ, директор",
+   "person": [
+    [
+     11,
+     34
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "caps_pii",
+   "text": "ГЕНЕРАЛЬНЫЙ ДИРЕКТОР СМИРНОВ АЛЕКСЕЙ ПЕТРОВИЧ",
+   "person": [
+    [
+     21,
+     45
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "caps_pii",
+   "text": "от КУЗНЕЦОВОЙ АННЫ ВИКТОРОВНЫ получено",
+   "person": [
+    [
+     3,
+     29
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "caps_pii",
+   "text": "менеджер иванов иван иванович ответил",
+   "person": [
+    [
+     9,
+     29
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "caps_pii",
+   "text": "Контакт: И.И. ИВАНОВ",
+   "person": [
+    [
+     9,
+     20
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "caps_pii",
+   "text": "ФИО: ФЁДОРОВ ДМИТРИЙ НИКОЛАЕВИЧ",
+   "person": [
+    [
+     5,
+     31
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "address_positive",
+   "text": "ул. Ленина, д. 5, кв. 12",
+   "person": [],
+   "address": [
+    [
+     0,
+     24
+    ]
+   ]
+  },
+  {
+   "source": "address_positive",
+   "text": "Доставка: г. Москва, ул. Ленина, д. 5, кв. 12.",
+   "person": [],
+   "address": [
+    [
+     21,
+     45
+    ]
+   ]
+  },
+  {
+   "source": "address_positive",
+   "text": "Заберём на улице Ленина, д. 5",
+   "person": [],
+   "address": [
+    [
+     11,
+     29
+    ]
+   ]
+  },
+  {
+   "source": "address_positive",
+   "text": "доставить на улицу Ленина 5а",
+   "person": [],
+   "address": [
+    [
+     13,
+     28
+    ]
+   ]
+  },
+  {
+   "source": "address_positive",
+   "text": "находится по ул. Ленина, д. 5",
+   "person": [],
+   "address": [
+    [
+     13,
+     29
+    ]
+   ]
+  },
+  {
+   "source": "address_positive",
+   "text": "УЛ. ЛЕНИНА, Д. 5",
+   "person": [],
+   "address": [
+    [
+     0,
+     16
+    ]
+   ]
+  },
+  {
+   "source": "address_positive",
+   "text": "ул.Ленина,д.5",
+   "person": [],
+   "address": [
+    [
+     0,
+     13
+    ]
+   ]
+  },
+  {
+   "source": "address_positive",
+   "text": "Ленина ул., д. 5",
+   "person": [],
+   "address": [
+    [
+     0,
+     16
+    ]
+   ]
+  },
+  {
+   "source": "address_positive",
+   "text": "Ленина улица 5",
+   "person": [],
+   "address": [
+    [
+     0,
+     14
+    ]
+   ]
+  },
+  {
+   "source": "address_positive",
+   "text": "дом 5 по улице Ленина",
+   "person": [],
+   "address": [
+    [
+     0,
+     21
+    ]
+   ]
+  },
+  {
+   "source": "address_positive",
+   "text": "д. 5, ул. Ленина",
+   "person": [],
+   "address": [
+    [
+     0,
+     16
+    ]
+   ]
+  },
+  {
+   "source": "address_positive",
+   "text": "г. Москва, Ленина 5",
+   "person": [],
+   "address": [
+    [
+     11,
+     19
+    ]
+   ]
+  },
+  {
+   "source": "address_positive",
+   "text": "по адресу: Ленина 5",
+   "person": [],
+   "address": [
+    [
+     11,
+     19
+    ]
+   ]
+  },
+  {
+   "source": "address_positive",
+   "text": "адрес доставки: Ленина, 5, оф. 3",
+   "person": [],
+   "address": [
+    [
+     16,
+     32
+    ]
+   ]
+  },
+  {
+   "source": "address_positive",
+   "text": "пр-т Мира, д. 10, корп. 2, стр. 1",
+   "person": [],
+   "address": [
+    [
+     0,
+     33
+    ]
+   ]
+  },
+  {
+   "source": "address_positive",
+   "text": "пр-кт Мира 10",
+   "person": [],
+   "address": [
+    [
+     0,
+     13
+    ]
+   ]
+  },
+  {
+   "source": "address_positive",
+   "text": "пр. Мира 10",
+   "person": [],
+   "address": [
+    [
+     0,
+     11
+    ]
+   ]
+  },
+  {
+   "source": "address_positive",
+   "text": "проспект Мира, 10",
+   "person": [],
+   "address": [
+    [
+     0,
+     17
+    ]
+   ]
+  },
+  {
+   "source": "address_positive",
+   "text": "пер. Тихий, 3",
+   "person": [],
+   "address": [
+    [
+     0,
+     13
+    ]
+   ]
+  },
+  {
+   "source": "address_positive",
+   "text": "в переулке Тихом нет",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "address_positive",
+   "text": "б-р Яна Райниса, д.2",
+   "person": [],
+   "address": [
+    [
+     0,
+     20
+    ]
+   ]
+  },
+  {
+   "source": "address_positive",
+   "text": "наб. Фонтанки, 15 лит. А",
+   "person": [],
+   "address": [
+    [
+     0,
+     24
+    ]
+   ]
+  },
+  {
+   "source": "address_positive",
+   "text": "ш. Энтузиастов, 5",
+   "person": [],
+   "address": [
+    [
+     0,
+     17
+    ]
+   ]
+  },
+  {
+   "source": "address_positive",
+   "text": "пл. Революции, 2",
+   "person": [],
+   "address": [
+    [
+     0,
+     16
+    ]
+   ]
+  },
+  {
+   "source": "address_positive",
+   "text": "ул. 8 Марта, 4",
+   "person": [],
+   "address": [
+    [
+     0,
+     14
+    ]
+   ]
+  },
+  {
+   "source": "address_positive",
+   "text": "ул. Красной Армии, д. 7/2",
+   "person": [],
+   "address": [
+    [
+     0,
+     25
+    ]
+   ]
+  },
+  {
+   "source": "address_positive",
+   "text": "1-я Тверская-Ямская ул., 5",
+   "person": [],
+   "address": [
+    [
+     0,
+     26
+    ]
+   ]
+  },
+  {
+   "source": "address_positive",
+   "text": "119019, ул. Арбат, д. 1",
+   "person": [],
+   "address": [
+    [
+     0,
+     23
+    ]
+   ]
+  },
+  {
+   "source": "address_positive",
+   "text": "ул. Арбат, д. 1, 119019",
+   "person": [],
+   "address": [
+    [
+     0,
+     23
+    ]
+   ]
+  },
+  {
+   "source": "address_positive",
+   "text": "г. Москва, ул. Арбат, д. 1.",
+   "person": [],
+   "address": [
+    [
+     11,
+     26
+    ]
+   ]
+  },
+  {
+   "source": "address_masked",
+   "text": "Везём по ул. Ленина, д. 5",
+   "person": [],
+   "address": [
+    [
+     9,
+     25
+    ]
+   ]
+  },
+  {
+   "source": "address_masked",
+   "text": "пр-т Мира, д. 10, корп. 2",
+   "person": [],
+   "address": [
+    [
+     0,
+     25
+    ]
+   ]
+  },
+  {
+   "source": "address_masked",
+   "text": "119019, г. Москва, ул. Арбат, д. 1",
+   "person": [],
+   "address": [
+    [
+     0,
+     6
+    ],
+    [
+     19,
+     34
+    ]
+   ]
+  },
+  {
+   "source": "address_masked",
+   "text": "ул. Ивана Франко, д. 4",
+   "person": [],
+   "address": [
+    [
+     0,
+     22
+    ]
+   ]
+  },
+  {
+   "source": "address_masked",
+   "text": "пр. Маршала Жукова, 7",
+   "person": [],
+   "address": [
+    [
+     0,
+     21
+    ]
+   ]
+  },
+  {
+   "source": "page_negative",
+   "text": "Главная Каталог Доставка и оплата Контакты Корзина Личный кабинет",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "page_negative",
+   "text": "Цемент М500 Д0 мешок 50 кг — 520 руб. Купить цемент в Красноярске с доставкой по городу и краю.",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "page_negative",
+   "text": "Мёд Цветочный Липовый 500 г. Алтайский мёд от пасеки Горная Долина. В наличии.",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "page_negative",
+   "text": "Профнастил С8 оцинкованный, толщина 0,45 мм, цвет RAL 3005 Красное вино. Цена за лист.",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "page_negative",
+   "text": "Наши склады находятся в Москве, Санкт-Петербурге, Екатеринбурге, Новосибирске и Абакане.",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "page_negative",
+   "text": "Магазин Камин работает ежедневно с 9:00 до 20:00. Выходной — воскресенье.",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "page_negative",
+   "text": "Бренды: Bosch, Makita, Hilti, Metabo, DeWalt, Stanley, Интерскол, Зубр, Калибр, Вихрь.",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "page_negative",
+   "text": "Дрель-шуруповёрт Makita DF333D, аккумуляторная, 12 В, 2 аккумулятора. Гарантия 1 год.",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "page_negative",
+   "text": "Лопата штыковая Садовая Классика, черенок берёза, сталь 65Г. Артикул ЛШ-120.",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "page_negative",
+   "text": "Краска Тёплый дом фасадная белая 14 кг, расход 150 г/м2. Производство Россия.",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "page_negative",
+   "text": "Доставка по Королёву, Чехову, Пушкино, Жуковскому, Дзержинскому и Лермонтову за 2 дня.",
+   "person": [
+    [
+     22,
+     28
+    ],
+    [
+     66,
+     76
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "page_negative",
+   "text": "Компания Сибирь Снаб — поставки металлопроката в Красноярском крае с 2005 года.",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "page_negative",
+   "text": "Вера, Надежда, Любовь — коллекция подарочных наборов к 8 Марта. Скидка 10 процентов.",
+   "person": [
+    [
+     0,
+     4
+    ],
+    [
+     6,
+     13
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "page_negative",
+   "text": "Роман в трёх томах, подарочное издание в твёрдом переплёте.",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "page_negative",
+   "text": "Кирпич облицовочный Красный, размер 250x120x65, марка М150. Склад в г. Красноярск.",
+   "person": [
+    [
+     20,
+     27
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "page_negative",
+   "text": "Тверская улица, Невский проспект и Арбат — названия известных улиц; заказы по ним не принимаем.",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "page_negative",
+   "text": "Условия доставки: бесплатно от 5000 руб. Самовывоз со склада в г. Москва, Заказ 5 оформить онлайн.",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "page_negative",
+   "text": "Станок Корвет-83, мощность 750 Вт, масса 40 кг. Цена 18900 руб.",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "page_negative",
+   "text": "Прагматика — сервис закупок. Войти в Прагматику, написать в Прагматике, отчёт Прагматики.",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "page_negative",
+   "text": "Здравствуйте! Оставьте заявку, и наш менеджер свяжется с вами в течение часа.",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "page_negative",
+   "text": "Каталог: Крепёж, Инструмент, Электрика, Сантехника, Отопление, Лакокрасочные материалы.",
+   "person": [
+    [
+     29,
+     38
+    ],
+    [
+     40,
+     50
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "page_negative",
+   "text": "Гвозди строительные 100 мм, упаковка 5 кг, ГОСТ 4028-63. Минимальный заказ 10 упаковок.",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "page_negative",
+   "text": "Фабрика Победа, торговый дом Алмаз, завод Красный Октябрь, комбинат Северсталь.",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "page_negative",
+   "text": "Светильник Старт, Лидер, Мастер, Гарант, Эксперт, Профи — серии для склада и цеха.",
+   "person": [
+    [
+     25,
+     31
+    ],
+    [
+     33,
+     39
+    ],
+    [
+     50,
+     55
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "page_negative",
+   "text": "Золотая осень, Белая ночь, Чёрный жемчуг, Красная шапочка — названия коллекций садовых роз.",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "page_negative",
+   "text": "Нижний Новгород, Великий Новгород, Ростов-на-Дону, Санкт-Петербург, Набережные Челны.",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "page_negative",
+   "text": "Сертификат соответствия действителен до 31.12.2027. Паспорт качества прилагается.",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "page_negative",
+   "text": "Петр Первый, Иван Грозный — исторические фигуры; набор шахмат Петр Первый на столе.",
+   "person": [
+    [
+     0,
+     11
+    ],
+    [
+     13,
+     25
+    ],
+    [
+     62,
+     73
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "page_negative",
+   "text": "Бетон В25 П4 F200 W6, доставка миксером 7 куб. Машина подаётся к объекту за 3 часа.",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "page_negative",
+   "text": "Мастер-класс по ремонту. Профессиональный подход. Эксперт по отоплению. Гарант качества.",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "page_negative",
+   "text": "Лада Веста, Лада Гранта, Газель Next, Камаз 65115 — запчасти в наличии.",
+   "person": [
+    [
+     12,
+     23
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "page_negative",
+   "text": "Ольховая щепа, Липовая вагонка, Берёзовые дрова, Сосновая доска 25x150x6000.",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "page_negative",
+   "text": "Адрес склада: Красноярск, склад 5, ворота 3. Приёмка товара по будням.",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "page_negative",
+   "text": "Георгиевская лента, Александровский сад, Павловский Посад — платки и шали оптом.",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "page_negative",
+   "text": "Сантехнические трубы ПНД 32 мм, фитинги, краны шаровые. Оптовые цены для строительных компаний.",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "page_negative",
+   "text": "Наш офис в Новосибирске, филиалы в Томске, Кемерове, Барнауле и Омске. Работаем с 1998 года.",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "page_negative",
+   "text": "Купить Samsung Galaxy S24 Ultra 256 ГБ чёрный титан в рассрочку без переплат.",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "page_negative",
+   "text": "Рейтинг поставщиков: Металлсервис, Уралхим, Сибпромкомплект, Технопарк, Стройдвор.",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "page_negative",
+   "text": "Тёмное пиво Старый Мельник, Три Медведя, Балтика 7, Жигулёвское — доставка по области.",
+   "person": [
+    [
+     52,
+     63
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "page_negative",
+   "text": "Матрас Орматек Бриз, размер 160x200, жёсткость средняя. Бесплатная доставка и подъём на этаж.",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "page_negative",
+   "text": "Услуги: монтаж, демонтаж, пусконаладка, сервисное обслуживание, гарантийный ремонт.",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "page_negative",
+   "text": "Часы работы: пн-пт 8:00-17:00, сб 9:00-14:00, вс — выходной. Обеденный перерыв с 12:00 до 13:00.",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "page_negative",
+   "text": "Ленина и Пушкина — самые частые названия улиц в России. Каталог улиц Красноярска.",
+   "person": [
+    [
+     9,
+     16
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "page_negative",
+   "text": "Подшипник 6205-2RS SKF, внутренний диаметр 25 мм, наружный 52 мм. Склад в Екатеринбурге.",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "page_negative",
+   "text": "Отзывы покупателей: отличный товар, быстрая доставка, рекомендую. Оценка 4,8 из 5.",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "page_negative",
+   "text": "Уважаемые клиенты! В связи с праздниками офис не работает с 1 по 8 января.",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "page_negative",
+   "text": "Компания Альфа-Строй предлагает бетон, раствор, ФБС блоки и плиты перекрытия с доставкой.",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "page_negative",
+   "text": "Лакированный паркет Дуб Классик, Ясень Натур, Бук Рустик; толщина 14 мм; упаковка 2,2 м2.",
+   "person": [
+    [
+     20,
+     31
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "page_negative",
+   "text": "Шины Кама Евро-129 205/55 R16 91H зимние. Цена за комплект из четырёх штук.",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "page_positive",
+   "text": "Контактное лицо: Иванов Иван Иванович, тел. +7 (391) 123-45-67",
+   "person": [
+    [
+     17,
+     37
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "page_positive",
+   "text": "Ваш менеджер Анна Петрова ответит на вопросы по заказу.",
+   "person": [
+    [
+     13,
+     25
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "page_positive",
+   "text": "Директор: Сидоров Алексей Николаевич. Главный бухгалтер: Кузнецова Ольга Петровна.",
+   "person": [
+    [
+     10,
+     36
+    ],
+    [
+     57,
+     81
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "page_positive",
+   "text": "Отдел продаж: Мария Смирнова, Дмитрий Козлов. Звоните с 9 до 18.",
+   "person": [
+    [
+     14,
+     28
+    ],
+    [
+     30,
+     44
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "page_positive",
+   "text": "С уважением, Павел Морозов, руководитель отдела закупок.",
+   "person": [
+    [
+     13,
+     26
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "page_positive",
+   "text": "Ответственный за заказ — Новикова Е.В., e-mail в шапке письма.",
+   "person": [
+    [
+     25,
+     38
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "page_positive",
+   "text": "Пишите Ивану Сергеевичу Лебедеву по любым вопросам поставки.",
+   "person": [
+    [
+     7,
+     32
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "page_positive",
+   "text": "Адрес офиса: г. Красноярск, ул. Мира, д. 12, оф. 305. Индекс 660049.",
+   "person": [],
+   "address": [
+    [
+     28,
+     52
+    ]
+   ]
+  },
+  {
+   "source": "page_positive",
+   "text": "Склад: 660099, Красноярск, пр-т Свободный, 75, стр. 2.",
+   "person": [],
+   "address": [
+    [
+     7,
+     13
+    ],
+    [
+     27,
+     53
+    ]
+   ]
+  },
+  {
+   "source": "page_positive",
+   "text": "Забрать товар можно по адресу: Абакан, Пушкина 10.",
+   "person": [],
+   "address": []
+  },
+  {
+   "source": "page_positive",
+   "text": "Подписал договор Васильев В.П., доверенность № 5.",
+   "person": [
+    [
+     17,
+     30
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "page_positive",
+   "text": "Менеджер Алексей сообщит стоимость доставки.",
+   "person": [
+    [
+     9,
+     16
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "page_positive",
+   "text": "Для связи: Орлов А.А., Белов К.Н., Громова Т.И.",
+   "person": [
+    [
+     11,
+     21
+    ],
+    [
+     23,
+     33
+    ],
+    [
+     35,
+     47
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "page_positive",
+   "text": "ИП Захаров Сергей Олегович, ИНН 123456789012",
+   "person": [
+    [
+     0,
+     44
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "page_positive",
+   "text": "Поставщик передал заявку Фёдорову Николаю Андреевичу и Егоровой Марине.",
+   "person": [
+    [
+     25,
+     52
+    ],
+    [
+     55,
+     70
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "page_positive",
+   "text": "Счёт выставил ТИХОНОВ ПЁТР ИВАНОВИЧ, ИП.",
+   "person": [
+    [
+     14,
+     35
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "page_positive",
+   "text": "Руководитель проекта — Татьяна Егорова, помощник — Кирилл Андреев.",
+   "person": [
+    [
+     23,
+     38
+    ],
+    [
+     51,
+     65
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "page_positive",
+   "text": "Заявку приняла Соловьёва Наталья Игоревна, тел. +7 913 000-00-00.",
+   "person": [
+    [
+     15,
+     41
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "page_positive",
+   "text": "Директор ООО «Вектор» Макаров Игорь Валерьевич действует на основании устава.",
+   "person": [
+    [
+     22,
+     46
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "page_positive",
+   "text": "Обращайтесь к Григорию, он подскажет по наличию.",
+   "person": [
+    [
+     14,
+     22
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "page_positive",
+   "text": "Наш логист Михайлов Д.С. подтвердит дату отгрузки.",
+   "person": [
+    [
+     11,
+     24
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "page_positive",
+   "text": "Контактное лицо — Ирина Борисовна, добавочный 114.",
+   "person": [
+    [
+     18,
+     33
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "page_positive",
+   "text": "Подпись: Н.П. Тарасова",
+   "person": [
+    [
+     9,
+     22
+    ]
+   ],
+   "address": []
+  },
+  {
+   "source": "page_positive",
+   "text": "Адрес доставки: г. Абакан, ул. Щетинкина, д. 14, кв. 7.",
+   "person": [],
+   "address": [
+    [
+     27,
+     54
+    ]
+   ]
+  },
+  {
+   "source": "page_positive",
+   "text": "Офис находится по адресу Красноярск, проспект Мира 90, офис 4-12.",
+   "person": [],
+   "address": [
+    [
+     37,
+     53
+    ]
+   ]
+  },
+  {
+   "source": "page_positive",
+   "text": "Менеджер по закупкам Семенова Юлия Андреевна ответила на письмо.",
+   "person": [
+    [
+     21,
+     44
+    ]
+   ],
+   "address": []
+  }
+ ]
+}
