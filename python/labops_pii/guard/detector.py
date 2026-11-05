@@ -12,6 +12,7 @@ from typing import Any
 
 from labops_pii.guard.address import ADDRESS_TYPE, AddressMode, address_mode
 from labops_pii.guard.names import NAME_TYPE, NamesMode, has_person_name, names_mode
+from labops_pii.guard.names_morph import has_person_morph, names_morph_enabled
 from labops_pii.pii_patterns import (
     ACCOUNT_RE,
     BARE_PHONE_RE,
@@ -270,10 +271,14 @@ def find_pii_types(text: str) -> set[str]:
         found.add(EMAIL)
     search_names = names_mode() is not NamesMode.OFF
     search_address = address_mode() is not AddressMode.OFF
+    morph = search_names and names_morph_enabled()
     for start, end in _windows(clean):
         found |= _find_digit_types(clean, start, end)
         # Окна общие с цифровыми детекторами: длинный текст не держит GIL одним проходом
-        if search_names and NAME not in found and has_person_name(clean, start, end):
+        if search_names and NAME not in found and (
+            has_person_name(clean, start, end)
+            or (morph and has_person_morph(clean[start:end]))
+        ):
             found.add(NAME)
         # Токены [ADDRESS_n] уже вырезаны выше; перекрытие окон больше любого адреса,
         # позиции наружу не отдаются
@@ -292,9 +297,9 @@ STRING_CACHE_MAX_CHARS = 4 * 1024 * 1024
 STRING_CACHE_MIN_CHARS = 64
 
 
-def _scan_modes() -> tuple[NamesMode, AddressMode]:
+def _scan_modes() -> tuple[NamesMode, AddressMode, bool]:
     """Режимы, от которых зависит результат find_pii_types (ключ актуальности кэша)."""
-    return names_mode(), address_mode()
+    return names_mode(), address_mode(), names_morph_enabled()
 
 
 class _StringScanCache:

@@ -51,6 +51,7 @@ class Profile:
         accept_case_labels: Принимает ли /pseudonymize флаг case_labels (падежные метки).
         guard_names_mode: Режим проверки ФИО в guard по умолчанию.
         guard_address_mode: Режим проверки адресов в guard по умолчанию.
+        guard_names_morph: Искать ФИО в guard с морфологией (extras, тяжёлые зависимости).
         contacts: Белый список имён по умолчанию (дополняется файлом контактов сервиса).
     """
 
@@ -66,6 +67,7 @@ class Profile:
     accept_case_labels: bool
     guard_names_mode: str
     guard_address_mode: str
+    guard_names_morph: bool = False
     contacts: tuple[str, ...] = ()
 
 
