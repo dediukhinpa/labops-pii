@@ -7,7 +7,9 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
 
-from labops_pii.config import load_contacts
+from labops_pii.config import ENV_ADDRESS_MASK as ENV_SERVICE_ADDRESS_MASK
+from labops_pii.config import ConfigError as _ServiceConfigError
+from labops_pii.config import _strict_bool_env, load_contacts
 
 ENV_API_TOKEN = "MEDIA_MASKER_API_TOKEN"
 ENV_HOST = "MEDIA_MASKER_HOST"
@@ -21,6 +23,10 @@ ENV_OCR_TIMEOUT = "MEDIA_MASKER_OCR_TIMEOUT_S"
 ENV_MASK_LEGAL = "MEDIA_MASKER_MASK_LEGAL_ENTITY"
 ENV_CONTACTS = "MEDIA_MASKER_CONTACTS_FILE"
 ENV_HIDE_UNREADABLE = "MEDIA_MASKER_HIDE_UNREADABLE"
+# Адреса на картинках: свой флаг, иначе флаг сервиса псевдонимизации, иначе профиль.
+# Без этого при PSEUDONYMIZER_ADDRESS_MASK=on адрес становился токеном в тексте, но
+# оставался видимым на самой картинке (найдено при переходе labops на библиотеку).
+ENV_ADDRESS_MASK = "MEDIA_MASKER_ADDRESS_MASK"
 
 DEFAULT_HOST = "127.0.0.1"
 DEFAULT_PORT = 8320
@@ -68,6 +74,7 @@ class Settings:
         contacts: Словарь контактов для детектора.
         hide_unreadable: Закрашивать ли области с признаками письма, которые OCR не
             распознал (рукопись, подпись).
+        mask_addresses: Закрашивать ли адреса; None - по профилю (LABOPS_PII_PROFILE).
     """
 
     api_token: str
@@ -82,6 +89,7 @@ class Settings:
     mask_legal_entity: bool = True
     contacts: tuple[str, ...] = ()
     hide_unreadable: bool = True
+    mask_addresses: bool | None = None
 
 
 def _positive_int(env: Mapping[str, str], name: str, default: int) -> int:
@@ -96,6 +104,21 @@ def _positive_int(env: Mapping[str, str], name: str, default: int) -> int:
     if value <= 0:
         raise ConfigError(f"{name}: нужно положительное число")
     return value
+
+
+def _address_flag(env: Mapping[str, str]) -> bool | None:
+    """Флаг адресов: MEDIA_MASKER_ADDRESS_MASK, затем PSEUDONYMIZER_ADDRESS_MASK, иначе None.
+
+    Raises:
+        ConfigError: Значение не on/off (опечатка не должна молча выключить маскирование).
+    """
+    for name in (ENV_ADDRESS_MASK, ENV_SERVICE_ADDRESS_MASK):
+        if env.get(name, "").strip():
+            try:
+                return _strict_bool_env(env, name, default=False)
+            except _ServiceConfigError as exc:
+                raise ConfigError(str(exc)) from exc
+    return None
 
 
 def load_settings(env: Mapping[str, str] | None = None) -> Settings:
@@ -127,7 +150,9 @@ def load_settings(env: Mapping[str, str] | None = None) -> Settings:
     hide_unreadable = (
         source.get(ENV_HIDE_UNREADABLE, "true").strip().lower() not in ("0", "false", "no")
     )
+    mask_addresses = _address_flag(source)
     return Settings(
+        mask_addresses=mask_addresses,
         api_token=token,
         host=source.get(ENV_HOST, DEFAULT_HOST).strip() or DEFAULT_HOST,
         port=_positive_int(source, ENV_PORT, DEFAULT_PORT),
