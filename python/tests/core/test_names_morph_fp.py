@@ -45,7 +45,28 @@ def test_morph_false_positive_rate(monkeypatch: pytest.MonkeyPatch) -> None:
     print(f"\n[замер] эвристика+морфология: ложных {fp} из {len(LABELS['negative'])}, "
           f"найдено ФИО {hits} из {len(LABELS['positive'])}")
     assert fp <= LABELS["max_morph_fp"]
-    assert hits >= LABELS["min_heuristic_hits"]
+    assert hits >= LABELS["min_morph_hits"]
+
+
+# Синтетические фрагменты страниц поставщиков (общая фикстура с TS-детектором): товары,
+# бренды, города и улицы, совпадающие с фамилиями
+WEB_FRAGMENTS = json.loads(
+    (FIXTURES.parents[2] / "ts" / "tests" / "fixtures" / "web_page_fragments.json").read_text(
+        encoding="utf-8"
+    )
+)
+# Измерено 05.11.26: остаются «по Королёву, Чехову, ... Лермонтову» и «Ленина и Пушкина»
+MAX_WEB_MORPH_FP = 2
+
+
+def test_morph_false_positive_rate_on_web_pages(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Морфология на тексте страниц: модели, сорта и прозвища правителей не дают ФИО."""
+    for key, value in {"PII_GUARD_NAMES_MODE": "enforce", "PII_GUARD_NAMES_MORPH": "on"}.items():
+        monkeypatch.setenv(key, value)
+    fp = [t for t in WEB_FRAGMENTS["negative"] if NAME_TYPE in detector.find_pii_types(t)]
+    print(f"\n[замер] страницы, эвристика+морфология: ложных {len(fp)} из "
+          f"{len(WEB_FRAGMENTS['negative'])}")
+    assert len(fp) <= MAX_WEB_MORPH_FP
 
 
 def test_morph_off_by_default_for_all_profiles() -> None:
