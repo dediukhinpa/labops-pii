@@ -21,8 +21,9 @@
 
 ## Переменные окружения
 
-Имена `PSEUDONYMIZER_*` и `PII_GUARD_*` сохранены. Новые: `LABOPS_PII_PROFILE`,
-`PII_GUARD_NAMES_MORPH`. Прагматика: `PSEUDONYMIZER_RETENTION_DAYS` по-прежнему работает
+Имена `PSEUDONYMIZER_*` и `PII_GUARD_*` сохранены. Новые: `LABOPS_PII_PROFILE`
+(`PII_GUARD_NAMES_MORPH` удалена в 0.7.0: задана — guard пишет предупреждение и не включает
+ничего). Прагматика: `PSEUDONYMIZER_RETENTION_DAYS` по-прежнему работает
 (переводится в часы; `PSEUDONYMIZER_RETENTION_HOURS` главнее).
 
 ## Модули

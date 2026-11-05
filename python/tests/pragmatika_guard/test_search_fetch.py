@@ -124,7 +124,7 @@ def test_too_many_urls_rejected() -> None:
 @pytest.mark.parametrize(
     "text",
     [
-        "Найди ИНН 7707083893 https://good.com/",
+        "Найди ИНН 500100732259 https://good.com/",
         "Позвони +7 916 123 45 67 https://good.com/",
         "Напиши ivan@mail.ru https://good.com/",
         "Карта 4111 1111 1111 1111 https://good.com/",
@@ -289,4 +289,4 @@ def test_search_with_fetch_only_keys_rejected() -> None:
 def test_search_query_keeps_pii_allowed() -> None:
     """Для поиска ПДн в запросе по-прежнему допустимы (решение владельца)."""
     search = [{"type": "web_search_20260209", "name": "web_search", "max_uses": 3}]
-    assert _check(tools=search, messages=_user("ИНН 7707083893 ivan@mail.ru")) is None
+    assert _check(tools=search, messages=_user("ИНН 500100732259 ivan@mail.ru")) is None

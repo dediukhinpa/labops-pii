@@ -212,7 +212,7 @@
 "Лебедеву Игорю Петровичу направлено уведомление"
 ],
 "max_heuristic_fp": 0,
-"max_morph_fp": 1,
-"min_morph_hits": 77,
+"max_morph_fp": 0,
+"min_morph_hits": 69,
 "min_heuristic_hits": 69
 }
