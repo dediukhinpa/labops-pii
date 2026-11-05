@@ -20,6 +20,7 @@ ENV_MAX_CONCURRENCY = "MEDIA_MASKER_MAX_CONCURRENCY"
 ENV_OCR_TIMEOUT = "MEDIA_MASKER_OCR_TIMEOUT_S"
 ENV_MASK_LEGAL = "MEDIA_MASKER_MASK_LEGAL_ENTITY"
 ENV_CONTACTS = "MEDIA_MASKER_CONTACTS_FILE"
+ENV_HIDE_UNREADABLE = "MEDIA_MASKER_HIDE_UNREADABLE"
 
 DEFAULT_HOST = "127.0.0.1"
 DEFAULT_PORT = 8320
@@ -65,6 +66,8 @@ class Settings:
         ocr_timeout_s: Предел времени одного запуска tesseract.
         mask_legal_entity: Закрашивать ли названия организаций (как в pseudonymizer).
         contacts: Словарь контактов для детектора.
+        hide_unreadable: Закрашивать ли области с признаками письма, которые OCR не
+            распознал (рукопись, подпись).
     """
 
     api_token: str
@@ -78,6 +81,7 @@ class Settings:
     ocr_timeout_s: float = DEFAULT_OCR_TIMEOUT_S
     mask_legal_entity: bool = True
     contacts: tuple[str, ...] = ()
+    hide_unreadable: bool = True
 
 
 def _positive_int(env: Mapping[str, str], name: str, default: int) -> int:
@@ -120,6 +124,9 @@ def load_settings(env: Mapping[str, str] | None = None) -> Settings:
     if contacts_file:
         contacts = load_contacts(Path(contacts_file))
     mask_legal = source.get(ENV_MASK_LEGAL, "true").strip().lower() not in ("0", "false", "no")
+    hide_unreadable = (
+        source.get(ENV_HIDE_UNREADABLE, "true").strip().lower() not in ("0", "false", "no")
+    )
     return Settings(
         api_token=token,
         host=source.get(ENV_HOST, DEFAULT_HOST).strip() or DEFAULT_HOST,
@@ -132,4 +139,5 @@ def load_settings(env: Mapping[str, str] | None = None) -> Settings:
         ocr_timeout_s=timeout,
         mask_legal_entity=mask_legal,
         contacts=contacts,
+        hide_unreadable=hide_unreadable,
     )
