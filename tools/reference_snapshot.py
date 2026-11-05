@@ -1,14 +1,14 @@
 """Эталонные снимки ответов: исходная копия или библиотека на общем корпусе.
 
 Один и тот же сценарий запускается на исходном коде (`--impl original --src <каталог>`, пакеты
-`pseudonymizer` / `pii_guard` из ref проекта) и на библиотеке (`--impl library --profile P`).
+`pseudonymizer` / `pii_guard` из ref проекта) и на библиотеке (`--impl library --env-set P`).
 Снимки сравнивает tests/test_reference_snapshots.py. Значения секретов в снимок не попадают:
 ключ Fernet и токен API здесь тестовые и одноразовые.
 
 Примеры:
   reference_snapshot.py --kind pseudonymizer --impl original --src /tmp/lab/pseudonymizer \
       --with-case-labels --out ref_labops.json
-  reference_snapshot.py --kind pseudonymizer --impl library --profile labops --out lib.json
+  reference_snapshot.py --kind pseudonymizer --impl library --env-set labops --out lib.json
 """
 
 from __future__ import annotations
@@ -16,6 +16,7 @@ from __future__ import annotations
 import argparse
 import asyncio
 import importlib
+import importlib.util
 import json
 import os
 import sys
@@ -193,29 +194,69 @@ def snapshot_guard(kind: str, impl: str, modes: dict[str, dict[str, str]]) -> di
     return out
 
 
-def snapshot_config() -> dict[str, Any]:
-    """Снимок эффективных настроек бывшего профиля (значения полей и производные от них)."""
+def snapshot_config(set_name: str) -> dict[str, Any]:
+    """Снимок эффективных настроек, собранных из переменных окружения.
+
+    Структура совпадает со снимками бывших профилей (`fixtures/profiles/*__config.json`):
+    `profile` - поля бывшего профиля, `settings` - Settings, `name` - имя набора переменных.
+    """
     from dataclasses import asdict
 
     from cryptography.fernet import Fernet
 
     from labops_pii import allowlist, config
     from labops_pii.guard import address, names
-    from labops_pii.profiles import get_profile
+    from labops_pii.store import ENV_KEY_SCHEME
 
-    profile = asdict(get_profile())
-    settings = config.Settings(key=Fernet.generate_key().decode(), api_token=API_TOKEN)
+    env = {
+        **os.environ,
+        config.ENV_KEY: Fernet.generate_key().decode(),
+        config.ENV_API_TOKEN: API_TOKEN,
+    }
+    settings = config.load_settings(env)
+    modes = (names.names_mode().value, address.address_mode().value)
+    profile = {
+        "accept_case_labels": settings.enable_case_labels,
+        "allowed_words": list(allowlist.allowed_stems()),
+        "contacts": list(settings.contacts),
+        "enable_delete_threads": settings.enable_delete_threads,
+        "enable_inflect_signatory": settings.enable_inflect_signatory,
+        "expose_boot_id": settings.enable_expose_boot_id,
+        "guard_address_mode": modes[1],
+        "guard_names_mode": modes[0],
+        "key_scheme": env.get(ENV_KEY_SCHEME, ""),
+        "mask_addresses": settings.mask_addresses,
+        "mask_legal_entity_requisites": settings.mask_legal_entity_requisites,
+        "name": set_name,
+        "retention_hours": settings.retention_hours,
+        "store_backend": settings.store_backend,
+    }
     effective = asdict(settings)
-    for secret in ("key", "api_token"):
-        effective.pop(secret)
+    for key in ("key", "api_token", "key_scheme", "enable_inflect_signatory",
+                "enable_delete_threads", "enable_expose_boot_id", "enable_case_labels"):
+        effective.pop(key)
     effective["db_path"] = str(effective["db_path"])
+    effective["profile"] = set_name
+    effective["contacts"] = list(effective["contacts"])
     return {
         "profile": profile,
         "settings": effective,
         "allowed_stems": list(allowlist.allowed_stems()),
-        "guard_names_mode": names.default_names_mode().value,
-        "guard_address_mode": address.default_address_mode().value,
+        "guard_names_mode": modes[0],
+        "guard_address_mode": modes[1],
     }
+
+
+def load_env_sets() -> Any:
+    """Модуль python/tests/env_sets.py (единый источник наборов переменных бывших профилей)."""
+    spec = importlib.util.spec_from_file_location(
+        "labops_env_sets", ROOT / "python" / "tests" / "env_sets.py"
+    )
+    if spec is None or spec.loader is None:
+        raise ImportError("python/tests/env_sets.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 def main() -> None:
@@ -225,7 +266,7 @@ def main() -> None:
                         required=True)
     parser.add_argument("--impl", choices=("original", "library"), required=True)
     parser.add_argument("--src", type=Path, help="каталог исходной копии (для original)")
-    parser.add_argument("--profile", help="профиль библиотеки")
+    parser.add_argument("--env-set", help="набор переменных из tests/env_sets.py")
     parser.add_argument("--with-case-labels", action="store_true")
     parser.add_argument("--with-signatory", action="store_true")
     parser.add_argument("--all-modes", action="store_true",
@@ -238,10 +279,10 @@ def main() -> None:
         sys.path.insert(0, str(args.src))
     else:
         sys.path.insert(0, str(ROOT / "python"))
-        if args.profile:
-            os.environ["LABOPS_PII_PROFILE"] = args.profile
+        if args.env_set:
+            load_env_sets().apply_env_set(args.env_set)
     if args.kind == "config":
-        result = snapshot_config()
+        result = snapshot_config(args.env_set or "")
     elif args.kind == "pseudonymizer":
         pkg = MODULES[(args.kind, args.impl)]["pkg"]
         result = snapshot_pseudonymizer(

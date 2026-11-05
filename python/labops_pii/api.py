@@ -38,6 +38,7 @@ from labops_pii.store import (
     MemoryReplacementStore,
     ReplacementStore,
     SqliteReplacementStore,
+    resolve_key_scheme,
 )
 
 logger = logging.getLogger(__name__)
@@ -228,7 +229,7 @@ def create_app(
     if store is None:
         store = (
             SqliteReplacementStore(
-                settings.db_path, settings.key, key_scheme=settings.key_scheme
+                settings.db_path, settings.key, key_scheme=resolve_key_scheme(settings.key_scheme)
             )
             if settings.store_backend == STORE_SQLITE
             else MemoryReplacementStore()

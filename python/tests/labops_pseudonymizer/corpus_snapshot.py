@@ -58,14 +58,13 @@ def write_baseline() -> None:
     Исходный эталон labops e271609 хранится рядом (`corpus_baseline_e271609.json`): расхождения
     между ними разобраны в tests/fixtures/accepted_divergences.json и CHANGELOG.
     """
-    import os
-
     import pytest
 
     from labops_pii.detector import PiiDetector
+    from tests.env_sets import apply_env_set
     from tests.labops_pseudonymizer.conftest import make_client
 
-    os.environ["LABOPS_PII_PROFILE"] = "labops"
+    apply_env_set("labops")
     client = make_client(PiiDetector(), pytest.MonkeyPatch())
     BASELINE_PATH.write_text(dump(take_snapshot(client)), encoding="utf-8")
 

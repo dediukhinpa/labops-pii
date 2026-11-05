@@ -44,8 +44,14 @@ def _clean_cache() -> None:
     _STRING_CACHE.clear()
 
 
-def test_default_is_log_only(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_default_is_off(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Без PII_GUARD_NAMES_MODE ФИО не ищутся (log_only прежнего профиля теперь в env)."""
     monkeypatch.delenv(MODE_ENV, raising=False)
+    assert find_pii_types(f"Контакт {FIO}") == set()
+
+
+def test_log_only_from_env(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv(MODE_ENV, "log_only")
     found = find_pii_types(f"Контакт {FIO}")
     assert found == {"name"}
     split = split_findings(found)

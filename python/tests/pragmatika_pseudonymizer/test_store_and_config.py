@@ -11,6 +11,7 @@ from cryptography.fernet import Fernet
 from labops_pii.__main__ import main
 from labops_pii.config import ENV_API_TOKEN, ENV_KEY, ConfigError, load_contacts, load_settings
 from labops_pii.store import SqliteReplacementStore
+from tests.env_sets import ENV_SETS
 
 
 def test_store_encrypts_values_on_disk(tmp_path: Path, fernet_key: str) -> None:
@@ -56,7 +57,7 @@ def test_main_exits_nonzero_without_key(monkeypatch: pytest.MonkeyPatch) -> None
 
 
 def test_settings_repr_hides_key(fernet_key: str) -> None:
-    settings = load_settings({ENV_KEY: fernet_key, ENV_API_TOKEN: "tok"})
+    settings = load_settings({**ENV_SETS["pragmatika"], ENV_KEY: fernet_key, ENV_API_TOKEN: "tok"})
     assert fernet_key not in repr(settings)
     assert settings.mask_legal_entity_requisites is False
 

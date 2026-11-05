@@ -134,8 +134,14 @@ def test_address_found_in_long_text_windows() -> None:
 
 # --- Режимы -----------------------------------------------------------------------
 
-def test_default_is_log_only(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_default_is_off(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Без PII_GUARD_ADDRESS_MODE адреса не ищутся (log_only прежнего профиля теперь в env)."""
     monkeypatch.delenv(MODE_ENV, raising=False)
+    assert find_pii_types(ADDR) == set()
+
+
+def test_log_only_from_env(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv(MODE_ENV, "log_only")
     found = find_pii_types(ADDR)
     assert found == {"address"}
     split = split_findings(found)
@@ -148,8 +154,9 @@ def test_off_does_not_search(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 def test_parse_mode() -> None:
-    assert parse_address_mode(None) is AddressMode.LOG_ONLY
-    assert parse_address_mode("  ") is AddressMode.LOG_ONLY
+    assert parse_address_mode(None) is AddressMode.OFF
+    assert parse_address_mode("  ") is AddressMode.OFF
+    assert parse_address_mode("log_only") is AddressMode.LOG_ONLY
     assert parse_address_mode(" ENFORCE ") is AddressMode.ENFORCE
     with pytest.raises(ValueError, match=MODE_ENV):
         parse_address_mode("on")

@@ -9,6 +9,7 @@ from labops_pii.config import ConfigError, load_settings
 from labops_pii.detector import PiiDetector
 from labops_pii.service import Pseudonymizer
 from labops_pii.store import SqliteReplacementStore
+from tests.env_sets import ENV_SETS
 from tests.pragmatika_pseudonymizer.conftest import found
 
 # (текст, ожидаемый результат маскирования). Город («г. Москва,») остаётся открытым.
@@ -145,13 +146,18 @@ def test_switch_off_returns_old_behaviour(fernet_key: str) -> None:
 
 
 def test_env_switch(monkeypatch: pytest.MonkeyPatch) -> None:
-    """PSEUDONYMIZER_ADDRESS_MASK: по умолчанию включено, off выключает, мусор - ошибка."""
+    """PSEUDONYMIZER_ADDRESS_MASK: без переменной выключено, on включает, мусор - ошибка.
+
+    Включение по умолчанию было значением профиля pragmatika; теперь его задаёт набор
+    переменных (`tests/env_sets.py`), а без переменной адреса не маскируются.
+    """
     base = {
         "PSEUDONYMIZER_KEY": Fernet.generate_key().decode(),
         "PSEUDONYMIZER_API_TOKEN": "t",
     }
-    assert load_settings(base).mask_addresses is True
-    assert load_settings({**base, "PSEUDONYMIZER_ADDRESS_MASK": ""}).mask_addresses is True
+    assert load_settings(base).mask_addresses is False
+    assert load_settings({**base, **ENV_SETS["pragmatika"]}).mask_addresses is True
+    assert load_settings({**base, "PSEUDONYMIZER_ADDRESS_MASK": ""}).mask_addresses is False
     assert load_settings({**base, "PSEUDONYMIZER_ADDRESS_MASK": "on"}).mask_addresses is True
     for off in ("off", "false", "0", "No", " OFF "):
         assert load_settings({**base, "PSEUDONYMIZER_ADDRESS_MASK": off}).mask_addresses is False

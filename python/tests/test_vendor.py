@@ -58,7 +58,7 @@ def test_guard_part_does_not_need_morphology(tmp_path: Path) -> None:
     )
     subprocess.run(
         [sys.executable, "-c", code], check=True, capture_output=True,
-        env={"PYTHONPATH": str(vendor_dir), "PATH": "/usr/bin", "LABOPS_PII_PROFILE": "webapp_v2"},
+        env={"PYTHONPATH": str(vendor_dir), "PATH": "/usr/bin"},
         cwd=tmp_path,
     )
 

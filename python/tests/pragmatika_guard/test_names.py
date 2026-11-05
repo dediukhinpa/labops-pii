@@ -164,8 +164,9 @@ def test_linear_time(kind: str) -> None:
 
 
 def test_mode_parsing() -> None:
-    assert parse_names_mode(None) is NamesMode.LOG_ONLY
-    assert parse_names_mode("") is NamesMode.LOG_ONLY
+    assert parse_names_mode(None) is NamesMode.OFF
+    assert parse_names_mode("") is NamesMode.OFF
+    assert parse_names_mode("log_only") is NamesMode.LOG_ONLY
     assert parse_names_mode(" Enforce ") is NamesMode.ENFORCE
     assert parse_names_mode("off") is NamesMode.OFF
     with pytest.raises(ValueError):

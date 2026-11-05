@@ -10,6 +10,7 @@ from __future__ import annotations
 import pytest
 from labops_pii.guard import detector
 from labops_pii.guard.names import NAME_TYPE
+from tests.env_sets import ENV_SETS, use_env_set
 
 # Каждая строка блокировалась морфологией v0.6.0 (проверено); морфология убрана в 0.7.0, и
 # старая переменная PII_GUARD_NAMES_MORPH=on больше ничего не включает
@@ -36,7 +37,7 @@ REAL_PII = (
 
 @pytest.fixture(autouse=True)
 def _pragmatika_enforce(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv("LABOPS_PII_PROFILE", "pragmatika")
+    use_env_set(monkeypatch, "pragmatika")
     monkeypatch.setenv("PII_GUARD_NAMES_MODE", "enforce")
     monkeypatch.setenv("PII_GUARD_ADDRESS_MODE", "enforce")
 
@@ -67,12 +68,12 @@ ORG_INN = "7707083893"  # 10 цифр, контрольная сумма вер�
 PERSON_INN = "500100732259"  # 12 цифр, ИНН физлица или ИП
 
 
-@pytest.mark.parametrize("profile", ["labops", "pragmatika", "webapp_v2"])
-def test_inn_of_any_length_blocked_in_every_profile(
-    monkeypatch: pytest.MonkeyPatch, profile: str
+@pytest.mark.parametrize("env_set", sorted(ENV_SETS))
+def test_inn_of_any_length_blocked_in_every_env_set(
+    monkeypatch: pytest.MonkeyPatch, env_set: str
 ) -> None:
-    """ИНН организации и физлица - ПДн во всех профилях (решение владельца 05.11.26)."""
-    monkeypatch.setenv("LABOPS_PII_PROFILE", profile)
+    """ИНН организации и физлица - ПДн при любом наборе переменных (решение владельца 05.11.26)."""
+    use_env_set(monkeypatch, env_set)
     assert "inn" in detector.find_pii_types(f"Поставщик ИНН {ORG_INN}")
     assert "inn" in detector.find_pii_types(f"ИП, ИНН {PERSON_INN}")
 

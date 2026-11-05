@@ -75,7 +75,8 @@ class Settings:
         contacts: Словарь контактов для детектора.
         hide_unreadable: Закрашивать ли области с признаками письма, которые OCR не
             распознал (рукопись, подпись).
-        mask_addresses: Закрашивать ли адреса; None - из PSEUDONYMIZER_ADDRESS_MASK (по умолчанию выкл.).
+        mask_addresses: Закрашивать ли адреса; None - из PSEUDONYMIZER_ADDRESS_MASK
+            (по умолчанию выкл.).
     """
 
     api_token: str
@@ -132,7 +133,10 @@ def load_settings(env: Mapping[str, str] | None = None) -> Settings:
         ConfigError: Нет токена или значение неверно.
     """
     source = os.environ if env is None else env
-    reject_legacy_profile(source)
+    try:
+        reject_legacy_profile(source)
+    except _ServiceConfigError as exc:
+        raise ConfigError(str(exc)) from exc
     token = source.get(ENV_API_TOKEN, "").strip()
     if not token:
         # Fail closed: без секрета сервис не поднимается
