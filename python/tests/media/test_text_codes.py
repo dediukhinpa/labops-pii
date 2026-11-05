@@ -210,3 +210,35 @@ def test_hide_unreadable_setting(raw: str, expected: bool) -> None:
     if raw:
         env["MEDIA_MASKER_HIDE_UNREADABLE"] = raw
     assert load_settings(env).hide_unreadable is expected
+
+
+@pytest.mark.parametrize(
+    ("env_extra", "expected"),
+    [
+        ({}, None),
+        ({"PSEUDONYMIZER_ADDRESS_MASK": "true"}, True),
+        ({"PSEUDONYMIZER_ADDRESS_MASK": "off"}, False),
+        ({"MEDIA_MASKER_ADDRESS_MASK": "false", "PSEUDONYMIZER_ADDRESS_MASK": "true"}, False),
+    ],
+)
+def test_address_mask_setting(env_extra: dict[str, str], expected: bool | None) -> None:
+    env = {"MEDIA_MASKER_API_TOKEN": "t", **env_extra}
+    assert load_settings(env).mask_addresses is expected
+
+
+def test_address_mask_setting_rejects_typo() -> None:
+    from labops_pii.media.mask.config import ConfigError
+
+    with pytest.raises(ConfigError):
+        load_settings({"MEDIA_MASKER_API_TOKEN": "t", "PSEUDONYMIZER_ADDRESS_MASK": "ture"})
+
+
+def test_card_address_painted_when_enabled(ocr: TesseractOcr) -> None:
+    # Включённый флаг адресов должен закрашивать адрес и на картинке, а не только в тексте
+    masker = ImageMasker(ocr, PiiDetector(True, mask_addresses=True), FaceBlurrer())
+    out, _stats, rec = masker.mask_image_ex(card_image())
+    after = " ".join(w.text for w in ocr.recognize(out))
+    assert "Ленина" in rec.text
+    # Детектор считает адресом улицу с домом; город без улицы не ПДн - как и в тексте
+    assert "Ленина" not in after
+    assert "Абакан" in after

@@ -172,7 +172,9 @@ def create_app(settings: Settings) -> FastAPI:
         settings.tesseract_cmd, settings.langs, settings.ocr_timeout_s, settings.tessdata
     )
     ocr.check_ready()
-    detector = PiiDetector(settings.mask_legal_entity, settings.contacts)
+    detector = PiiDetector(
+        settings.mask_legal_entity, settings.contacts, mask_addresses=settings.mask_addresses
+    )
     masker = ImageMasker(
         ocr, detector, FaceBlurrer(), settings.hide_unreadable, CodeFinder()
     )
