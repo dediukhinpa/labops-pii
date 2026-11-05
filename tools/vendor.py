@@ -9,8 +9,9 @@
   guard    режим «только проверка»: labops_pii/{__init__,profiles,pii_patterns}.py и guard/
            (без natasha и pymorphy: образ шлюза остаётся лёгким);
   service  ядро и HTTP-сервис псевдонимизации (всё, кроме guard/ и media/);
-  media    labops_pii/media/ (extras: Pillow, OpenCV, pypdfium2).
-По умолчанию: guard,service,media.
+  media    labops_pii/media/ (extras: Pillow, OpenCV, pypdfium2);
+  ts       TS-пакет @labops/pii: ts/src, ts/package.json, ts/LICENSE (в vendor/labops-pii/ts/).
+По умолчанию: guard,service,media (ts берётся только по явной просьбе: нужен лишь TS-проектам).
 
 Пример:
   tools/vendor.py --dest ~/project --ref v0.1.0 --parts guard
@@ -33,7 +34,12 @@ PACKAGE_DIR = "python/labops_pii"
 VENDOR_SUBDIR = Path("vendor") / "labops-pii"
 VERSION_FILE = "VERSION"
 DEFAULT_REF = "origin/prod"
-ALL_PARTS = ("guard", "service", "media")
+ALL_PARTS = ("guard", "service", "media", "ts")
+DEFAULT_PARTS = ("guard", "service", "media")
+TS_DIR = "ts"
+# Из ts/ вендорятся только исходники и манифест: тесты, node_modules и lock остаются в библиотеке
+TS_FILES = ("ts/package.json",)
+TS_SRC_PREFIX = "ts/src/"
 # Файлы верхнего уровня пакета, нужные guard без морфологии
 GUARD_TOP_FILES = frozenset({"__init__.py", "profiles.py", "pii_patterns.py"})
 EXTRA_FILES = ("LICENSE",)
@@ -66,10 +72,32 @@ def wanted(relative: PurePosixPath, parts: set[str]) -> bool:
     return "service" in parts
 
 
+def collect_ts(ref: str) -> dict[str, bytes]:
+    """Файлы TS-части из git: ts/src/**, ts/package.json и копия LICENSE как ts/LICENSE."""
+    archive = run_git("archive", "--format=tar", ref, TS_DIR, *EXTRA_FILES)
+    files: dict[str, bytes] = {}
+    with tarfile.open(fileobj=io.BytesIO(archive)) as tar:
+        for member in tar.getmembers():
+            if not member.isfile():
+                continue
+            extracted = tar.extractfile(member)
+            if extracted is None:
+                continue
+            data = extracted.read()
+            if member.name in EXTRA_FILES:
+                # Каталог ts/ должен быть самодостаточным (лицензия рядом с кодом)
+                files[f"{TS_DIR}/{member.name}"] = data
+            elif member.name in TS_FILES or member.name.startswith(TS_SRC_PREFIX):
+                files[member.name] = data
+    return files
+
+
 def collect(ref: str, parts: set[str]) -> dict[str, bytes]:
     """Файлы выбранных частей из git по ссылке: путь внутри vendor/labops-pii -> байты."""
+    files: dict[str, bytes] = collect_ts(ref) if "ts" in parts else {}
+    if not parts - {"ts"}:
+        return files
     archive = run_git("archive", "--format=tar", ref, PACKAGE_DIR, *EXTRA_FILES)
-    files: dict[str, bytes] = {}
     with tarfile.open(fileobj=io.BytesIO(archive)) as tar:
         for member in tar.getmembers():
             if not member.isfile():
@@ -119,7 +147,7 @@ def main() -> int:
     parser.add_argument("--dest", type=Path, required=True, help="корень проекта-потребителя")
     # Базовая ветка репозитория - prod (main нет): по умолчанию вендорится она
     parser.add_argument("--ref", default=DEFAULT_REF, help="тег или коммит библиотеки")
-    parser.add_argument("--parts", default=",".join(ALL_PARTS))
+    parser.add_argument("--parts", default=",".join(DEFAULT_PARTS))
     args = parser.parse_args()
     parts = {p.strip() for p in args.parts.split(",") if p.strip()}
     unknown = parts - set(ALL_PARTS)
