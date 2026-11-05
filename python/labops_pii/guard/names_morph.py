@@ -26,6 +26,10 @@ _LOCK = threading.Lock()
 _DETECTOR: PiiDetector | None = None
 # Слово находки: буквы, без инициалов-точек и знаков
 _WORD_RE = re.compile(r"[A-Za-zА-Яа-яЁё]+")
+# Инициал: заглавная буква с точкой, не внутри слова («И.», но не «т.бут» и не «Н-р»)
+_INITIAL_RE = re.compile(r"(?<![А-Яа-яЁёA-Za-z])[А-ЯЁA-Z]\.")
+# Сколько слов-частей ФИО нужно в находке без инициала
+MIN_NAME_WORDS = 2
 # Прозвища и порядковые номера правителей: «Петр Первый», «Иван Грозный» - не ПДн клиента
 _REGNAL_RE = re.compile(
     r"\b(?:Перв(?:ый|ая)|Втор(?:ой|ая)|Трет(?:ий|ья)|Велик(?:ий|ая)|Грозный|Мудрый|Святой|"
@@ -64,22 +68,27 @@ def has_person_morph(text: str) -> bool:
 def _counts_as_person(text: str, span: str) -> bool:
     """Считается ли находка NER ФИО для guard.
 
-    Замер на names_labels.json: без этого фильтра морфология давала 7 ложных из 130 - одиночные
-    имена («Иван», «Позвони Ивану»), фамилия без контекста («Иванов») и правители
-    («Петр Первый»). Guard блокирует запрос, поэтому одиночное слово засчитываем, только если
-    это фамилия по словарю и она стоит в предложении, а не одна. Из 2+ слов - если два из них
-    части ФИО по словарю или есть инициал.
+    Правило строже, чем у сервиса: guard блокирует запрос. Замер 05.11.26 на 75 752 названиях
+    товаров и поставщиков БД Прагматики: прежнее правило («два слова из словаря» или «одно
+    слово с инициалом», одиночная фамилия в предложении) добавляло 396 ложных блокировок -
+    сокращения «Н-р»/«т.бут» шли как инициалы, иностранные и нарицательные слова pymorphy
+    размечает как имена («Ванджэ», «Фань»), одиночные «фамилии» - сорта и бренды. Теперь:
+    инициал - только заглавная буква с точкой рядом с фамилией; иначе нужно два слова-части
+    ФИО по словарю, и одно из них - фамилия или отчество. Одиночное слово - не ФИО.
     """
+    del text  # контекст строки больше не нужен: одиночное слово не засчитывается
     from labops_pii.morph import name_gramme
 
     if _REGNAL_RE.search(span):
         return False
-    words = _WORD_RE.findall(span)
-    if len(words) >= 2:
-        # NER склеивает в «ФИО» модели и сорта («Лада Гранта», «Дуб Классик»): нужно минимум
-        # два слова-части ФИО по словарю или инициал («Иванов И.»)
-        name_words = sum(name_gramme(w) is not None for w in words)
-        return name_words >= 2 or any(len(w) == 1 for w in words)
-    if not words or len(_WORD_RE.findall(text)) == 1:
+    words = [w for w in _WORD_RE.findall(span) if len(w) > 1]
+    # ФИО пишут с заглавной; строчные пары NER («флэт уайт», «стрейч мини») - напитки и товары
+    if any(not w[0].isupper() for w in words):
         return False
-    return name_gramme(words[0]) == "Surn"
+    grams = [name_gramme(w) for w in words]
+    if _INITIAL_RE.search(span) and "Surn" in grams:
+        return True
+    if len(words) < MIN_NAME_WORDS:
+        return False
+    named = sum(g is not None for g in grams)
+    return named >= MIN_NAME_WORDS and any(g in ("Surn", "Patr") for g in grams)

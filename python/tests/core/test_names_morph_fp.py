@@ -55,8 +55,8 @@ WEB_FRAGMENTS = json.loads(
         encoding="utf-8"
     )
 )
-# Измерено 05.11.26: остаются «по Королёву, Чехову, ... Лермонтову» и «Ленина и Пушкина»
-MAX_WEB_MORPH_FP = 2
+# Измерено 05.11.26 (v0.7.0, строгое правило): ложных нет
+MAX_WEB_MORPH_FP = 0
 
 
 def test_morph_false_positive_rate_on_web_pages(monkeypatch: pytest.MonkeyPatch) -> None:

@@ -108,6 +108,27 @@ def strip_tokens(text: str) -> str:
 # регулярным выражением: прежний шаблон давал квадратичное время на длинных телах (S-04).
 AT_RE = re.compile("@")
 DIGITS_RUN_RE = re.compile(r"(?<!\d)\d{10,12}(?!\d)")
+# Списки чисел через ASCII «/» в названиях товаров: объёмы и размеры («425/660/1000 мл»,
+# «M.2 2280/2260/2242/2230»). Нормализация делает из «/» дефис, и такой список выглядел
+# как телефон 3-3-4 или карта 4-4-4-4 (замер на 75 752 названиях БД Прагматики, 05.11.26).
+# Здесь «/» в таких списках меняется на «;» до нормализации (длина та же), чтобы группы не
+# склеивались. Телефон «8/916/123/45/67» не трогается: в нём нет единицы измерения после
+# списка и группы не по 4 цифры. Unicode-косые («⁄», «∕», «／») не трогаются вовсе.
+_SLASH_LIST_UNIT_RE = re.compile(
+    r"(?<![\d/])\d+(?:[.,]\d+)?(?:\s?/\s?\d+(?:[.,]\d+)?){2,}"
+    r"(?=\s?(?:мл|л|г|гр|кг|мг|мм|см|м|шт|л\.|ml|l|g|kg|mm|cm|m|W|Вт|В|V|А|A)\b)",
+    re.IGNORECASE,
+)
+_SLASH_LIST_FOUR_RE = re.compile(r"(?<![\d/])\d{4}(?:/\d{4}){2,}(?![\d/])")
+
+
+def _split_slash_lists(text: str) -> str:
+    """Меняет «/» на «;» в списках размеров и объёмов (длина строки не меняется)."""
+
+    def _semi(match: re.Match[str]) -> str:
+        return match.group(0).replace("/", ";")
+
+    return _SLASH_LIST_FOUR_RE.sub(_semi, _SLASH_LIST_UNIT_RE.sub(_semi, text))
 UNICODE_ESCAPE_RE = re.compile(r"\\u([0-9a-fA-F]{4})")
 
 
@@ -266,7 +287,7 @@ def find_pii_types(text: str) -> set[str]:
         блокируют ли они запрос, решает labops_pii.guard.policy.
     """
     # Сначала нормализация (NFKC, тире и «/» -> «-», NBSP -> пробел), потом вырезание токенов
-    clean = strip_tokens(normalize_text(text))
+    clean = strip_tokens(normalize_text(_split_slash_lists(text)))
     found: set[str] = set()
     if has_email(clean):
         found.add(EMAIL)

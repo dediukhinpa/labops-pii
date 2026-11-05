@@ -107,6 +107,9 @@ PROFILES: dict[str, Profile] = {
         accept_case_labels=False,
         guard_names_mode=GUARD_MODE_LOG_ONLY,
         guard_address_mode=GUARD_MODE_LOG_ONLY,
+        # Торговая марка «С.ПУДОВЪ» (замер на 75 752 названиях БД Прагматики, 05.11.26): с
+        # инициалом guard видел в ней ФИО. Основа с «ъ» не совпадает с фамилией «Пудов».
+        allowed_words=(*ALLOWED_WORDS_DEFAULT, "пудовъ"),
     ),
     # web-app-v2: своего псевдонимизатора не было (план: общий сервис labops); guard искал
     # только цифровые типы, поэтому ФИО и адреса в guard выключены

@@ -19,6 +19,9 @@ ALLOWED_WORDS_ENV = "PII_ALLOWED_WORDS"
 # Падежное окончание после основы: «прагматик» + «а/у/е/ой/ами/...»
 ALLOWED_ENDING_MAX = 3
 WORD_RE = re.compile(r"[А-Яа-яЁёA-Za-z]+(?:-[А-Яа-яЁёA-Za-z]+)*")
+# Инициал вплотную перед словом: заглавная буква и точка («С.»)
+GLUED_INITIAL_RE = re.compile(r"[А-ЯЁA-Z]\.")
+GLUED_INITIAL_LEN = 2
 
 
 def allowed_stems() -> tuple[str, ...]:
@@ -51,7 +54,17 @@ def strip_allowed_words(text: str) -> str:
     stems = allowed_stems()
     if not stems:
         return text
-    return WORD_RE.sub(
-        lambda m: " " * len(m.group()) if is_allowed_word(m.group(), stems) else m.group(),
-        text,
-    )
+    chars = list(text)
+    for match in WORD_RE.finditer(text):
+        if not is_allowed_word(match.group(), stems):
+            continue
+        start = match.start()
+        # Инициал, приклеенный к разрешённому слову без пробела («С.ПУДОВЪ»), - часть марки:
+        # иначе после затирания слова оставалось «Пектин С.», и guard видел «Фамилия И.»
+        glued = text[max(start - GLUED_INITIAL_LEN, 0):start]
+        if GLUED_INITIAL_RE.fullmatch(glued) and (
+            start == GLUED_INITIAL_LEN or not text[start - GLUED_INITIAL_LEN - 1].isalpha()
+        ):
+            start -= GLUED_INITIAL_LEN
+        chars[start:match.end()] = " " * (match.end() - start)
+    return "".join(chars)
