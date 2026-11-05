@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools>=61,<81"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "labops-pii"
+version = "0.1.0"
+description = "Общая библиотека маскирования персональных данных (LabOps)"
+requires-python = ">=3.12"
+license = { text = "Proprietary" }
+dependencies = [
+    "natasha>=1.6,<2",
+    "pymorphy3>=2.0",
+    "pymorphy3-dicts-ru",
+    "setuptools>=61,<81",  # natasha/pymorphy2 импортируют pkg_resources
+    "cryptography>=42",
+    "fastapi>=0.110",
+    "uvicorn>=0.29",
+    "pydantic>=2",
+]
+
+[project.optional-dependencies]
+# guard: прокси-проверка запросов (httpx нужен для пересылки апстриму)
+guard = ["httpx>=0.27,<1"]
+# media: маска фото и PDF и детектор текста на картинке (отдельно, чтобы текстовый сервис
+# не тянул OpenCV и Tesseract)
+media = [
+    "pillow>=11",
+    "opencv-python-headless>=4.10,<5",
+    "pypdfium2>=4.30",
+    "python-multipart>=0.0.9",
+]
+dev = ["pytest>=8", "pytest-asyncio>=0.23", "httpx>=0.27,<1"]
+
+[tool.setuptools.packages.find]
+include = ["labops_pii*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+filterwarnings = ["ignore::UserWarning", "ignore::DeprecationWarning"]

@@ -1,0 +1,25 @@
+name: gitleaks
+
+# Secret scanning on every push / PR. gitleaks-action is free for personal
+# repositories (a GITLEAKS_LICENSE is only required for GitHub *organization*
+# accounts). This complements the repo's own test.sh / install guards.
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  gitleaks:
+    name: scan for leaked secrets
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # scan full history, not just the latest commit
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}  # only for org-owned repos
