@@ -527,7 +527,7 @@ def create_app(
         if findings.blocking:
             return _pii_denied(request, findings)
 
-        return await _forward(request, "/" + path, request.url.query, body, slot, path)
+        return await _forward(request, "/" + path, request.url.query, body, slot)
 
     async def _handle_search(request: Request, slot: _Slot) -> Response:
         """Проверяет форму запроса поиска (не ПДн) и пересылает его в /v1/messages."""
@@ -551,8 +551,7 @@ def create_app(
         if reason is not None:
             return _search_reject(request, reason)
         return await _forward(
-            request, SEARCH_UPSTREAM_PATH, "", body, slot, SEARCH_ROUTE_PATH.lstrip("/"),
-            SEARCH_DROP_HEADERS,
+            request, SEARCH_UPSTREAM_PATH, "", body, slot, SEARCH_DROP_HEADERS,
         )
 
     async def _handle_vision(request: Request, slot: _Slot) -> Response:
@@ -595,8 +594,7 @@ def create_app(
             route=VISION_ROUTE_PATH, images=[m.log_text() for m in verdict.images],
         )
         return await _forward(
-            request, VISION_UPSTREAM_PATH, "", body, slot, VISION_ROUTE_PATH.lstrip("/"),
-            VISION_DROP_HEADERS,
+            request, VISION_UPSTREAM_PATH, "", body, slot, VISION_DROP_HEADERS,
         )
 
     async def _handle_webpage(request: Request, slot: _Slot) -> Response:
@@ -637,8 +635,7 @@ def create_app(
             route=WEBPAGE_ROUTE_PATH, pii_types=sorted(verdict.pii_types),
         )
         return await _forward(
-            request, WEBPAGE_UPSTREAM_PATH, "", body, slot, WEBPAGE_ROUTE_PATH.lstrip("/"),
-            WEBPAGE_DROP_HEADERS,
+            request, WEBPAGE_UPSTREAM_PATH, "", body, slot, WEBPAGE_DROP_HEADERS,
         )
 
     def _webpage_reject(request: Request, reason: str) -> Response:
@@ -681,11 +678,9 @@ def create_app(
         query: str,
         body: bytes,
         slot: _Slot,
-        log_path: str,
         drop_headers: frozenset[str] = frozenset(),
     ) -> Response:
         """Пересылает проверенное тело в LiteLLM и отдаёт ответ потоком."""
-        _ = log_path
         headers = {
             k: v
             for k, v in request.headers.items()
