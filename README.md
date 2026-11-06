@@ -106,7 +106,7 @@ python -m labops_pii.media.mask          # маска фото и PDF
 ## Вендоринг в проекты
 
 ```bash
-tools/vendor.sh /путь/к/проекту v1.0.2 guard        # тег или коммит; части: guard, service, media, ts
+tools/vendor.sh /путь/к/проекту v1.0.3 guard        # тег или коммит; части: guard, service, media, ts
 ```
 
 Файлы попадают в `vendor/labops-pii/` вместе с `VERSION` (тег, коммит, sha256 каждого файла).
