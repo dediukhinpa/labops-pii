@@ -108,6 +108,18 @@ def _positive_int(env: Mapping[str, str], name: str, default: int) -> int:
     return value
 
 
+def _media_flag(env: Mapping[str, str], name: str, *, default: bool) -> bool:
+    """Флаг on/off строго (ошибка сервиса переводится в ошибку media).
+
+    Raises:
+        ConfigError: Значение не on/off.
+    """
+    try:
+        return _strict_bool_env(env, name, default=default)
+    except _ServiceConfigError as exc:
+        raise ConfigError(str(exc)) from exc
+
+
 def _address_flag(env: Mapping[str, str]) -> bool | None:
     """Флаг адресов: MEDIA_MASKER_ADDRESS_MASK, затем PSEUDONYMIZER_ADDRESS_MASK, иначе None.
 
@@ -152,10 +164,10 @@ def load_settings(env: Mapping[str, str] | None = None) -> Settings:
     contacts: tuple[str, ...] = ()
     if contacts_file:
         contacts = load_contacts(Path(contacts_file))
-    mask_legal = source.get(ENV_MASK_LEGAL, "true").strip().lower() not in ("0", "false", "no")
-    hide_unreadable = (
-        source.get(ENV_HIDE_UNREADABLE, "true").strip().lower() not in ("0", "false", "no")
-    )
+    # Строго, как у сервиса: «off» раньше не выключал (не входил в список), а опечатка молча
+    # оставляла значение по умолчанию
+    mask_legal = _media_flag(source, ENV_MASK_LEGAL, default=True)
+    hide_unreadable = _media_flag(source, ENV_HIDE_UNREADABLE, default=True)
     mask_addresses = _address_flag(source)
     return Settings(
         mask_addresses=mask_addresses,
