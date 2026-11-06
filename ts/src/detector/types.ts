@@ -20,7 +20,7 @@ export interface DetectedSpan {
  * (обычно из своего окружения: `PSEUDONYMIZER_ADDRESS_MASK`, `PII_ALLOWED_WORDS`).
  */
 export interface DetectorOptions {
-  /** Искать ли адреса в `detectNamesAndAddresses`; по умолчанию нет. */
+  /** Искать ли адреса в `detectNamesAndAddresses`; по умолчанию да. */
   maskAddresses?: boolean | undefined;
   /** Основы слов белого списка (как PII_ALLOWED_WORDS в Python); по умолчанию пусто. */
   allowedWords?: readonly string[] | undefined;

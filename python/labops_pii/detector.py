@@ -301,10 +301,10 @@ class PiiDetector:
             contacts: Словарь контактов (точное совпадение без учёта регистра).
             mask_addresses: Маскировать ли адрес (улица + дом, индекс). Выключатель отката
                 PSEUDONYMIZER_ADDRESS_MASK=off: поведение до этапа Г. None - из окружения
-                (PSEUDONYMIZER_ADDRESS_MASK, по умолчанию выключено).
+                (PSEUDONYMIZER_ADDRESS_MASK, по умолчанию включено).
         """
         self._mask_legal = mask_legal_entity_requisites
-        # None - значение PSEUDONYMIZER_ADDRESS_MASK (по умолчанию выкл.)
+        # None - значение PSEUDONYMIZER_ADDRESS_MASK (по умолчанию вкл.)
         self._mask_addresses = env_mask_addresses() if mask_addresses is None else (
             mask_addresses
         )

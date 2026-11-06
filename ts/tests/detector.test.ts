@@ -107,10 +107,10 @@ describe('адреса', () => {
     expect(spans.map((s) => [s.kind, s.text])).toEqual([['address', 'ул. Ивана Франко, д. 4']]);
   });
 
-  test('флаг maskAddresses задаёт, ищутся ли адреса (по умолчанию нет)', () => {
+  test('флаг maskAddresses задаёт, ищутся ли адреса (по умолчанию да)', () => {
     const text = 'ул. Ленина, д. 5';
-    expect(detectNamesAndAddresses(text)).toEqual([]);
-    expect(detectNamesAndAddresses(text, {})).toEqual([]);
+    expect(detectNamesAndAddresses(text)).toHaveLength(1);
+    expect(detectNamesAndAddresses(text, {})).toHaveLength(1);
     expect(detectNamesAndAddresses(text, { maskAddresses: false })).toEqual([]);
     expect(detectNamesAndAddresses(text, PRAGMATIKA)).toHaveLength(1);
     expect(detectNamesAndAddresses(text, { maskAddresses: true })).toHaveLength(1);

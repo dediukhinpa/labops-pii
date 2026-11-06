@@ -27,6 +27,9 @@ ENV_RETENTION_DAYS = "PSEUDONYMIZER_RETENTION_DAYS"
 ENV_DB = "PSEUDONYMIZER_DB"
 ENV_MASK_LEGAL = "PSEUDONYMIZER_MASK_LEGAL_ENTITY"
 ENV_ADDRESS_MASK = "PSEUDONYMIZER_ADDRESS_MASK"
+# Адреса (улица + дом, индекс) маскируются, пока их явно не выключили: забытая переменная
+# не должна пропускать адрес в модель (1.0.0; раньше по умолчанию было выключено)
+DEFAULT_ADDRESS_MASK = True
 # Флаги маршрутов и полей API: по умолчанию все выключены (включает потребитель)
 ENV_ENABLE_INFLECT_SIGNATORY = "PSEUDONYMIZER_ENABLE_INFLECT_SIGNATORY"
 ENV_ENABLE_DELETE_THREADS = "PSEUDONYMIZER_ENABLE_DELETE_THREADS"
@@ -155,7 +158,7 @@ class Settings:
         default_factory=lambda: _bool_env(os.environ, ENV_MASK_LEGAL, default=True)
     )
     mask_addresses: bool = field(
-        default_factory=lambda: _strict_bool_env(os.environ, ENV_ADDRESS_MASK, default=False)
+        default_factory=lambda: _strict_bool_env(os.environ, ENV_ADDRESS_MASK, default=DEFAULT_ADDRESS_MASK)
     )
     contacts: tuple[str, ...] = ()
     host: str = DEFAULT_HOST
@@ -254,12 +257,12 @@ def _retention_hours(env: Mapping[str, str]) -> int:
 
 
 def env_mask_addresses(env: Mapping[str, str] | None = None) -> bool:
-    """Маскировать ли адреса: PSEUDONYMIZER_ADDRESS_MASK (по умолчанию выключено).
+    """Маскировать ли адреса: PSEUDONYMIZER_ADDRESS_MASK (по умолчанию включено).
 
     Raises:
         ConfigError: Значение не on/off.
     """
-    return _strict_bool_env(os.environ if env is None else env, ENV_ADDRESS_MASK, default=False)
+    return _strict_bool_env(os.environ if env is None else env, ENV_ADDRESS_MASK, default=DEFAULT_ADDRESS_MASK)
 
 
 def _env_store(env: Mapping[str, str]) -> str:
@@ -327,7 +330,7 @@ def load_settings(
         retention_hours=_retention_hours(env),
         db_path=Path(env.get(ENV_DB, str(DEFAULT_DB))),
         mask_legal_entity_requisites=_bool_env(env, ENV_MASK_LEGAL, default=True),
-        mask_addresses=_strict_bool_env(env, ENV_ADDRESS_MASK, default=False),
+        mask_addresses=_strict_bool_env(env, ENV_ADDRESS_MASK, default=DEFAULT_ADDRESS_MASK),
         contacts=load_contacts(Path(contacts_file)) if contacts_file else (),
         host=env.get(ENV_HOST, DEFAULT_HOST),
         port=int(env.get(ENV_PORT, str(DEFAULT_PORT))),

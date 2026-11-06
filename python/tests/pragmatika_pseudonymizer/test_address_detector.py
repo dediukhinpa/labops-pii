@@ -146,18 +146,17 @@ def test_switch_off_returns_old_behaviour(fernet_key: str) -> None:
 
 
 def test_env_switch(monkeypatch: pytest.MonkeyPatch) -> None:
-    """PSEUDONYMIZER_ADDRESS_MASK: без переменной выключено, on включает, мусор - ошибка.
+    """PSEUDONYMIZER_ADDRESS_MASK: без переменной включено, off выключает, мусор - ошибка.
 
-    Включение по умолчанию было значением профиля pragmatika; теперь его задаёт набор
-    переменных (`tests/env_sets.py`), а без переменной адреса не маскируются.
+    С 1.0.0 адреса маскируются по умолчанию: забытая переменная не пропускает адрес в модель.
     """
     base = {
         "PSEUDONYMIZER_KEY": Fernet.generate_key().decode(),
         "PSEUDONYMIZER_API_TOKEN": "t",
     }
-    assert load_settings(base).mask_addresses is False
+    assert load_settings(base).mask_addresses is True
     assert load_settings({**base, **ENV_SETS["pragmatika"]}).mask_addresses is True
-    assert load_settings({**base, "PSEUDONYMIZER_ADDRESS_MASK": ""}).mask_addresses is False
+    assert load_settings({**base, "PSEUDONYMIZER_ADDRESS_MASK": ""}).mask_addresses is True
     assert load_settings({**base, "PSEUDONYMIZER_ADDRESS_MASK": "on"}).mask_addresses is True
     for off in ("off", "false", "0", "No", " OFF "):
         assert load_settings({**base, "PSEUDONYMIZER_ADDRESS_MASK": off}).mask_addresses is False

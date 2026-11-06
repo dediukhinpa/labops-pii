@@ -21,6 +21,9 @@ export {
   type DetectorOptions,
 } from './types';
 
+// Адреса ищутся, пока вызывающий не выключил их явно (как PSEUDONYMIZER_ADDRESS_MASK в Python)
+const DEFAULT_MASK_ADDRESSES = true;
+
 interface ResolvedOptions {
   maskAddresses: boolean;
   stems: readonly string[];
@@ -34,7 +37,7 @@ function resolve(options: DetectorOptions | undefined): ResolvedOptions {
   }
   const parsed = DetectorOptionsSchema.parse(options ?? {});
   return {
-    maskAddresses: parsed.maskAddresses ?? false,
+    maskAddresses: parsed.maskAddresses ?? DEFAULT_MASK_ADDRESSES,
     stems: normalizeStems(parsed.allowedWords ?? []),
     latinNames: parsed.latinNames ?? true,
   };
