@@ -1,9 +1,9 @@
 """Сверка библиотеки с эталонными снимками исходных копий (побайтно, по наборам переменных).
 
 Эталоны в tests/fixtures/reference/*.json сняты tools/reference_snapshot.py на КОДЕ ИСХОДНЫХ
-копий: labops-ai-assistant e271609, pragmatica-ai origin/prod 53c84abc, web-app-v2 1aebe40.
+копий: labops-ai-assistant e271609, копия с хранилищем sqlite v2 53c84abc, web-app-v2 1aebe40.
 Библиотека снимается в отдельном процессе с набором переменных бывшего профиля
-(tests/env_sets.py). Для pragmatika расхождений
+(tests/env_sets.py). Для sqlite_v2 расхождений
 быть не должно вообще. Для labops и webapp_v2 допустимы только расхождения из
 fixtures/accepted_divergences.json (осознанные фиксы, см. CHANGELOG): любое новое
 расхождение роняет тест, пока его не разобрали и не записали.
@@ -28,9 +28,9 @@ ACCEPTED = json.loads((FIXTURES / "accepted_divergences.json").read_text(encodin
 CASES = {
     "labops_pseudonymizer": ["--kind", "pseudonymizer", "--env-set", "labops",
                              "--with-case-labels"],
-    "pragmatika_pseudonymizer": ["--kind", "pseudonymizer", "--env-set", "pragmatika",
+    "sqlite_v2_pseudonymizer": ["--kind", "pseudonymizer", "--env-set", "sqlite_v2",
                                  "--with-signatory"],
-    "pragmatika_guard": ["--kind", "guard-litellm", "--env-set", "pragmatika"],
+    "sqlite_v2_guard": ["--kind", "guard-litellm", "--env-set", "sqlite_v2"],
     "webapp_v2_guard": ["--kind", "guard-edge", "--env-set", "webapp_v2"],
 }
 

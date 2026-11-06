@@ -1,4 +1,4 @@
-"""Белый список слов: «Прагматика» (название проекта) не маскируется как ФИО или организация."""
+"""Белый список слов: слово из PII_ALLOWED_WORDS (пример: «Вектрика») не маскируется как ФИО или организация."""
 
 from __future__ import annotations
 
@@ -8,15 +8,15 @@ from labops_pii.allowlist import allowed_stems, is_allowed_fragment, strip_allow
 from tests.env_sets import ENV_SETS, use_env_set
 
 FORMS = [
-    "Прагматика", "Прагматики", "Прагматике", "Прагматику", "Прагматикой", "«Прагматика»",
-    '"Прагматикой"', "прагматику", "ПРАГМАТИКА",
+    "Вектрика", "Вектрики", "Вектрике", "Вектрику", "Вектрикой", "«Вектрика»",
+    '"Вектрикой"', "вектрику", "ВЕКТРИКА",
 ]
 SENTENCES = [
-    "Мы работаем с Прагматикой уже год",
-    "Это сообщение из Прагматики",
-    "в Прагматике заказ готов",
-    "Проект «Прагматика» запущен",
-    "Отправь это в Прагматику",
+    "Мы работаем с Вектрикой уже год",
+    "Это сообщение из Вектрики",
+    "в Вектрике заказ готов",
+    "Проект «Вектрика» запущен",
+    "Отправь это в Вектрику",
 ]
 
 
@@ -28,17 +28,17 @@ def test_every_env_set_allows_the_project_name(name: str, monkeypatch: pytest.Mo
 
 def test_other_words_not_allowed(monkeypatch: pytest.MonkeyPatch) -> None:
     use_env_set(monkeypatch, "labops")
-    assert not is_allowed_fragment("Прагматик Иванов")
+    assert not is_allowed_fragment("Вектрик Иванов")
     assert not is_allowed_fragment("Иванов")
-    assert not is_allowed_fragment("Tony")  # имена агентов в список не входят
+    assert not is_allowed_fragment("Alex")  # имена в список не входят
 
 
 def test_no_words_allowed_by_default(monkeypatch: pytest.MonkeyPatch) -> None:
     """Список слов по умолчанию пуст: слова задаёт только PII_ALLOWED_WORDS."""
     monkeypatch.delenv("PII_ALLOWED_WORDS", raising=False)
     assert allowed_stems() == ()
-    assert not is_allowed_fragment("Прагматика")
-    assert strip_allowed_words("из Прагматики") == "из Прагматики"
+    assert not is_allowed_fragment("Вектрика")
+    assert strip_allowed_words("из Вектрики") == "из Вектрики"
 
 
 def test_extra_words_from_environment(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -48,7 +48,7 @@ def test_extra_words_from_environment(monkeypatch: pytest.MonkeyPatch) -> None:
 
 def test_strip_keeps_positions(monkeypatch: pytest.MonkeyPatch) -> None:
     use_env_set(monkeypatch, "labops")
-    text = "Иванов из Прагматики"
+    text = "Иванов из Вектрики"
     stripped = strip_allowed_words(text)
     assert len(stripped) == len(text) and stripped.startswith("Иванов из ")
     assert stripped.strip() == "Иванов из"
@@ -67,12 +67,12 @@ def test_service_does_not_mask_project_name(name: str, monkeypatch: pytest.Monke
 
 
 def test_real_person_next_to_project_name_still_masked(monkeypatch: pytest.MonkeyPatch) -> None:
-    use_env_set(monkeypatch, "pragmatika")
+    use_env_set(monkeypatch, "sqlite_v2")
     from labops_pii.detector import PiiDetector
 
-    text = "Иванов Иван Иванович из Прагматики"
+    text = "Иванов Иван Иванович из Вектрики"
     found = [text[d.start:d.end] for d in PiiDetector().detect(text) if d.pii_type == "PERSON"]
-    assert found and all("Прагматик" not in f for f in found)
+    assert found and all("Вектрик" not in f for f in found)
 
 
 @pytest.mark.parametrize("name", sorted(ENV_SETS))

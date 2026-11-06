@@ -7,7 +7,7 @@ import pytest
 from labops_pii.detector import PiiDetector
 from labops_pii.pii_patterns import PHONE_RE, normalize_text
 from labops_pii.service import Pseudonymizer
-from tests.pragmatika_pseudonymizer.conftest import found
+from tests.sqlite_v2_pseudonymizer.conftest import found
 
 INTL_PHONES = [
     "+86 138 0013 8000",

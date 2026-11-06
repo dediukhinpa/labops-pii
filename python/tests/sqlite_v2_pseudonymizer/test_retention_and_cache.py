@@ -22,10 +22,10 @@ from labops_pii.detector import PiiDetector
 from labops_pii.service import Pseudonymizer
 from labops_pii.store import SECONDS_PER_DAY, SqliteReplacementStore
 from tests.env_sets import ENV_SETS
-from tests.pragmatika_pseudonymizer.conftest import API_TOKEN, make_client
+from tests.sqlite_v2_pseudonymizer.conftest import API_TOKEN, make_client
 
-# Срок хранения по умолчанию Прагматики, суток (в наборе переменных он в часах)
-PRAGMATIKA_RETENTION_DAYS = 90
+# Срок хранения набора sqlite_v2, суток (в наборе переменных он в часах)
+SQLITE_V2_RETENTION_DAYS = 90
 
 
 class Clock:
@@ -159,9 +159,9 @@ def test_retention_settings() -> None:
     base = {
         ENV_KEY: key, ENV_API_TOKEN: API_TOKEN, ENV_STORE: "sqlite", ENV_KEY_SCHEME: "v2"
     }
-    # Срок по умолчанию Прагматики (90 суток) теперь задаёт набор переменных, а не профиль
-    pragmatika_hours = {ENV_RETENTION_HOURS: ENV_SETS["pragmatika"][ENV_RETENTION_HOURS]}
-    assert load_settings({**base, **pragmatika_hours}).retention_days == PRAGMATIKA_RETENTION_DAYS
+    # Срок набора sqlite_v2 (90 суток) теперь задаёт набор переменных, а не профиль
+    sqlite_v2_hours = {ENV_RETENTION_HOURS: ENV_SETS["sqlite_v2"][ENV_RETENTION_HOURS]}
+    assert load_settings({**base, **sqlite_v2_hours}).retention_days == SQLITE_V2_RETENTION_DAYS
     assert load_settings({**base, ENV_RETENTION_DAYS: "30"}).retention_days == 30
     assert load_settings({**base, ENV_RETENTION_DAYS: "0"}).retention_days == 0
     for bad in ("-1", "abc"):

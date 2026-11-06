@@ -15,7 +15,7 @@ from labops_pii.guard.policy import split_findings
 from labops_pii.guard.names import NamesMode
 from labops_pii.guard.litellm.vision_route import check_vision_request
 from labops_pii.guard.litellm.webpage_route import check_webpage_request
-from tests.pragmatika_guard.test_vision_route import _body as vision_body
+from tests.sqlite_v2_guard.test_vision_route import _body as vision_body
 
 MODE_ENV = "PII_GUARD_NAMES_MODE"
 FIO = "Иванов Иван Иванович"
@@ -150,7 +150,7 @@ def test_vision_verdict_fields(monkeypatch: pytest.MonkeyPatch) -> None:
 
 def test_webpage_never_blocks_names_even_in_enforce(monkeypatch: pytest.MonkeyPatch) -> None:
     """Решение 28.10: на маршруте публичных страниц ПДн не причина отказа."""
-    from tests.pragmatika_guard.test_webpage_route import _body as webpage_body
+    from tests.sqlite_v2_guard.test_webpage_route import _body as webpage_body
 
     monkeypatch.setenv(MODE_ENV, "enforce")
     body = json.dumps(webpage_body(f"Директор {FIO}")).encode()

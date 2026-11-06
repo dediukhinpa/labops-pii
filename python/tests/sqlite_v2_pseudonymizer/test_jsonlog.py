@@ -20,7 +20,7 @@ import labops_pii
 from labops_pii import jsonlog
 from labops_pii.jsonlog import EVENT_SEVERITY, JsonFormatter, JsonLogMiddleware
 from labops_pii.service import Pseudonymizer
-from tests.pragmatika_pseudonymizer.conftest import AUTH_HEADERS, make_client
+from tests.sqlite_v2_pseudonymizer.conftest import AUTH_HEADERS, make_client
 
 ALLOWED_KEYS = {
     "ts", "level", "severity", "event", "trace_id", "route", "status", "duration_ms",
@@ -264,7 +264,7 @@ def test_other_route_failure_stays_generic(sink: LogSink) -> None:
 def test_lifespan_events(sink: LogSink) -> None:
     from labops_pii.api import create_app
     from labops_pii.config import Settings
-    from tests.pragmatika_pseudonymizer.conftest import API_TOKEN
+    from tests.sqlite_v2_pseudonymizer.conftest import API_TOKEN
 
     settings = Settings(
         key=_key(), db_path=":memory:", api_token=API_TOKEN  # type: ignore[arg-type]

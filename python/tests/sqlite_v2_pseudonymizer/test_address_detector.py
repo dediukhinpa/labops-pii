@@ -10,7 +10,7 @@ from labops_pii.detector import PiiDetector
 from labops_pii.service import Pseudonymizer
 from labops_pii.store import SqliteReplacementStore
 from tests.env_sets import ENV_SETS
-from tests.pragmatika_pseudonymizer.conftest import found
+from tests.sqlite_v2_pseudonymizer.conftest import found
 
 # (текст, ожидаемый результат маскирования). Город («г. Москва,») остаётся открытым.
 MASKED = [
@@ -155,7 +155,7 @@ def test_env_switch(monkeypatch: pytest.MonkeyPatch) -> None:
         "PSEUDONYMIZER_API_TOKEN": "t",
     }
     assert load_settings(base).mask_addresses is True
-    assert load_settings({**base, **ENV_SETS["pragmatika"]}).mask_addresses is True
+    assert load_settings({**base, **ENV_SETS["sqlite_v2"]}).mask_addresses is True
     assert load_settings({**base, "PSEUDONYMIZER_ADDRESS_MASK": ""}).mask_addresses is True
     assert load_settings({**base, "PSEUDONYMIZER_ADDRESS_MASK": "on"}).mask_addresses is True
     for off in ("off", "false", "0", "No", " OFF "):

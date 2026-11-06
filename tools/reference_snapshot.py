@@ -28,7 +28,7 @@ ROOT = Path(__file__).resolve().parents[1]
 CORPUS = ROOT / "python" / "tests" / "fixtures" / "common_corpus.json"
 API_TOKEN = "snapshot-token-0123456789"
 AUTH = {"Authorization": f"Bearer {API_TOKEN}"}
-# Подписанты для маршрута /inflect_signatory (только профиль pragmatika)
+# Подписанты для маршрута /inflect_signatory (только набор sqlite_v2)
 SIGNATORIES = [
     ("Директор", "Иванов Иван Иванович"),
     ("Генеральный директор", "Петрова Мария Сергеевна"),

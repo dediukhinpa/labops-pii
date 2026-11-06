@@ -39,7 +39,7 @@ def test_store_roundtrip_and_wrong_key(tmp_path: Path, fernet_key: str) -> None:
 
 
 def test_no_key_refuses_to_start() -> None:
-    sqlite = {**ENV_SETS["pragmatika"], ENV_API_TOKEN: "tok"}
+    sqlite = {**ENV_SETS["sqlite_v2"], ENV_API_TOKEN: "tok"}
     with pytest.raises(ConfigError, match=ENV_KEY):
         load_settings(sqlite)
     with pytest.raises(ConfigError, match=ENV_KEY):
@@ -49,7 +49,7 @@ def test_no_key_refuses_to_start() -> None:
 def test_invalid_key_refused_without_leaking_it() -> None:
     with pytest.raises(ConfigError) as info:
         load_settings({
-            **ENV_SETS["pragmatika"], ENV_API_TOKEN: "tok", ENV_KEY: "not-a-fernet-key-SECRETVALUE"
+            **ENV_SETS["sqlite_v2"], ENV_API_TOKEN: "tok", ENV_KEY: "not-a-fernet-key-SECRETVALUE"
         })
     assert "SECRETVALUE" not in str(info.value)
 
@@ -60,7 +60,7 @@ def test_main_exits_nonzero_without_key(monkeypatch: pytest.MonkeyPatch) -> None
 
 
 def test_settings_repr_hides_key(fernet_key: str) -> None:
-    settings = load_settings({**ENV_SETS["pragmatika"], ENV_KEY: fernet_key, ENV_API_TOKEN: "tok"})
+    settings = load_settings({**ENV_SETS["sqlite_v2"], ENV_KEY: fernet_key, ENV_API_TOKEN: "tok"})
     assert fernet_key not in repr(settings)
     assert settings.mask_legal_entity_requisites is False
 

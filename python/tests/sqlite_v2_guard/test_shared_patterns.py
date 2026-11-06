@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from tests.pragmatika_guard.pii_corpus import NEGATIVE, POSITIVE
+from tests.sqlite_v2_guard.pii_corpus import NEGATIVE, POSITIVE
 from labops_pii.guard.detector import (
     SCAN_OVERLAP,
     SCAN_WINDOW,

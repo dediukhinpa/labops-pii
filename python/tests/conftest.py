@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 
 # Наборы, которые воспроизводят бывшие профили собственным набором переменных (env_sets.py)
-ENV_SET_SUITES = ("labops_pseudonymizer", "pragmatika_pseudonymizer", "pragmatika_guard",
+ENV_SET_SUITES = ("labops_pseudonymizer", "sqlite_v2_pseudonymizer", "sqlite_v2_guard",
                   "webapp_v2_guard")
 
 

@@ -25,7 +25,7 @@ from labops_pii.detector import (
 )
 from labops_pii.service import Pseudonymizer
 from labops_pii.store import COUNT_CACHE_ENTRIES, SqliteReplacementStore
-from tests.pragmatika_pseudonymizer.pii_corpus import NEGATIVE, POSITIVE
+from tests.sqlite_v2_pseudonymizer.pii_corpus import NEGATIVE, POSITIVE
 
 RANDOM_SEED = 32
 RANDOM_CASES = 400

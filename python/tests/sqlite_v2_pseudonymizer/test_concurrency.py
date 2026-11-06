@@ -20,7 +20,7 @@ from labops_pii.config import (
     ConfigError,
     load_settings,
 )
-from tests.pragmatika_pseudonymizer.conftest import API_TOKEN, make_client
+from tests.sqlite_v2_pseudonymizer.conftest import API_TOKEN, make_client
 
 HTTP_BUSY = 503
 

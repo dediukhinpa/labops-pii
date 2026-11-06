@@ -12,7 +12,7 @@ import labops_pii.api as api
 from labops_pii.__main__ import main
 from labops_pii.config import ENV_API_TOKEN, ENV_KEY, ConfigError, Settings, load_settings
 from labops_pii.detector import PiiDetector
-from tests.pragmatika_pseudonymizer.conftest import API_TOKEN, make_client
+from tests.sqlite_v2_pseudonymizer.conftest import API_TOKEN, make_client
 
 ENDPOINTS = (
     ("/pseudonymize", {"thread_id": "t", "text": "Иванов Иван"}),

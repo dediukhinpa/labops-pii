@@ -10,7 +10,7 @@ from fastapi.testclient import TestClient
 
 from labops_pii.body_guard import BodyGuardMiddleware
 from labops_pii.config import DEFAULT_MAX_BATCH_ITEMS, DEFAULT_MAX_TEXT_CHARS, max_body_bytes
-from tests.pragmatika_pseudonymizer.conftest import AUTH_HEADERS, make_client
+from tests.sqlite_v2_pseudonymizer.conftest import AUTH_HEADERS, make_client
 
 LIMIT = max_body_bytes(DEFAULT_MAX_TEXT_CHARS, DEFAULT_MAX_BATCH_ITEMS)
 CHUNK = b"x" * 65_536

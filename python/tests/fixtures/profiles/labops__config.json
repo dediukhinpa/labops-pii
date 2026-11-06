@@ -1,13 +1,13 @@
 {
  "allowed_stems": [
-  "прагматик"
+  "вектрик"
  ],
  "guard_address_mode": "off",
  "guard_names_mode": "off",
  "profile": {
   "accept_case_labels": true,
   "allowed_words": [
-   "прагматик"
+   "вектрик"
   ],
   "contacts": [],
   "enable_delete_threads": true,

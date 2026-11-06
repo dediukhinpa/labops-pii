@@ -7,7 +7,7 @@ import pytest
 from labops_pii.detector import PiiDetector
 from labops_pii.pii_patterns import normalize_text
 from labops_pii.service import Pseudonymizer
-from tests.pragmatika_pseudonymizer.conftest import found
+from tests.sqlite_v2_pseudonymizer.conftest import found
 
 VALID_INN12 = "500100732259"
 PHONE = "+7 916 123-45-67"

@@ -11,7 +11,7 @@ from labops_pii.detector import PiiDetector
 from labops_pii.morph import keys_compatible, person_key
 from labops_pii.pii_patterns import is_luhn_valid, normalize_text
 from labops_pii.service import Pseudonymizer
-from tests.pragmatika_pseudonymizer.pii_corpus import NEGATIVE, POSITIVE
+from tests.sqlite_v2_pseudonymizer.pii_corpus import NEGATIVE, POSITIVE
 
 ROOT = Path(__file__).resolve().parents[3]
 GUARD_DIR = ROOT / "gateway" / "pii-guard"

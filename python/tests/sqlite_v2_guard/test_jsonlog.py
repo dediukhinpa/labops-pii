@@ -18,7 +18,7 @@ from fastapi.testclient import TestClient
 from labops_pii.guard.litellm import jsonlog
 from labops_pii.guard.litellm.app import create_app
 from labops_pii.guard.litellm.jsonlog import EVENT_SEVERITY, JsonFormatter, JsonLogMiddleware
-from tests.pragmatika_guard.pii_corpus import INN12
+from tests.sqlite_v2_guard.pii_corpus import INN12
 
 ALLOWED_KEYS = {
     "ts", "level", "severity", "event", "request_id", "code", "route", "status", "duration_ms",

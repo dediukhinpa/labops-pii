@@ -6,7 +6,7 @@ import pytest
 
 from labops_pii import checksums
 from labops_pii.detector import PiiDetector, PiiType
-from tests.pragmatika_pseudonymizer.conftest import found
+from tests.sqlite_v2_pseudonymizer.conftest import found
 
 VALID_INN10 = "7707083893"
 VALID_INN12 = "500100732259"

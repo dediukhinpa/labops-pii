@@ -19,7 +19,7 @@ from labops_pii.store import (
 STORES = Path(__file__).resolve().parents[1] / "fixtures" / "stores"
 # Тестовый ключ Fernet из нулевых байт (не секрет)
 TEST_KEY = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
-SCHEME_BY_NAME = {"pragmatika": "v2", "labops": "v3"}
+SCHEME_BY_NAME = {"sqlite_v2": "v2", "labops": "v3"}
 
 
 def _fixture(name: str, tmp_path: Path) -> tuple[Path, dict]:
@@ -52,8 +52,8 @@ def test_blind_index_equals_original(name: str) -> None:
         assert store._hash(thread, key) == meta["hashes"][f"{thread}|{key}"]  # noqa: SLF001
 
 
-def test_pragmatika_scheme_writes_v2_only(tmp_path: Path) -> None:
-    """Профиль Прагматики пишет v2: файл остаётся читаемым прежним кодом (откат возможен)."""
+def test_sqlite_v2_scheme_writes_v2_only(tmp_path: Path) -> None:
+    """Набор sqlite_v2 пишет v2: файл остаётся читаемым прежним кодом (откат возможен)."""
     store = SqliteReplacementStore(tmp_path / "p.sqlite3", TEST_KEY, key_scheme="v2")
     store.add("agent:1", "[PERSON_1]", "PERSON", "петров", "Петров")
     store.close()

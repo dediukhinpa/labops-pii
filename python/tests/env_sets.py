@@ -5,7 +5,7 @@
 `tools/reference_snapshot.py`. Те же блоки приведены в `docs/MIGRATION.md` для потребителей.
 
 Запуск как скрипт печатает набор построчно (`KEY=VALUE`) для `env` в bash:
-    python python/tests/env_sets.py pragmatika
+    python python/tests/env_sets.py sqlite_v2
 """
 
 from __future__ import annotations
@@ -15,13 +15,13 @@ import sys
 from collections.abc import MutableMapping
 from typing import Any
 
-# «Прагматика» - название проекта, а не ФИО (решение владельца 05.11): слово в белом списке
-# всех трёх наборов, как было у профилей. «пудовъ» - торговая марка «С.ПУДОВЪ» (замер на
-# 75 752 названиях БД Прагматики): с инициалом guard видел в ней ФИО.
-_ALLOWED_WORDS_BASE = "прагматик"
-_ALLOWED_WORDS_PRAGMATIKA = "прагматик,пудовъ"
+# Слова белого списка - нейтральные примеры: «вектрик» (название продукта, которое детектор
+# иначе принимает за ФИО) во всех наборах, «орловъ» (торговая марка «С.ОРЛОВЪ»: с инициалом
+# guard видел в ней ФИО) в наборе sqlite_v2. Настоящие слова потребитель задаёт у себя.
+_ALLOWED_WORDS_BASE = "вектрик"
+_ALLOWED_WORDS_SQLITE_V2 = "вектрик,орловъ"
 # 90 суток в часах
-_PRAGMATIKA_RETENTION_HOURS = "2160"
+_SQLITE_V2_RETENTION_HOURS = "2160"
 
 _LABOPS: dict[str, str] = {
     "PSEUDONYMIZER_STORE": "memory",
@@ -42,10 +42,10 @@ ENV_SETS: dict[str, dict[str, str]] = {
     "labops": _LABOPS,
     # web-app v2 жил на тех же значениях, что labops (общий сервис)
     "webapp_v2": dict(_LABOPS),
-    "pragmatika": {
+    "sqlite_v2": {
         "PSEUDONYMIZER_STORE": "sqlite",
         "PSEUDONYMIZER_KEY_SCHEME": "v2",
-        "PSEUDONYMIZER_RETENTION_HOURS": _PRAGMATIKA_RETENTION_HOURS,
+        "PSEUDONYMIZER_RETENTION_HOURS": _SQLITE_V2_RETENTION_HOURS,
         "PSEUDONYMIZER_MASK_LEGAL_ENTITY": "off",
         "PSEUDONYMIZER_ADDRESS_MASK": "on",
         "PSEUDONYMIZER_ENABLE_INFLECT_SIGNATORY": "on",
@@ -54,7 +54,7 @@ ENV_SETS: dict[str, dict[str, str]] = {
         "PSEUDONYMIZER_ENABLE_CASE_LABELS": "off",
         "PII_GUARD_NAMES_MODE": "log_only",
         "PII_GUARD_ADDRESS_MODE": "log_only",
-        "PII_ALLOWED_WORDS": _ALLOWED_WORDS_PRAGMATIKA,
+        "PII_ALLOWED_WORDS": _ALLOWED_WORDS_SQLITE_V2,
     },
 }
 
@@ -68,7 +68,7 @@ def apply_env_set(name: str, environ: MutableMapping[str, str] | None = None) ->
     """Задаёт набор переменных (прежние значения управляемых ключей сбрасываются).
 
     Args:
-        name: Имя набора (labops, webapp_v2, pragmatika).
+        name: Имя набора (labops, webapp_v2, sqlite_v2).
         environ: Куда писать (по умолчанию os.environ).
 
     Raises:

@@ -13,7 +13,7 @@ from labops_pii.guard.litellm.vision_route import (
     VISION_ROUTE_PATH,
     VisionLimits,
 )
-from tests.pragmatika_guard.test_vision_route import _body
+from tests.sqlite_v2_guard.test_vision_route import _body
 
 # Короткое ожидание очереди в тестах (секунды)
 SHORT_QUEUE_SECONDS = 1

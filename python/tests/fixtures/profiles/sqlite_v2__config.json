@@ -1,15 +1,15 @@
 {
  "allowed_stems": [
-  "прагматик",
-  "пудовъ"
+  "вектрик",
+  "орловъ"
  ],
  "guard_address_mode": "log_only",
  "guard_names_mode": "log_only",
  "profile": {
   "accept_case_labels": false,
   "allowed_words": [
-   "прагматик",
-   "пудовъ"
+   "вектрик",
+   "орловъ"
   ],
   "contacts": [],
   "enable_delete_threads": false,
@@ -20,7 +20,7 @@
   "key_scheme": "v2",
   "mask_addresses": true,
   "mask_legal_entity_requisites": false,
-  "name": "pragmatika",
+  "name": "sqlite_v2",
   "retention_hours": 2160,
   "store_backend": "sqlite"
  },
@@ -36,7 +36,7 @@
   "max_restore_tokens": 5000,
   "max_text_chars": 70000,
   "port": 8300,
-  "profile": "pragmatika",
+  "profile": "sqlite_v2",
   "retention_hours": 2160,
   "store_backend": "sqlite"
  }

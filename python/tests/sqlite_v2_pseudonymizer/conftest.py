@@ -99,4 +99,4 @@ def client(
 
 # Набор воспроизводит поведение исходной копии: переменные задаёт tools/run_tests.sh, а при
 # прямом запуске pytest - этот вызов, до создания детекторов и настроек
-ensure_env_set("pragmatika")
+ensure_env_set("sqlite_v2")

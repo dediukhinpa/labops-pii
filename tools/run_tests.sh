@@ -16,8 +16,8 @@ cd "$ROOT/python"
 # раз на процесс, наборы переменных нельзя смешивать).
 SUITES=(
   tests/labops_pseudonymizer:labops
-  tests/pragmatika_pseudonymizer:pragmatika
-  tests/pragmatika_guard:pragmatika
+  tests/sqlite_v2_pseudonymizer:sqlite_v2
+  tests/sqlite_v2_guard:sqlite_v2
   tests/webapp_v2_guard:webapp_v2
   tests/media
   tests/core

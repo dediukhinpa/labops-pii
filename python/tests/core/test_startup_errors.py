@@ -30,7 +30,7 @@ from labops_pii.store import SqliteReplacementStore, resolve_key_scheme
 from tests.env_sets import ENV_SETS, MANAGED_KEYS
 
 TOKEN = "startup-token-0123456789abcdef"
-LEGACY_NAMES = ("labops", "pragmatika", "webapp_v2", "nope")
+LEGACY_NAMES = ("labops", "sqlite_v2", "webapp_v2", "nope")
 
 
 @pytest.fixture(autouse=True)
@@ -128,7 +128,7 @@ def test_service_main_exits_nonzero_with_legacy_profile(
 
 
 def test_create_app_refuses_legacy_profile(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv(LEGACY_PROFILE_ENV, "pragmatika")
+    monkeypatch.setenv(LEGACY_PROFILE_ENV, "sqlite_v2")
     settings = Settings(key=Fernet.generate_key().decode(), api_token=TOKEN)
     with pytest.raises(ConfigError, match="MIGRATION"):
         create_app(settings)
@@ -228,5 +228,5 @@ def test_rekey_requires_scheme_and_rejects_legacy_profile(
     monkeypatch.setenv(ENV_KEY, Fernet.generate_key().decode())
     assert rekey.main(["--db", str(db), "--dry-run"]) == rekey.EXIT_USAGE  # нет схемы
     monkeypatch.setenv(ENV_KEY_SCHEME, "v3")
-    monkeypatch.setenv(LEGACY_PROFILE_ENV, "pragmatika")
+    monkeypatch.setenv(LEGACY_PROFILE_ENV, "sqlite_v2")
     assert rekey.main(["--db", str(db), "--dry-run"]) == rekey.EXIT_USAGE

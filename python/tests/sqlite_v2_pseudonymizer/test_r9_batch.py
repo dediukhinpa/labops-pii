@@ -29,8 +29,8 @@ from labops_pii.config import (
 from labops_pii.detector import PiiDetector
 from labops_pii.service import Pseudonymizer
 from labops_pii.store import SqliteReplacementStore
-from tests.pragmatika_pseudonymizer import pii_corpus, recall_sets
-from tests.pragmatika_pseudonymizer.conftest import make_client
+from tests.sqlite_v2_pseudonymizer import pii_corpus, recall_sets
+from tests.sqlite_v2_pseudonymizer.conftest import make_client
 
 THREAD = "t-batch"
 SUPPLIERS = 50

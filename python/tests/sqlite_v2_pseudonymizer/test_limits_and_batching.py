@@ -24,7 +24,7 @@ from labops_pii.config import (
 from labops_pii.detector import PiiDetector
 from labops_pii.service import Pseudonymizer, TooManyTokensError
 from labops_pii.store import SqliteReplacementStore
-from tests.pragmatika_pseudonymizer.conftest import API_TOKEN, make_client
+from tests.sqlite_v2_pseudonymizer.conftest import API_TOKEN, make_client
 
 FIRST_NAMES = ("Иван", "Пётр", "Сергей", "Алексей", "Николай", "Дмитрий")
 SYLLABLES = ("ва", "ко", "ри", "но", "се", "ми", "ла", "ту", "бе", "зо")

@@ -7,7 +7,7 @@ import logging
 import pytest
 from fastapi.testclient import TestClient
 
-from tests.pragmatika_pseudonymizer.conftest import make_client
+from tests.sqlite_v2_pseudonymizer.conftest import make_client
 
 LETTER = "Позвони Петрову, +7 (902) 123-45-67, почта petrov@firma.ru"
 

@@ -7,7 +7,7 @@ import re
 import pytest
 
 from labops_pii.service import Pseudonymizer
-from tests.pragmatika_pseudonymizer.recall_sets import CAPS_CLEAN, CAPS_PII, EASY, FILES_CLEAN, FILES_PII, HARD, score
+from tests.sqlite_v2_pseudonymizer.recall_sets import CAPS_CLEAN, CAPS_PII, EASY, FILES_CLEAN, FILES_PII, HARD, score
 
 # Реалистичные строки: имена файлов, пути, JSON, строки прайса, письма, слова через «_ - .».
 ROUNDTRIP_STRINGS: list[str] = [
