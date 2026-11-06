@@ -277,6 +277,9 @@ def test_account_email_template_exempt_only_when_allowed() -> None:
         "+79161234567,500100732259,4242424242424242,ivan@mail.ru",
         "4242424242424242",
         "ivan@mail.ru,+79161234567",
+        "4276160012345675@mail.ru",
+        "79161234567@mail.ru",
+        "ivan.500100732259@mail.ru",
     ],
 )
 def test_account_email_template_does_not_hide_other_pii(smuggled: str) -> None:
