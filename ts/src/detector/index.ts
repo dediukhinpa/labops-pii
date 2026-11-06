@@ -93,7 +93,7 @@ export function detectNamesAndAddresses(
  * Заменяет находки в тексте метками.
  *
  * @param text Исходный текст.
- * @param spans Непересекающиеся находки (результат детектора).
+ * @param spans Находки; пересекающиеся сливаются под метку первой из них.
  * @param mark Функция метки по виду данных.
  */
 export function replaceSpans(
@@ -104,7 +104,12 @@ export function replaceSpans(
   let result = '';
   let cursor = 0;
   for (const span of [...spans].sort((a, b) => a.start - b.start)) {
-    if (span.start < cursor) continue;
+    if (span.start < cursor) {
+      // Пересечение (например, ФИО и адрес из разных детекторов): хвост за cursor раньше
+      // оставался открытым; теперь он закрыт меткой предыдущей находки
+      cursor = Math.max(cursor, span.end);
+      continue;
+    }
     result += text.slice(cursor, span.start) + mark(span);
     cursor = span.end;
   }

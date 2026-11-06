@@ -161,3 +161,15 @@ describe('интерфейс', () => {
     expect(elapsedMs).toBeLessThan(3000);
   });
 });
+
+describe('replaceSpans', () => {
+  test('пересекающиеся фрагменты закрываются целиком', () => {
+    const text = 'Иванов Иван ул. Ленина, д. 5, кв. 2';
+    const spans = [
+      { kind: 'person' as const, start: 0, end: 12 },
+      { kind: 'address' as const, start: 8, end: 30 },
+    ];
+    const out = replaceSpans(text, spans, (s) => (s.kind === 'person' ? '[ФИО]' : '[адрес]'));
+    expect(out).toBe('[ФИО] кв. 2');
+  });
+});
