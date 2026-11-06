@@ -16,14 +16,14 @@ ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "python" / "tests" / "fixtures" / "common_corpus.json"
 TEXT_MODULES = (
     ("labops_pseudonymizer.pii_corpus", ("POSITIVE", "NEGATIVE")),
-    ("pragmatika_pseudonymizer.pii_corpus", ("POSITIVE", "NEGATIVE")),
+    ("sqlite_v2_pseudonymizer.pii_corpus", ("POSITIVE", "NEGATIVE")),
     ("webapp_v2_guard.pii_corpus", ("POSITIVE", "NEGATIVE")),
     ("labops_pseudonymizer.recall_sets", ("EASY", "HARD", "FILES_PII", "CAPS_PII",
                                           "FILES_CLEAN", "CAPS_CLEAN")),
-    ("pragmatika_pseudonymizer.test_address_patterns", ("POSITIVE", "NEGATIVE")),
-    ("pragmatika_pseudonymizer.test_address_detector", ("MASKED", "CLEAN")),
-    ("pragmatika_pseudonymizer.test_card_price_row", ("PRICE_ROWS", "CARDS")),
-    ("pragmatika_guard.test_names", ("POSITIVE", "NEGATIVE")),
+    ("sqlite_v2_pseudonymizer.test_address_patterns", ("POSITIVE", "NEGATIVE")),
+    ("sqlite_v2_pseudonymizer.test_address_detector", ("MASKED", "CLEAN")),
+    ("sqlite_v2_pseudonymizer.test_card_price_row", ("PRICE_ROWS", "CARDS")),
+    ("sqlite_v2_guard.test_names", ("POSITIVE", "NEGATIVE")),
     ("webapp_v2_guard.test_intl_phones", ("PHONES", "NOT_PHONES")),
 )
 

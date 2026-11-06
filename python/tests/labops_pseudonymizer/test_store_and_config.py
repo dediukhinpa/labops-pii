@@ -12,6 +12,7 @@ from labops_pii.__main__ import main
 from labops_pii.config import (
     ENV_API_TOKEN,
     ENV_KEY,
+    ENV_KEY_SCHEME,
     ENV_STORE,
     ConfigError,
     load_contacts,
@@ -46,15 +47,22 @@ def test_store_roundtrip_and_wrong_key(tmp_path: Path, fernet_key: str) -> None:
 
 def test_no_key_refuses_to_start() -> None:
     with pytest.raises(ConfigError):
-        load_settings({ENV_STORE: "sqlite", ENV_API_TOKEN: "tok"})
+        load_settings({ENV_STORE: "sqlite", ENV_KEY_SCHEME: "v3", ENV_API_TOKEN: "tok"})
     with pytest.raises(ConfigError):
-        load_settings({ENV_STORE: "sqlite", ENV_API_TOKEN: "tok", ENV_KEY: "   "})
+        load_settings(
+            {ENV_STORE: "sqlite", ENV_KEY_SCHEME: "v3", ENV_API_TOKEN: "tok", ENV_KEY: "   "}
+        )
 
 
 def test_invalid_key_refused_without_leaking_it() -> None:
     with pytest.raises(ConfigError) as info:
         load_settings(
-            {ENV_STORE: "sqlite", ENV_API_TOKEN: "tok", ENV_KEY: "not-a-fernet-key-SECRETVALUE"}
+            {
+                ENV_STORE: "sqlite",
+                ENV_KEY_SCHEME: "v3",
+                ENV_API_TOKEN: "tok",
+                ENV_KEY: "not-a-fernet-key-SECRETVALUE",
+            }
         )
     assert "SECRETVALUE" not in str(info.value)
 
@@ -108,7 +116,11 @@ def test_memory_is_default_and_needs_no_key() -> None:
 def test_api_token_required_for_every_backend() -> None:
     for backend in ("memory", "sqlite"):
         with pytest.raises(ConfigError, match=ENV_API_TOKEN):
-            load_settings({ENV_STORE: backend, ENV_KEY: Fernet.generate_key().decode()})
+            load_settings({
+                ENV_STORE: backend,
+                ENV_KEY_SCHEME: "v3",
+                ENV_KEY: Fernet.generate_key().decode(),
+            })
 
 
 def test_unknown_store_rejected() -> None:

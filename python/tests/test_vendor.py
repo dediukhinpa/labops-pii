@@ -58,7 +58,7 @@ def test_guard_part_does_not_need_morphology(tmp_path: Path) -> None:
     )
     subprocess.run(
         [sys.executable, "-c", code], check=True, capture_output=True,
-        env={"PYTHONPATH": str(vendor_dir), "PATH": "/usr/bin", "LABOPS_PII_PROFILE": "webapp_v2"},
+        env={"PYTHONPATH": str(vendor_dir), "PATH": "/usr/bin"},
         cwd=tmp_path,
     )
 
@@ -104,3 +104,49 @@ def test_vendor_records_commit_of_annotated_tag(tmp_path: Path) -> None:
     )
     version = (tmp_path / "vendor" / "labops-pii" / "VERSION").read_text(encoding="utf-8")
     assert f"commit: {found.stdout.strip()}\n" in version
+
+
+def _head_commit() -> str:
+    return subprocess.run(
+        ["git", "-C", str(ROOT), "rev-parse", "HEAD"], check=True, capture_output=True, text=True
+    ).stdout.strip()
+
+
+def _version_fields(vendor_dir: Path) -> dict[str, str]:
+    lines = (vendor_dir / "VERSION").read_text(encoding="utf-8").splitlines()
+    return dict(line.split(": ", 1) for line in lines if ": " in line and not line.startswith(" "))
+
+
+@pytest.mark.parametrize("length", [40, 12])
+def test_vendor_accepts_commit_hash_instead_of_tag(tmp_path: Path, length: int) -> None:
+    """Ссылка на коммит (полный или короткий хеш), а не тег: вендорится именно он."""
+    commit = _head_commit()
+    subprocess.run(
+        [sys.executable, str(TOOL), "--dest", str(tmp_path), "--ref", commit[:length],
+         "--parts", "guard"],
+        check=True, capture_output=True,
+    )
+    fields = _version_fields(tmp_path / "vendor" / "labops-pii")
+    assert fields["commit"] == commit and fields["ref"] == commit[:length]
+    _load_example(tmp_path / "vendor" / "labops-pii").test_vendored_files_unchanged()
+
+
+def test_vendor_sh_passes_commit_through(tmp_path: Path) -> None:
+    """Обёртка vendor.sh принимает коммит вторым аргументом (этап вендоринга до тега)."""
+    commit = _head_commit()
+    subprocess.run(
+        ["bash", str(ROOT / "tools" / "vendor.sh"), str(tmp_path), commit, "guard"],
+        check=True, capture_output=True,
+    )
+    assert _version_fields(tmp_path / "vendor" / "labops-pii")["commit"] == commit
+
+
+def test_vendor_rejects_unknown_ref(tmp_path: Path) -> None:
+    """Неизвестная ссылка - ошибка, а не пустое вендоренное дерево."""
+    result = subprocess.run(
+        [sys.executable, str(TOOL), "--dest", str(tmp_path), "--ref", "0" * 40,
+         "--parts", "guard"],
+        capture_output=True,
+    )
+    assert result.returncode != 0
+    assert not (tmp_path / "vendor").exists()

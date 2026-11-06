@@ -8,10 +8,11 @@ import {
   type DetectorOptions,
 } from '../src/index';
 
-const PRAGMATIKA: DetectorOptions = { profile: 'pragmatika' };
+// Набор sqlite_v2: адреса ищутся, «вектрик» в белом списке
+const SQLITE_V2: DetectorOptions = { maskAddresses: true, allowedWords: ['вектрик'] };
 
 /** Тексты найденных ФИО. */
-function persons(text: string, options: DetectorOptions = PRAGMATIKA): string[] {
+function persons(text: string, options: DetectorOptions = SQLITE_V2): string[] {
   return detectPersons(text, options).map((span) => span.text);
 }
 
@@ -49,10 +50,10 @@ describe('ФИО: явные случаи', () => {
 
 describe('ФИО: не ПДн', () => {
   test.each([
-    'Прагматика',
-    'Прагматике и Прагматикой',
-    'Войти в «Прагматику»',
-    'Прагматика запускает сервис. Товар доставлен.',
+    'Вектрика',
+    'Вектрике и Вектрикой',
+    'Войти в «Вектрику»',
+    'Вектрика запускает сервис. Товар доставлен.',
     'Доставка работает. Каталог обновлён. Корзина пуста. Мастер приедет завтра.',
     'Заказ принят. Машина выехала. Картина в раме. Резина зимняя.',
     'Королевна Мария',
@@ -68,12 +69,12 @@ describe('ФИО: не ПДн', () => {
     expect(persons(text)).toEqual([]);
   });
 
-  test('«Прагматик Иванов» белым списком не покрывается: чужое слово остаётся', () => {
-    expect(persons('Прагматик Иванов, менеджер')).not.toContain('Прагматик');
+  test('«Вектрик Иванов» белым списком не покрывается: чужое слово остаётся', () => {
+    expect(persons('Вектрик Иванов, менеджер')).not.toContain('Вектрик');
   });
 
   test('дополнительное слово белого списка', () => {
-    expect(persons('Менеджер Алексей', { ...PRAGMATIKA, allowedWords: ['алексе'] })).toEqual([]);
+    expect(persons('Менеджер Алексей', { ...SQLITE_V2, allowedWords: ['алексе'] })).toEqual([]);
   });
 });
 
@@ -102,18 +103,17 @@ describe('адреса', () => {
   });
 
   test('улица по фамилии — один адрес, без ФИО внутри', () => {
-    const spans = detectNamesAndAddresses('ул. Ивана Франко, д. 4', PRAGMATIKA);
+    const spans = detectNamesAndAddresses('ул. Ивана Франко, д. 4', SQLITE_V2);
     expect(spans.map((s) => [s.kind, s.text])).toEqual([['address', 'ул. Ивана Франко, д. 4']]);
   });
 
-  test('профиль задаёт, ищутся ли адреса; параметр перекрывает профиль', () => {
+  test('флаг maskAddresses задаёт, ищутся ли адреса (по умолчанию да)', () => {
     const text = 'ул. Ленина, д. 5';
-    expect(detectNamesAndAddresses(text, { profile: 'labops' })).toEqual([]);
-    expect(detectNamesAndAddresses(text, { profile: 'webapp_v2' })).toEqual([]);
-    expect(detectNamesAndAddresses(text, PRAGMATIKA)).toHaveLength(1);
-    expect(detectNamesAndAddresses(text, { profile: 'labops', maskAddresses: true })).toHaveLength(
-      1,
-    );
+    expect(detectNamesAndAddresses(text)).toHaveLength(1);
+    expect(detectNamesAndAddresses(text, {})).toHaveLength(1);
+    expect(detectNamesAndAddresses(text, { maskAddresses: false })).toEqual([]);
+    expect(detectNamesAndAddresses(text, SQLITE_V2)).toHaveLength(1);
+    expect(detectNamesAndAddresses(text, { maskAddresses: true })).toHaveLength(1);
   });
 
   test('цифры других систем и NBSP не сдвигают границы', () => {
@@ -127,7 +127,7 @@ describe('адреса', () => {
 describe('интерфейс', () => {
   test('replaceSpans подставляет метки', () => {
     const text = 'Менеджер Иванов Иван, ул. Ленина, д. 5.';
-    const spans = detectNamesAndAddresses(text, PRAGMATIKA);
+    const spans = detectNamesAndAddresses(text, SQLITE_V2);
     const result = replaceSpans(text, spans, (s) => (s.kind === 'person' ? '[ФИО]' : '[адрес]'));
     expect(result).toBe('Менеджер [ФИО], [адрес].');
   });
@@ -137,9 +137,17 @@ describe('интерфейс', () => {
     expect(() => detectAddresses(null as unknown as string)).toThrow();
   });
 
-  test('неизвестный профиль — ошибка, а не молчаливая подмена', () => {
-    expect(() => detectPersons('Иванов Иван', { profile: 'nope' } as unknown as DetectorOptions))
-      .toThrow();
+  test('параметр profile удалён — ошибка с подсказкой, а не молчаливая подмена', () => {
+    for (const profile of ['sqlite_v2', 'labops', 'nope']) {
+      const options = { profile } as unknown as DetectorOptions;
+      expect(() => detectPersons('Иванов Иван', options)).toThrow(/MIGRATION/);
+      expect(() => detectNamesAndAddresses('Иванов Иван', options)).toThrow(/MIGRATION/);
+    }
+  });
+
+  test('слов белого списка по умолчанию нет: исключение появляется только из параметра', () => {
+    expect(persons('Менеджер Алексей', {})).not.toEqual([]);
+    expect(persons('Менеджер Алексей', { allowedWords: ['алексе'] })).toEqual([]);
   });
 
   test('длинный текст страницы обрабатывается быстро', () => {
@@ -147,7 +155,7 @@ describe('интерфейс', () => {
       'Склад: ул. Мира, д. 12. ';
     const text = chunk.repeat(2000);
     const started = performance.now();
-    const spans = detectNamesAndAddresses(text, PRAGMATIKA);
+    const spans = detectNamesAndAddresses(text, SQLITE_V2);
     const elapsedMs = performance.now() - started;
     expect(spans.length).toBeGreaterThan(3000);
     expect(elapsedMs).toBeLessThan(3000);

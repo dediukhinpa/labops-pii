@@ -5,7 +5,7 @@
 import { findAddresses } from './addresses';
 import { normalizeStems } from './allowlist';
 import { findPersons } from './persons';
-import { DETECTOR_PROFILES, DEFAULT_PROFILE_NAME } from './profiles';
+import { LegacyProfileError } from '../errors';
 import {
   DetectorOptionsSchema,
   DetectorTextSchema,
@@ -14,16 +14,15 @@ import {
 } from './types';
 
 export { findAddresses } from './addresses';
-export { DETECTOR_PROFILES } from './profiles';
-export type { DetectorProfile } from './profiles';
 export {
   DetectorOptionsSchema,
-  PROFILE_NAMES,
   type DetectedKind,
   type DetectedSpan,
   type DetectorOptions,
-  type ProfileName,
 } from './types';
+
+// Адреса ищутся, пока вызывающий не выключил их явно (как PSEUDONYMIZER_ADDRESS_MASK в Python)
+const DEFAULT_MASK_ADDRESSES = true;
 
 interface ResolvedOptions {
   maskAddresses: boolean;
@@ -32,11 +31,14 @@ interface ResolvedOptions {
 }
 
 function resolve(options: DetectorOptions | undefined): ResolvedOptions {
+  // Прежний параметр `profile` удалён: молча игнорировать его нельзя (другие слова и режим)
+  if (typeof options === 'object' && options !== null && 'profile' in options) {
+    throw new LegacyProfileError();
+  }
   const parsed = DetectorOptionsSchema.parse(options ?? {});
-  const profile = DETECTOR_PROFILES[parsed.profile ?? DEFAULT_PROFILE_NAME];
   return {
-    maskAddresses: parsed.maskAddresses ?? profile.maskAddresses,
-    stems: normalizeStems([...profile.allowedWords, ...(parsed.allowedWords ?? [])]),
+    maskAddresses: parsed.maskAddresses ?? DEFAULT_MASK_ADDRESSES,
+    stems: normalizeStems(parsed.allowedWords ?? []),
     latinNames: parsed.latinNames ?? true,
   };
 }
@@ -45,7 +47,7 @@ function resolve(options: DetectorOptions | undefined): ResolvedOptions {
  * Находит ФИО в тексте.
  *
  * @param text Исходный текст.
- * @param options Профиль, белый список, латиница.
+ * @param options Белый список слов, латиница.
  * @returns Непересекающиеся находки по возрастанию позиции.
  * @throws ZodError Если вход не строка или настройки неверны (вызывающий код должен не
  *   пропускать текст дальше, fail closed).
@@ -57,7 +59,7 @@ export function detectPersons(text: string, options?: DetectorOptions): Detected
 }
 
 /**
- * Находит адреса уровня дома (улица + дом), независимо от флага профиля.
+ * Находит адреса уровня дома (улица + дом), независимо от `maskAddresses`.
  *
  * @param text Исходный текст.
  */
@@ -67,11 +69,11 @@ export function detectAddresses(text: string): DetectedSpan[] {
 
 /**
  * Находит ФИО и адреса вместе. Адрес сильнее ФИО: название улицы по фамилии
- * («ул. Ленина, д. 5») остаётся одним адресом, а не ФИО внутри адреса. Адреса ищутся,
- * только если их маскирует профиль (или `maskAddresses: true`).
+ * («ул. Ленина, д. 5») остаётся одним адресом, а не ФИО внутри адреса. Адреса ищутся
+ * только при `maskAddresses: true`.
  *
  * @param text Исходный текст.
- * @param options Профиль и белый список.
+ * @param options Флаг адресов и белый список.
  * @returns Непересекающиеся находки по возрастанию позиции.
  */
 export function detectNamesAndAddresses(

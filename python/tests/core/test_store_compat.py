@@ -19,7 +19,7 @@ from labops_pii.store import (
 STORES = Path(__file__).resolve().parents[1] / "fixtures" / "stores"
 # Тестовый ключ Fernet из нулевых байт (не секрет)
 TEST_KEY = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
-SCHEME_BY_NAME = {"pragmatika": "v2", "labops": "v3"}
+SCHEME_BY_NAME = {"sqlite_v2": "v2", "labops": "v3"}
 
 
 def _fixture(name: str, tmp_path: Path) -> tuple[Path, dict]:
@@ -52,8 +52,8 @@ def test_blind_index_equals_original(name: str) -> None:
         assert store._hash(thread, key) == meta["hashes"][f"{thread}|{key}"]  # noqa: SLF001
 
 
-def test_pragmatika_scheme_writes_v2_only(tmp_path: Path) -> None:
-    """Профиль Прагматики пишет v2: файл остаётся читаемым прежним кодом (откат возможен)."""
+def test_sqlite_v2_scheme_writes_v2_only(tmp_path: Path) -> None:
+    """Набор sqlite_v2 пишет v2: файл остаётся читаемым прежним кодом (откат возможен)."""
     store = SqliteReplacementStore(tmp_path / "p.sqlite3", TEST_KEY, key_scheme="v2")
     store.add("agent:1", "[PERSON_1]", "PERSON", "петров", "Петров")
     store.close()
@@ -75,3 +75,49 @@ def test_labops_scheme_writes_v3(tmp_path: Path) -> None:
     with sqlite3.connect(tmp_path / "l.sqlite3") as conn:
         (key_hash,) = conn.execute("SELECT key_hash FROM replacements").fetchone()
     assert key_hash.startswith(V3_PREFIX)
+
+
+# --- Схема записи задаётся PSEUDONYMIZER_KEY_SCHEME (профилей нет) ----------------------
+
+@pytest.mark.parametrize("name", sorted(SCHEME_BY_NAME))
+def test_env_scheme_reads_original_database(
+    name: str, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Хранилище без явной схемы берёт её из окружения и читает базу исходной копии."""
+    monkeypatch.setenv("PSEUDONYMIZER_KEY_SCHEME", SCHEME_BY_NAME[name])
+    db, meta = _fixture(name, tmp_path)
+    store = SqliteReplacementStore(db, meta["key"])
+    for thread, token, pii_type, key, original in meta["rows"]:
+        assert store.find_token(thread, pii_type, key) == token
+        assert store.get_original(thread, token) == original
+    assert store.legacy_row_count() == 0
+
+
+@pytest.mark.parametrize(("scheme", "prefix"), [("v2", V2_PREFIX), ("v3", V3_PREFIX)])
+def test_env_scheme_decides_write_format(
+    scheme: str, prefix: str, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Схема из окружения определяет формат записи: v2 или v3 (и только он)."""
+    monkeypatch.setenv("PSEUDONYMIZER_KEY_SCHEME", scheme)
+    db = tmp_path / "env.sqlite3"
+    store = SqliteReplacementStore(db, TEST_KEY)
+    store.add("agent:1", "[PERSON_1]", "PERSON", "петров", "Петров")
+    store.close()
+    with sqlite3.connect(db) as conn:
+        (key_hash,) = conn.execute("SELECT key_hash FROM replacements").fetchone()
+    other = V3_PREFIX if prefix == V2_PREFIX else V2_PREFIX
+    assert key_hash.startswith(prefix) and not key_hash.startswith(other)
+
+
+def test_v2_database_stays_readable_by_v3_service_and_back(tmp_path: Path) -> None:
+    """Файл, записанный в v2, читается сервисом со схемой v3 и наоборот (читаются все схемы)."""
+    db = tmp_path / "mix.sqlite3"
+    writer = SqliteReplacementStore(db, TEST_KEY, key_scheme="v2")
+    writer.add("agent:1", "[PERSON_1]", "PERSON", "петров", "Петров")
+    writer.close()
+    reader = SqliteReplacementStore(db, TEST_KEY, key_scheme="v3")
+    assert reader.find_token("agent:1", "PERSON", "петров") == "[PERSON_1]"
+    reader.add("agent:1", "[PERSON_2]", "PERSON", "сидоров", "Сидоров")
+    reader.close()
+    back = SqliteReplacementStore(db, TEST_KEY, key_scheme="v2")
+    assert back.find_token("agent:1", "PERSON", "сидоров") == "[PERSON_2]"

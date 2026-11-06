@@ -1,0 +1,10665 @@
+{
+ "batch": {
+  "items": [
+   {
+    "entities": [
+     {
+      "token": "[PHONE_1]",
+      "type": "PHONE"
+     }
+    ],
+    "text": "звоните [PHONE_1]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PHONE_1]",
+      "type": "PHONE"
+     }
+    ],
+    "text": "тел [PHONE_1]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PHONE_1]",
+      "type": "PHONE"
+     }
+    ],
+    "text": "[PHONE_1]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PHONE_1]",
+      "type": "PHONE"
+     }
+    ],
+    "text": "[PHONE_1]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PHONE_1]",
+      "type": "PHONE"
+     }
+    ],
+    "text": "[PHONE_1]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PHONE_1]",
+      "type": "PHONE"
+     }
+    ],
+    "text": "[PHONE_1]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PHONE_1]",
+      "type": "PHONE"
+     }
+    ],
+    "text": "[PHONE_1]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PHONE_1]",
+      "type": "PHONE"
+     }
+    ],
+    "text": "[PHONE_1]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PHONE_1]",
+      "type": "PHONE"
+     }
+    ],
+    "text": "[PHONE_1]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PHONE_1]",
+      "type": "PHONE"
+     }
+    ],
+    "text": "[PHONE_1]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PHONE_1]",
+      "type": "PHONE"
+     }
+    ],
+    "text": "[PHONE_1]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PHONE_1]",
+      "type": "PHONE"
+     }
+    ],
+    "text": "[PHONE_1]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PHONE_1]",
+      "type": "PHONE"
+     }
+    ],
+    "text": "заказ 12 [PHONE_1]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PHONE_2]",
+      "type": "PHONE"
+     }
+    ],
+    "text": "[PHONE_2]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PHONE_2]",
+      "type": "PHONE"
+     }
+    ],
+    "text": "[PHONE_2]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PHONE_3]",
+      "type": "PHONE"
+     }
+    ],
+    "text": "[PHONE_3]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PHONE_3]",
+      "type": "PHONE"
+     }
+    ],
+    "text": "[PHONE_3]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PHONE_4]",
+      "type": "PHONE"
+     }
+    ],
+    "text": "[PHONE_4]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PHONE_5]",
+      "type": "PHONE"
+     }
+    ],
+    "text": "[PHONE_5]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PHONE_6]",
+      "type": "PHONE"
+     }
+    ],
+    "text": "тел. [PHONE_6]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PHONE_6]",
+      "type": "PHONE"
+     }
+    ],
+    "text": "Телефон для связи: [PHONE_6]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PHONE_1]",
+      "type": "PHONE"
+     }
+    ],
+    "text": "[PHONE_1]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PHONE_7]",
+      "type": "PHONE"
+     }
+    ],
+    "text": "тел [PHONE_7]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PHONE_8]",
+      "type": "PHONE"
+     }
+    ],
+    "text": "тел [PHONE_8]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PHONE_9]",
+      "type": "PHONE"
+     }
+    ],
+    "text": "тел [PHONE_9]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PHONE_10]",
+      "type": "PHONE"
+     }
+    ],
+    "text": "тел [PHONE_10]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PHONE_11]",
+      "type": "PHONE"
+     }
+    ],
+    "text": "тел [PHONE_11]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PHONE_12]",
+      "type": "PHONE"
+     }
+    ],
+    "text": "тел [PHONE_12]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PHONE_13]",
+      "type": "PHONE"
+     }
+    ],
+    "text": "тел [PHONE_13]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PHONE_12]",
+      "type": "PHONE"
+     }
+    ],
+    "text": "тел [PHONE_12]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[EMAIL_1]",
+      "type": "EMAIL"
+     }
+    ],
+    "text": "пишите [EMAIL_1] срочно"
+   },
+   {
+    "entities": [
+     {
+      "token": "[EMAIL_2]",
+      "type": "EMAIL"
+     }
+    ],
+    "text": "[EMAIL_2]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[EMAIL_3]",
+      "type": "EMAIL"
+     }
+    ],
+    "text": "[EMAIL_3]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[EMAIL_4]",
+      "type": "EMAIL"
+     }
+    ],
+    "text": "[EMAIL_4]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[EMAIL_5]",
+      "type": "EMAIL"
+     }
+    ],
+    "text": "[EMAIL_5]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[CARD_1]",
+      "type": "CARD"
+     }
+    ],
+    "text": "карта [CARD_1]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[CARD_1]",
+      "type": "CARD"
+     }
+    ],
+    "text": "[CARD_1]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[CARD_2]",
+      "type": "CARD"
+     }
+    ],
+    "text": "карта [CARD_2]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[CARD_3]",
+      "type": "CARD"
+     }
+    ],
+    "text": "карта [CARD_3]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[CARD_1]",
+      "type": "CARD"
+     }
+    ],
+    "text": "[CARD_1]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[ACCOUNT_1]",
+      "type": "ACCOUNT"
+     }
+    ],
+    "text": "р/с [ACCOUNT_1]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[ACCOUNT_2]",
+      "type": "ACCOUNT"
+     }
+    ],
+    "text": "счёт [ACCOUNT_2]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[ACCOUNT_2]",
+      "type": "ACCOUNT"
+     }
+    ],
+    "text": "[ACCOUNT_2]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[SNILS_1]",
+      "type": "SNILS"
+     }
+    ],
+    "text": "СНИЛС [SNILS_1]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[SNILS_1]",
+      "type": "SNILS"
+     }
+    ],
+    "text": "[SNILS_1]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[SNILS_1]",
+      "type": "SNILS"
+     }
+    ],
+    "text": "СНИЛС страхового свидетельства № [SNILS_1]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[SNILS_1]",
+      "type": "SNILS"
+     }
+    ],
+    "text": "СНИЛС (страховой номер): [SNILS_1]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[INN_1]",
+      "type": "INN"
+     }
+    ],
+    "text": "ИНН [INN_1]"
+   },
+   {
+    "entities": [],
+    "text": "Заказ 12345, 250 шт, цена 1999.90 руб, артикул AB-100500"
+   },
+   {
+    "entities": [],
+    "text": "артикул 9991234567"
+   },
+   {
+    "entities": [
+     {
+      "token": "[INN_2]",
+      "type": "INN"
+     }
+    ],
+    "text": "тел [INN_2]"
+   },
+   {
+    "entities": [],
+    "text": "сумма 1 500 000 00 00"
+   },
+   {
+    "entities": [],
+    "text": "заказ 123 456 78 90"
+   },
+   {
+    "entities": [],
+    "text": "3,89991234567"
+   },
+   {
+    "entities": [],
+    "text": "дата 12.09.2026"
+   },
+   {
+    "entities": [],
+    "text": "партия 1234567890123"
+   },
+   {
+    "entities": [],
+    "text": "срок 12/05/2024"
+   },
+   {
+    "entities": [],
+    "text": "срок поставки 10–15 дней"
+   },
+   {
+    "entities": [],
+    "text": "версия 1.2.3.4"
+   },
+   {
+    "entities": [],
+    "text": "адрес 192.168.100.200"
+   },
+   {
+    "entities": [],
+    "text": "артикул 1234 5678 9012 3456"
+   },
+   {
+    "entities": [],
+    "text": "партия 1234567890123456"
+   },
+   {
+    "entities": [],
+    "text": "счёт 12345678901234567890"
+   },
+   {
+    "entities": [],
+    "text": "ТУ 14-1-5555-2012"
+   },
+   {
+    "entities": [],
+    "text": "кол-во 2 500 000 00 00"
+   },
+   {
+    "entities": [],
+    "text": "отношение 3/4 и 5-6"
+   },
+   {
+    "entities": [],
+    "text": "ceny@ i @ptr"
+   },
+   {
+    "entities": [],
+    "text": "1 234 567,89 руб"
+   },
+   {
+    "entities": [],
+    "text": "+1 234 567 руб"
+   },
+   {
+    "entities": [],
+    "text": "12 345 678"
+   },
+   {
+    "entities": [],
+    "text": "Арт. 123-456-789"
+   },
+   {
+    "entities": [],
+    "text": "итого 12 345 678 руб"
+   },
+   {
+    "entities": [],
+    "text": "цена 1 234 567.89"
+   },
+   {
+    "entities": [],
+    "text": "сумма +12 345 678 руб"
+   },
+   {
+    "entities": [],
+    "text": "партия 123 456 789 шт"
+   },
+   {
+    "entities": [],
+    "text": "размер 12 34 56 78 мм"
+   },
+   {
+    "entities": [],
+    "text": "00 123 456 789 шт"
+   },
+   {
+    "entities": [],
+    "text": "№ 0012 3456 789"
+   },
+   {
+    "entities": [],
+    "text": "арт 12 34 56 78 90"
+   },
+   {
+    "entities": [],
+    "text": "10 20 30 40 50 60 шт"
+   },
+   {
+    "entities": [],
+    "text": "итого +1 200 000 000 руб"
+   },
+   {
+    "entities": [],
+    "text": "допуск +3 15 20 25 30"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_1]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "[PERSON_1] приедет завтра"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_2]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "Контакт: [PERSON_2], тел. снизу"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_3]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "Договор подписал [PERSON_3]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_4]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "Менеджер [PERSON_4] ответила"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_4]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "Здравствуйте, [PERSON_4]!"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_5]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "Директор [PERSON_5] подтвердил заказ"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_6]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "Счёт выставил [PERSON_6]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_7]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "[PERSON_7] на связи"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_8]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "Ответственный: [PERSON_8]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_9]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "Поставщик [PERSON_9]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_10]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "От [PERSON_10] пришло письмо"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_11]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "Подпись: [PERSON_11]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_12]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "[PERSON_12] отгрузил цемент"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_13]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "[PERSON_13]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_14]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "Вчера звонил [PERSON_14]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_15]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "Контактное лицо: [PERSON_15]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_16]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "Заказчик [PERSON_16]"
+   },
+   {
+    "entities": [],
+    "text": "Получатель Крылова Анна"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_17]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "ФИО: [PERSON_17]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_18]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "[PERSON_18]. отсутствует"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_19]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "позвони [PERSON_19], пожалуйста"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_1]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "Передайте [PERSON_1], что счёт оплачен"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_20]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "Письмо от [PERSON_20] получено"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_21]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "Отправь счёт [PERSON_21]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_2]",
+      "type": "PERSON"
+     },
+     {
+      "token": "[PERSON_6]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "Согласуй с [PERSON_2] и [PERSON_6]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_7]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "Мы говорили с [PERSON_7] вчера"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_8]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "Скажи [PERSON_8], что товар пришёл"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_9]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "Спроси у [PERSON_9] про отгрузку"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_14]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "Передай привет [PERSON_14]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_8]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "Это заказ для [PERSON_8]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_10]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "Письмо подписано [PERSON_10]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_16]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "Свяжись с [PERSON_16] по цене"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_11]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "Менеджер сказал, что [PERSON_11] не приедет"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_12]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "Позвонил [PERSON_12], спросил про счёт"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_22]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "Для [PERSON_22] подготовить КП"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_13]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "По вопросу оплаты обращайтесь к [PERSON_13]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_15]",
+      "type": "PERSON"
+     },
+     {
+      "token": "[PERSON_23]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "На встрече были [PERSON_15] и [PERSON_23]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_2]",
+      "type": "PERSON"
+     },
+     {
+      "token": "[PHONE_14]",
+      "type": "PHONE"
+     }
+    ],
+    "text": "Наш закупщик [PERSON_2], тел. [PHONE_14]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_24]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "[PERSON_24] просил перенести срок"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_25]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "Файл прислал [PERSON_25] вчера вечером"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_1]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "Файл [PERSON_1] прислал вчера"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_26]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "Заявку подготовила [PERSON_26]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_7]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "Договор с [PERSON_7] подписан"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_12]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "Привет, [PERSON_12]! Как дела?"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_27]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "[PERSON_27] направлено уведомление"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_28]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "[PERSON_28]_договор.docx"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_29]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "договор_[PERSON_29].docx"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_30]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "Прайс_[PERSON_30]_А.xlsx"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_31]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "Счёт_[PERSON_31]_2026.pdf"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_32]",
+      "type": "PERSON"
+     },
+     {
+      "token": "[PERSON_33]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "КП_[PERSON_32]-[PERSON_33].docx"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_34]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "[PERSON_34]_спецификация.xlsx"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_35]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "[PERSON_35]_ДОГОВОР.PDF"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_36]",
+      "type": "PERSON"
+     },
+     {
+      "token": "[PERSON_37]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "Акт_сверки_[PERSON_36]_[PERSON_37].xlsx"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_38]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "Заявка.[PERSON_38].docx"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_28]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "/home/[PERSON_28]/Документы/прайс.xlsx"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_39]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "C:\\Users\\[PERSON_39]\\Загрузки\\счёт.pdf"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_32]",
+      "type": "PERSON"
+     },
+     {
+      "token": "[PERSON_33]",
+      "type": "PERSON"
+     },
+     {
+      "token": "[PERSON_40]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "/srv/data/[PERSON_32]_[PERSON_33]_[PERSON_40]/договор.docx"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_41]",
+      "type": "PERSON"
+     },
+     {
+      "token": "[PERSON_42]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "./out/[PERSON_41]/КП_[PERSON_42].pdf"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_43]",
+      "type": "PERSON"
+     },
+     {
+      "token": "[PERSON_44]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "Вложение: [PERSON_43]_[PERSON_44]_прайс.xlsx (2 МБ)"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_45]",
+      "type": "PERSON"
+     },
+     {
+      "token": "[PERSON_23]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "{\"path\":\"Документы/[PERSON_45]/Договор_[PERSON_23].docx\"}"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_46]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "https://example.com/files/[PERSON_46]_договор.pdf"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_47]",
+      "type": "PERSON"
+     },
+     {
+      "token": "[PERSON_48]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "Письмо_[PERSON_47]_[PERSON_48].docx"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_49]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "[PERSON_49]_Д.Н._доверенность.pdf"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_25]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "[PERSON_25]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_50]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "[PERSON_50]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_25]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "[PERSON_25]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_25]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "[PERSON_25]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_18]",
+      "type": "PERSON"
+     },
+     {
+      "token": "[PERSON_19]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "[PERSON_18]: [PERSON_19], директор"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_9]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "ГЕНЕРАЛЬНЫЙ ДИРЕКТОР [PERSON_9]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_51]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "от [PERSON_51] получено"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_25]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "менеджер [PERSON_25] ответил"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_25]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "Контакт: [PERSON_25]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_7]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "ФИО: [PERSON_7]"
+   },
+   {
+    "entities": [],
+    "text": "Металлопрокат_прайс.xlsx"
+   },
+   {
+    "entities": [],
+    "text": "Счёт_на_оплату_2026.pdf"
+   },
+   {
+    "entities": [],
+    "text": "Коммерческое_предложение_v2.docx"
+   },
+   {
+    "entities": [],
+    "text": "Шаблон_договора_поставки.docx"
+   },
+   {
+    "entities": [],
+    "text": "Спецификация_Арматура.docx"
+   },
+   {
+    "entities": [],
+    "text": "Закупки_Урал_2026.pdf"
+   },
+   {
+    "entities": [],
+    "text": "Прайс_Сибирь_июнь.xlsx"
+   },
+   {
+    "entities": [],
+    "text": "Акт_сверки_взаиморасчётов.xlsx"
+   },
+   {
+    "entities": [],
+    "text": "Накладная_№5_от_01.09.2026.pdf"
+   },
+   {
+    "entities": [],
+    "text": "Протокол_разногласий.docx"
+   },
+   {
+    "entities": [],
+    "text": "Реестр_платежей_Август.xlsx"
+   },
+   {
+    "entities": [],
+    "text": "Каталог_Крепёж_Центр.pdf"
+   },
+   {
+    "entities": [],
+    "text": "Сводная-таблица.Закупки.csv"
+   },
+   {
+    "entities": [],
+    "text": "/srv/data/Металлопрокат/прайс.xlsx"
+   },
+   {
+    "entities": [],
+    "text": "/home/user/Документы/Прайсы/Цемент_М500.xlsx"
+   },
+   {
+    "entities": [],
+    "text": "C:\\Users\\Менеджер\\Загрузки\\Заявка_на_закупку.docx"
+   },
+   {
+    "entities": [],
+    "text": "./out/Склад/Остатки_на_складе.csv"
+   },
+   {
+    "entities": [],
+    "text": "Техническое_задание_Стройматериалы_опт.docx"
+   },
+   {
+    "entities": [],
+    "text": "Отчёт_итоговый_Q3.pdf"
+   },
+   {
+    "entities": [],
+    "text": "Приложение_1_Форма_заявки.docx"
+   },
+   {
+    "entities": [],
+    "text": "ТЕХМЕТАЛЛ СЕРВИС"
+   },
+   {
+    "entities": [],
+    "text": "РОМАШКА ТРЕЙД"
+   },
+   {
+    "entities": [],
+    "text": "ЗАО МЕТАЛЛТОРГ"
+   },
+   {
+    "entities": [],
+    "text": "ГЕНЕРАЛЬНЫЙ ДИРЕКТОР ДЕЙСТВУЕТ НА ОСНОВАНИИ УСТАВА"
+   },
+   {
+    "entities": [],
+    "text": "ОБЩЕСТВО С ОГРАНИЧЕННОЙ ОТВЕТСТВЕННОСТЬЮ СИБИРЬ СНАБ"
+   },
+   {
+    "entities": [],
+    "text": "СПЕЦИФИКАЦИЯ НА ПОСТАВКУ МЕТАЛЛОПРОКАТА"
+   },
+   {
+    "entities": [],
+    "text": "ДОГОВОР ПОСТАВКИ № 5 ОТ 01.09.2026"
+   },
+   {
+    "entities": [],
+    "text": "КОММЕРЧЕСКОЕ ПРЕДЛОЖЕНИЕ НА АРМАТУРУ"
+   },
+   {
+    "entities": [],
+    "text": "СТАЛЬ ИНВЕСТ ГРУПП"
+   },
+   {
+    "entities": [],
+    "text": "УРАЛ СТРОЙ ТОРГ"
+   },
+   {
+    "entities": [],
+    "text": "АКТ СВЕРКИ ВЗАИМОРАСЧЁТОВ"
+   },
+   {
+    "entities": [],
+    "text": "поставка арматуры и проволоки"
+   },
+   {
+    "entities": [],
+    "text": "ТЦ ЦЕНТР ТОРГ"
+   },
+   {
+    "entities": [],
+    "text": "АЛЬФА ПЛЮС"
+   },
+   {
+    "entities": [],
+    "text": "ВЕРА НАДЕЖДА ЛЮБОВЬ"
+   },
+   {
+    "entities": [
+     {
+      "token": "[ADDRESS_1]",
+      "type": "ADDRESS"
+     }
+    ],
+    "text": "[ADDRESS_1]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[ADDRESS_1]",
+      "type": "ADDRESS"
+     }
+    ],
+    "text": "Доставка: г. Москва, [ADDRESS_1]."
+   },
+   {
+    "entities": [
+     {
+      "token": "[ADDRESS_2]",
+      "type": "ADDRESS"
+     }
+    ],
+    "text": "Заберём на [ADDRESS_2]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[ADDRESS_3]",
+      "type": "ADDRESS"
+     }
+    ],
+    "text": "доставить на [ADDRESS_3]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[ADDRESS_2]",
+      "type": "ADDRESS"
+     }
+    ],
+    "text": "находится по [ADDRESS_2]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[ADDRESS_2]",
+      "type": "ADDRESS"
+     }
+    ],
+    "text": "[ADDRESS_2]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[ADDRESS_2]",
+      "type": "ADDRESS"
+     }
+    ],
+    "text": "[ADDRESS_2]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[ADDRESS_2]",
+      "type": "ADDRESS"
+     }
+    ],
+    "text": "[ADDRESS_2]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[ADDRESS_2]",
+      "type": "ADDRESS"
+     }
+    ],
+    "text": "[ADDRESS_2]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[ADDRESS_2]",
+      "type": "ADDRESS"
+     }
+    ],
+    "text": "[ADDRESS_2]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[ADDRESS_2]",
+      "type": "ADDRESS"
+     }
+    ],
+    "text": "[ADDRESS_2]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[ADDRESS_2]",
+      "type": "ADDRESS"
+     }
+    ],
+    "text": "г. Москва, [ADDRESS_2]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[ADDRESS_2]",
+      "type": "ADDRESS"
+     }
+    ],
+    "text": "по адресу: [ADDRESS_2]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[ADDRESS_4]",
+      "type": "ADDRESS"
+     }
+    ],
+    "text": "адрес доставки: [ADDRESS_4]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[ADDRESS_5]",
+      "type": "ADDRESS"
+     }
+    ],
+    "text": "[ADDRESS_5]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[ADDRESS_6]",
+      "type": "ADDRESS"
+     }
+    ],
+    "text": "[ADDRESS_6]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[ADDRESS_6]",
+      "type": "ADDRESS"
+     }
+    ],
+    "text": "[ADDRESS_6]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[ADDRESS_6]",
+      "type": "ADDRESS"
+     }
+    ],
+    "text": "[ADDRESS_6]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[ADDRESS_7]",
+      "type": "ADDRESS"
+     }
+    ],
+    "text": "[ADDRESS_7]"
+   },
+   {
+    "entities": [],
+    "text": "в переулке Тихом нет"
+   },
+   {
+    "entities": [
+     {
+      "token": "[ADDRESS_8]",
+      "type": "ADDRESS"
+     }
+    ],
+    "text": "[ADDRESS_8]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[ADDRESS_9]",
+      "type": "ADDRESS"
+     }
+    ],
+    "text": "[ADDRESS_9]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[ADDRESS_10]",
+      "type": "ADDRESS"
+     }
+    ],
+    "text": "[ADDRESS_10]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[ADDRESS_11]",
+      "type": "ADDRESS"
+     }
+    ],
+    "text": "[ADDRESS_11]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[ADDRESS_12]",
+      "type": "ADDRESS"
+     }
+    ],
+    "text": "[ADDRESS_12]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[ADDRESS_13]",
+      "type": "ADDRESS"
+     }
+    ],
+    "text": "[ADDRESS_13]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[ADDRESS_14]",
+      "type": "ADDRESS"
+     }
+    ],
+    "text": "[ADDRESS_14]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[ADDRESS_15]",
+      "type": "ADDRESS"
+     }
+    ],
+    "text": "[ADDRESS_15]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[ADDRESS_16]",
+      "type": "ADDRESS"
+     }
+    ],
+    "text": "[ADDRESS_16]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[ADDRESS_17]",
+      "type": "ADDRESS"
+     }
+    ],
+    "text": "г. Москва, [ADDRESS_17]."
+   },
+   {
+    "entities": [],
+    "text": "АБ-12 д.5"
+   },
+   {
+    "entities": [],
+    "text": "Артикул АБ-12 д.5 по ТУ"
+   },
+   {
+    "entities": [],
+    "text": "размер 10x20"
+   },
+   {
+    "entities": [],
+    "text": "ГОСТ 12345-2014"
+   },
+   {
+    "entities": [],
+    "text": "стр. 5 договора"
+   },
+   {
+    "entities": [],
+    "text": "д. 5 мм"
+   },
+   {
+    "entities": [],
+    "text": "лит. А, корп. 2"
+   },
+   {
+    "entities": [],
+    "text": "Светильник ул. LED 50W"
+   },
+   {
+    "entities": [],
+    "text": "Прожектор ул. Серия 5000"
+   },
+   {
+    "entities": [],
+    "text": "пр. 10"
+   },
+   {
+    "entities": [],
+    "text": "Примечание: пр. 10 штук"
+   },
+   {
+    "entities": [],
+    "text": "Цена 1500 руб, итого 12000"
+   },
+   {
+    "entities": [
+     {
+      "token": "[ACCOUNT_3]",
+      "type": "ACCOUNT"
+     }
+    ],
+    "text": "Счёт [ACCOUNT_3]"
+   },
+   {
+    "entities": [],
+    "text": "г. Москва, Заказ 5."
+   },
+   {
+    "entities": [],
+    "text": "в г. Москве"
+   },
+   {
+    "entities": [],
+    "text": "на улице Ленина"
+   },
+   {
+    "entities": [],
+    "text": "ул. Ленина 5 коробок"
+   },
+   {
+    "entities": [],
+    "text": "ул. Ленина д. 5 шт"
+   },
+   {
+    "entities": [],
+    "text": "Тираж 100000 экз., Санкт-Петербург"
+   },
+   {
+    "entities": [],
+    "text": "Серия 123456"
+   },
+   {
+    "entities": [],
+    "text": "1234567890"
+   },
+   {
+    "entities": [],
+    "text": "119019, цена 5"
+   },
+   {
+    "entities": [],
+    "text": "Позиция 119019 в прайсе"
+   },
+   {
+    "entities": [
+     {
+      "token": "[ADDRESS_2]",
+      "type": "ADDRESS"
+     }
+    ],
+    "text": "Везём по [ADDRESS_2]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[ADDRESS_18]",
+      "type": "ADDRESS"
+     }
+    ],
+    "text": "[ADDRESS_18]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[ADDRESS_19]",
+      "type": "ADDRESS"
+     },
+     {
+      "token": "[ADDRESS_17]",
+      "type": "ADDRESS"
+     }
+    ],
+    "text": "[ADDRESS_19], г. Москва, [ADDRESS_17]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[ADDRESS_20]",
+      "type": "ADDRESS"
+     }
+    ],
+    "text": "[ADDRESS_20]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[ADDRESS_21]",
+      "type": "ADDRESS"
+     }
+    ],
+    "text": "[ADDRESS_21]"
+   },
+   {
+    "entities": [],
+    "text": "Лист 10x20 мм, ГОСТ 12345-2014"
+   },
+   {
+    "entities": [],
+    "text": "см. стр. 5 договора"
+   },
+   {
+    "entities": [],
+    "text": "Труба d 20, д. 5 мм"
+   },
+   {
+    "entities": [],
+    "text": "Светильник ул. LED 50W, 12 шт"
+   },
+   {
+    "entities": [],
+    "text": "Примечание: пр. 10 штук в упаковке"
+   },
+   {
+    "entities": [
+     {
+      "token": "[ACCOUNT_3]",
+      "type": "ACCOUNT"
+     }
+    ],
+    "text": "Итого 12000 руб, счёт [ACCOUNT_3]"
+   },
+   {
+    "entities": [],
+    "text": "Склад в г. Москва, Заказ 5."
+   },
+   {
+    "entities": [],
+    "text": "Доставка на улице Ленина возможна"
+   },
+   {
+    "entities": [],
+    "text": "Партия 119019 отгружена"
+   },
+   {
+    "entities": [],
+    "text": "Награда органайзер 3050 2850 2620 2390 2180"
+   },
+   {
+    "entities": [],
+    "text": "3050 2850 2620 2390 2180 1990"
+   },
+   {
+    "entities": [
+     {
+      "token": "[CARD_4]",
+      "type": "CARD"
+     }
+    ],
+    "text": "[CARD_4]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[CARD_4]",
+      "type": "CARD"
+     }
+    ],
+    "text": "[CARD_4]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[CARD_4]",
+      "type": "CARD"
+     }
+    ],
+    "text": "[CARD_4]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[CARD_4]",
+      "type": "CARD"
+     }
+    ],
+    "text": "карта [CARD_4] до 12/27"
+   },
+   {
+    "entities": [
+     {
+      "token": "[CARD_5]",
+      "type": "CARD"
+     }
+    ],
+    "text": "номер карты: [CARD_5] спасибо"
+   },
+   {
+    "entities": [
+     {
+      "token": "[CARD_1]",
+      "type": "CARD"
+     }
+    ],
+    "text": "Оплата картой Visa [CARD_1]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[CARD_4]",
+      "type": "CARD"
+     }
+    ],
+    "text": "[CARD_4] 123"
+   },
+   {
+    "entities": [
+     {
+      "token": "[CARD_4]",
+      "type": "CARD"
+     }
+    ],
+    "text": "[CARD_4] 1500 руб"
+   },
+   {
+    "entities": [
+     {
+      "token": "[CARD_4]",
+      "type": "CARD"
+     }
+    ],
+    "text": "[CARD_4] 12/27"
+   },
+   {
+    "entities": [
+     {
+      "token": "[CARD_4]",
+      "type": "CARD"
+     }
+    ],
+    "text": "Клиент оплатил заказ на прошлой неделе по реквизитам [CARD_4] — 1500 руб"
+   },
+   {
+    "entities": [
+     {
+      "token": "[CARD_4]",
+      "type": "CARD"
+     }
+    ],
+    "text": "Клиент оплатил заказ на прошлой неделе и сообщил номер [CARD_4] CVV 123"
+   },
+   {
+    "entities": [
+     {
+      "token": "[CARD_4]",
+      "type": "CARD"
+     }
+    ],
+    "text": "[CARD_4] 123 2026"
+   },
+   {
+    "entities": [
+     {
+      "token": "[CARD_4]",
+      "type": "CARD"
+     }
+    ],
+    "text": "[CARD_4] 1500 2000"
+   },
+   {
+    "entities": [
+     {
+      "token": "[CARD_4]",
+      "type": "CARD"
+     }
+    ],
+    "text": "5000 [CARD_4] 1500"
+   },
+   {
+    "entities": [
+     {
+      "token": "[CARD_6]",
+      "type": "CARD"
+     }
+    ],
+    "text": "Органайзер | [CARD_6] | шт"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_25]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "[PERSON_25]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_20]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "[PERSON_20]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_52]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "[PERSON_52]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_53]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "Позвоните [PERSON_53]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_54]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "Передайте [PERSON_54]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_55]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "Скажи [PERSON_55], что товар пришёл"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_56]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "[PERSON_56]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_57]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "[PERSON_57]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_58]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "[PERSON_58]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_59]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "[PERSON_59]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_19]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "[PERSON_19]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_60]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "[PERSON_60]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_61]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "Толстая Любовь [PERSON_61]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_62]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "[PERSON_62]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_63]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "[PERSON_63]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_64]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "[PERSON_64]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_65]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "[PERSON_65]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_25]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "[PERSON_25]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_25]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "[PERSON_25]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_25]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "[PERSON_25]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_25]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "[PERSON_25]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_25]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "[PERSON_25]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_66]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "[PERSON_66]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_19]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "Заказ у [PERSON_19] оформлен"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_2]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "[PERSON_2], тел. снизу"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_1]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "[PERSON_1]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_25]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "[PERSON_25]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_19]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "Поставщик [PERSON_19]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_19]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "[PERSON_19]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_67]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "Генеральный директор [PERSON_67]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_25]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "Директор: [PERSON_25]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_2]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "{\"owner\": \"[PERSON_2].\"}"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_25]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "Нужен цемент М500, 40 тонн. Контакт: [PERSON_25]."
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_68]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "[PERSON_68]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_28]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "[PERSON_28]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_69]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "[PERSON_69]"
+   },
+   {
+    "entities": [],
+    "text": "ООО Ромашка"
+   },
+   {
+    "entities": [],
+    "text": "АО «Металлторг»"
+   },
+   {
+    "entities": [],
+    "text": "ПАО Сбербанк"
+   },
+   {
+    "entities": [
+     {
+      "token": "[INN_1]",
+      "type": "INN"
+     }
+    ],
+    "text": "ИП ИНН [INN_1]"
+   },
+   {
+    "entities": [],
+    "text": "генеральный директор"
+   },
+   {
+    "entities": [],
+    "text": "Менеджер по закупкам"
+   },
+   {
+    "entities": [],
+    "text": "Главный бухгалтер"
+   },
+   {
+    "entities": [],
+    "text": "Исполнительный директор компании"
+   },
+   {
+    "entities": [
+     {
+      "token": "[ADDRESS_22]",
+      "type": "ADDRESS"
+     }
+    ],
+    "text": "[ADDRESS_22]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[ADDRESS_2]",
+      "type": "ADDRESS"
+     }
+    ],
+    "text": "[ADDRESS_2]"
+   },
+   {
+    "entities": [],
+    "text": "проспект Ленина"
+   },
+   {
+    "entities": [],
+    "text": "Москва, Тверская улица"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_68]",
+      "type": "PERSON"
+     },
+     {
+      "token": "[PERSON_60]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "школа имени [PERSON_68] [PERSON_60]"
+   },
+   {
+    "entities": [],
+    "text": "площадь Гагарина"
+   },
+   {
+    "entities": [],
+    "text": "Лада Веста"
+   },
+   {
+    "entities": [],
+    "text": "Магазин Камин"
+   },
+   {
+    "entities": [],
+    "text": "Sony Bravia 55"
+   },
+   {
+    "entities": [],
+    "text": "Цемент М500 ГОСТ 10178-85"
+   },
+   {
+    "entities": [],
+    "text": "Арматура А500С d12 мм"
+   },
+   {
+    "entities": [],
+    "text": "Швеллер 12П, 40 тонн"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_70]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "[PERSON_70]"
+   },
+   {
+    "entities": [],
+    "text": "Это практична и логична"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_69]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "[PERSON_69]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_68]",
+      "type": "PERSON"
+     },
+     {
+      "token": "[PERSON_40]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "Позвони [PERSON_68]. [PERSON_40] придёт позже"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_69]",
+      "type": "PERSON"
+     },
+     {
+      "token": "[PERSON_28]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "[PERSON_69]. [PERSON_28] пришёл"
+   },
+   {
+    "entities": [],
+    "text": "John Smith"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PHONE_7]",
+      "type": "PHONE"
+     }
+    ],
+    "text": "[PHONE_7]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PHONE_8]",
+      "type": "PHONE"
+     }
+    ],
+    "text": "[PHONE_8]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PHONE_9]",
+      "type": "PHONE"
+     }
+    ],
+    "text": "[PHONE_9]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PHONE_10]",
+      "type": "PHONE"
+     }
+    ],
+    "text": "[PHONE_10]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PHONE_11]",
+      "type": "PHONE"
+     }
+    ],
+    "text": "[PHONE_11]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PHONE_12]",
+      "type": "PHONE"
+     }
+    ],
+    "text": "[PHONE_12]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PHONE_13]",
+      "type": "PHONE"
+     }
+    ],
+    "text": "[PHONE_13]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PHONE_12]",
+      "type": "PHONE"
+     }
+    ],
+    "text": "[PHONE_12]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PHONE_15]",
+      "type": "PHONE"
+     }
+    ],
+    "text": "[PHONE_15]"
+   },
+   {
+    "entities": [],
+    "text": "цена 1 234 567.89 руб"
+   },
+   {
+    "entities": [],
+    "text": "+12 345 000 000 руб"
+   },
+   {
+    "entities": [],
+    "text": "0012 345 678"
+   },
+   {
+    "entities": [],
+    "text": "+3 15 20 25 30"
+   },
+   {
+    "entities": [],
+    "text": "+20 000 000 000"
+   }
+  ]
+ },
+ "case_labels": [
+  {
+   "entities": [
+    {
+     "token": "[PHONE_1]",
+     "type": "PHONE"
+    }
+   ],
+   "text": "звоните [PHONE_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PHONE_1]",
+     "type": "PHONE"
+    }
+   ],
+   "text": "тел [PHONE_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PHONE_1]",
+     "type": "PHONE"
+    }
+   ],
+   "text": "[PHONE_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PHONE_1]",
+     "type": "PHONE"
+    }
+   ],
+   "text": "[PHONE_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PHONE_1]",
+     "type": "PHONE"
+    }
+   ],
+   "text": "[PHONE_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PHONE_1]",
+     "type": "PHONE"
+    }
+   ],
+   "text": "[PHONE_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PHONE_1]",
+     "type": "PHONE"
+    }
+   ],
+   "text": "[PHONE_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PHONE_1]",
+     "type": "PHONE"
+    }
+   ],
+   "text": "[PHONE_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PHONE_1]",
+     "type": "PHONE"
+    }
+   ],
+   "text": "[PHONE_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PHONE_1]",
+     "type": "PHONE"
+    }
+   ],
+   "text": "[PHONE_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PHONE_1]",
+     "type": "PHONE"
+    }
+   ],
+   "text": "[PHONE_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PHONE_1]",
+     "type": "PHONE"
+    }
+   ],
+   "text": "[PHONE_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PHONE_1]",
+     "type": "PHONE"
+    }
+   ],
+   "text": "заказ 12 [PHONE_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PHONE_1]",
+     "type": "PHONE"
+    }
+   ],
+   "text": "[PHONE_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PHONE_1]",
+     "type": "PHONE"
+    }
+   ],
+   "text": "[PHONE_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PHONE_1]",
+     "type": "PHONE"
+    }
+   ],
+   "text": "[PHONE_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PHONE_1]",
+     "type": "PHONE"
+    }
+   ],
+   "text": "[PHONE_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PHONE_1]",
+     "type": "PHONE"
+    }
+   ],
+   "text": "[PHONE_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PHONE_1]",
+     "type": "PHONE"
+    }
+   ],
+   "text": "[PHONE_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PHONE_1]",
+     "type": "PHONE"
+    }
+   ],
+   "text": "тел. [PHONE_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PHONE_1]",
+     "type": "PHONE"
+    }
+   ],
+   "text": "Телефон для связи: [PHONE_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PHONE_1]",
+     "type": "PHONE"
+    }
+   ],
+   "text": "[PHONE_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PHONE_1]",
+     "type": "PHONE"
+    }
+   ],
+   "text": "тел [PHONE_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PHONE_1]",
+     "type": "PHONE"
+    }
+   ],
+   "text": "тел [PHONE_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PHONE_1]",
+     "type": "PHONE"
+    }
+   ],
+   "text": "тел [PHONE_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PHONE_1]",
+     "type": "PHONE"
+    }
+   ],
+   "text": "тел [PHONE_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PHONE_1]",
+     "type": "PHONE"
+    }
+   ],
+   "text": "тел [PHONE_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PHONE_1]",
+     "type": "PHONE"
+    }
+   ],
+   "text": "тел [PHONE_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PHONE_1]",
+     "type": "PHONE"
+    }
+   ],
+   "text": "тел [PHONE_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PHONE_1]",
+     "type": "PHONE"
+    }
+   ],
+   "text": "тел [PHONE_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[EMAIL_1]",
+     "type": "EMAIL"
+    }
+   ],
+   "text": "пишите [EMAIL_1] срочно"
+  },
+  {
+   "entities": [
+    {
+     "token": "[EMAIL_1]",
+     "type": "EMAIL"
+    }
+   ],
+   "text": "[EMAIL_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[EMAIL_1]",
+     "type": "EMAIL"
+    }
+   ],
+   "text": "[EMAIL_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[EMAIL_1]",
+     "type": "EMAIL"
+    }
+   ],
+   "text": "[EMAIL_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[EMAIL_1]",
+     "type": "EMAIL"
+    }
+   ],
+   "text": "[EMAIL_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[CARD_1]",
+     "type": "CARD"
+    }
+   ],
+   "text": "карта [CARD_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[CARD_1]",
+     "type": "CARD"
+    }
+   ],
+   "text": "[CARD_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[CARD_1]",
+     "type": "CARD"
+    }
+   ],
+   "text": "карта [CARD_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[CARD_1]",
+     "type": "CARD"
+    }
+   ],
+   "text": "карта [CARD_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[CARD_1]",
+     "type": "CARD"
+    }
+   ],
+   "text": "[CARD_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[ACCOUNT_1]",
+     "type": "ACCOUNT"
+    }
+   ],
+   "text": "р/с [ACCOUNT_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[ACCOUNT_1]",
+     "type": "ACCOUNT"
+    }
+   ],
+   "text": "счёт [ACCOUNT_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[ACCOUNT_1]",
+     "type": "ACCOUNT"
+    }
+   ],
+   "text": "[ACCOUNT_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[SNILS_1]",
+     "type": "SNILS"
+    }
+   ],
+   "text": "СНИЛС [SNILS_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[SNILS_1]",
+     "type": "SNILS"
+    }
+   ],
+   "text": "[SNILS_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[SNILS_1]",
+     "type": "SNILS"
+    }
+   ],
+   "text": "СНИЛС страхового свидетельства № [SNILS_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[SNILS_1]",
+     "type": "SNILS"
+    }
+   ],
+   "text": "СНИЛС (страховой номер): [SNILS_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[INN_1]",
+     "type": "INN"
+    }
+   ],
+   "text": "ИНН [INN_1]"
+  },
+  {
+   "entities": [],
+   "text": "Заказ 12345, 250 шт, цена 1999.90 руб, артикул AB-100500"
+  },
+  {
+   "entities": [],
+   "text": "артикул 9991234567"
+  },
+  {
+   "entities": [
+    {
+     "token": "[INN_1]",
+     "type": "INN"
+    }
+   ],
+   "text": "тел [INN_1]"
+  },
+  {
+   "entities": [],
+   "text": "сумма 1 500 000 00 00"
+  },
+  {
+   "entities": [],
+   "text": "заказ 123 456 78 90"
+  },
+  {
+   "entities": [],
+   "text": "3,89991234567"
+  },
+  {
+   "entities": [],
+   "text": "дата 12.09.2026"
+  },
+  {
+   "entities": [],
+   "text": "партия 1234567890123"
+  },
+  {
+   "entities": [],
+   "text": "срок 12/05/2024"
+  },
+  {
+   "entities": [],
+   "text": "срок поставки 10–15 дней"
+  },
+  {
+   "entities": [],
+   "text": "версия 1.2.3.4"
+  },
+  {
+   "entities": [],
+   "text": "адрес 192.168.100.200"
+  },
+  {
+   "entities": [],
+   "text": "артикул 1234 5678 9012 3456"
+  },
+  {
+   "entities": [],
+   "text": "партия 1234567890123456"
+  },
+  {
+   "entities": [],
+   "text": "счёт 12345678901234567890"
+  },
+  {
+   "entities": [],
+   "text": "ТУ 14-1-5555-2012"
+  },
+  {
+   "entities": [],
+   "text": "кол-во 2 500 000 00 00"
+  },
+  {
+   "entities": [],
+   "text": "отношение 3/4 и 5-6"
+  },
+  {
+   "entities": [],
+   "text": "ceny@ i @ptr"
+  },
+  {
+   "entities": [],
+   "text": "1 234 567,89 руб"
+  },
+  {
+   "entities": [],
+   "text": "+1 234 567 руб"
+  },
+  {
+   "entities": [],
+   "text": "12 345 678"
+  },
+  {
+   "entities": [],
+   "text": "Арт. 123-456-789"
+  },
+  {
+   "entities": [],
+   "text": "итого 12 345 678 руб"
+  },
+  {
+   "entities": [],
+   "text": "цена 1 234 567.89"
+  },
+  {
+   "entities": [],
+   "text": "сумма +12 345 678 руб"
+  },
+  {
+   "entities": [],
+   "text": "партия 123 456 789 шт"
+  },
+  {
+   "entities": [],
+   "text": "размер 12 34 56 78 мм"
+  },
+  {
+   "entities": [],
+   "text": "00 123 456 789 шт"
+  },
+  {
+   "entities": [],
+   "text": "№ 0012 3456 789"
+  },
+  {
+   "entities": [],
+   "text": "арт 12 34 56 78 90"
+  },
+  {
+   "entities": [],
+   "text": "10 20 30 40 50 60 шт"
+  },
+  {
+   "entities": [],
+   "text": "итого +1 200 000 000 руб"
+  },
+  {
+   "entities": [],
+   "text": "допуск +3 15 20 25 30"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1] приедет завтра"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Контакт: [PERSON_1], тел. снизу"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Договор подписал [PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Менеджер [PERSON_1] ответила"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Здравствуйте, [PERSON_1]!"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Директор [PERSON_1] подтвердил заказ"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Счёт выставил [PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1] на связи"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Ответственный: [PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Поставщик [PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "От [PERSON_1] пришло письмо"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Подпись: [PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1] отгрузил цемент"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Вчера звонил [PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Контактное лицо: [PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Заказчик [PERSON_1]"
+  },
+  {
+   "entities": [],
+   "text": "Получатель Крылова Анна"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "ФИО: [PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1]. отсутствует"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "позвони [PERSON_1], пожалуйста"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Передайте [PERSON_1], что счёт оплачен"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Письмо от [PERSON_1] получено"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Отправь счёт [PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    },
+    {
+     "token": "[PERSON_2]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Согласуй с [PERSON_1] и [PERSON_2]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Мы говорили с [PERSON_1] вчера"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Скажи [PERSON_1], что товар пришёл"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Спроси у [PERSON_1] про отгрузку"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Передай привет [PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Это заказ для [PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Письмо подписано [PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Свяжись с [PERSON_1] по цене"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Менеджер сказал, что [PERSON_1] не приедет"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Позвонил [PERSON_1], спросил про счёт"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Для [PERSON_1] подготовить КП"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "По вопросу оплаты обращайтесь к [PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    },
+    {
+     "token": "[PERSON_2]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "На встрече были [PERSON_1] и [PERSON_2]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    },
+    {
+     "token": "[PHONE_1]",
+     "type": "PHONE"
+    }
+   ],
+   "text": "Наш закупщик [PERSON_1], тел. [PHONE_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1] просил перенести срок"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Файл прислал [PERSON_1] вчера вечером"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Файл [PERSON_1] прислал вчера"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Заявку подготовила [PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Договор с [PERSON_1] подписан"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Привет, [PERSON_1]! Как дела?"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1] направлено уведомление"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1]_договор.docx"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "договор_[PERSON_1].docx"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Прайс_[PERSON_1]_А.xlsx"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Счёт_[PERSON_1]_2026.pdf"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    },
+    {
+     "token": "[PERSON_2]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "КП_[PERSON_1]-[PERSON_2].docx"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1]_спецификация.xlsx"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1]_ДОГОВОР.PDF"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    },
+    {
+     "token": "[PERSON_2]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Акт_сверки_[PERSON_1]_[PERSON_2].xlsx"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Заявка.[PERSON_1].docx"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "/home/[PERSON_1]/Документы/прайс.xlsx"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "C:\\Users\\[PERSON_1]\\Загрузки\\счёт.pdf"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    },
+    {
+     "token": "[PERSON_2]",
+     "type": "PERSON"
+    },
+    {
+     "token": "[PERSON_3]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "/srv/data/[PERSON_1]_[PERSON_2]_[PERSON_3]/договор.docx"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    },
+    {
+     "token": "[PERSON_2]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "./out/[PERSON_1]/КП_[PERSON_2].pdf"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    },
+    {
+     "token": "[PERSON_2]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Вложение: [PERSON_1]_[PERSON_2]_прайс.xlsx (2 МБ)"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    },
+    {
+     "token": "[PERSON_2]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "{\"path\":\"Документы/[PERSON_1]/Договор_[PERSON_2].docx\"}"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "https://example.com/files/[PERSON_1]_договор.pdf"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    },
+    {
+     "token": "[PERSON_2]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Письмо_[PERSON_1]_[PERSON_2].docx"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1]_Д.Н._доверенность.pdf"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Подписант: [PERSON_1], директор"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "ГЕНЕРАЛЬНЫЙ ДИРЕКТОР [PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "от [PERSON_1] получено"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "менеджер [PERSON_1] ответил"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Контакт: [PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "ФИО: [PERSON_1]"
+  },
+  {
+   "entities": [],
+   "text": "Металлопрокат_прайс.xlsx"
+  },
+  {
+   "entities": [],
+   "text": "Счёт_на_оплату_2026.pdf"
+  },
+  {
+   "entities": [],
+   "text": "Коммерческое_предложение_v2.docx"
+  },
+  {
+   "entities": [],
+   "text": "Шаблон_договора_поставки.docx"
+  },
+  {
+   "entities": [],
+   "text": "Спецификация_Арматура.docx"
+  },
+  {
+   "entities": [],
+   "text": "Закупки_Урал_2026.pdf"
+  },
+  {
+   "entities": [],
+   "text": "Прайс_Сибирь_июнь.xlsx"
+  },
+  {
+   "entities": [],
+   "text": "Акт_сверки_взаиморасчётов.xlsx"
+  },
+  {
+   "entities": [],
+   "text": "Накладная_№5_от_01.09.2026.pdf"
+  },
+  {
+   "entities": [],
+   "text": "Протокол_разногласий.docx"
+  },
+  {
+   "entities": [],
+   "text": "Реестр_платежей_Август.xlsx"
+  },
+  {
+   "entities": [],
+   "text": "Каталог_Крепёж_Центр.pdf"
+  },
+  {
+   "entities": [],
+   "text": "Сводная-таблица.Закупки.csv"
+  },
+  {
+   "entities": [],
+   "text": "/srv/data/Металлопрокат/прайс.xlsx"
+  },
+  {
+   "entities": [],
+   "text": "/home/user/Документы/Прайсы/Цемент_М500.xlsx"
+  },
+  {
+   "entities": [],
+   "text": "C:\\Users\\Менеджер\\Загрузки\\Заявка_на_закупку.docx"
+  },
+  {
+   "entities": [],
+   "text": "./out/Склад/Остатки_на_складе.csv"
+  },
+  {
+   "entities": [],
+   "text": "Техническое_задание_Стройматериалы_опт.docx"
+  },
+  {
+   "entities": [],
+   "text": "Отчёт_итоговый_Q3.pdf"
+  },
+  {
+   "entities": [],
+   "text": "Приложение_1_Форма_заявки.docx"
+  },
+  {
+   "entities": [],
+   "text": "ТЕХМЕТАЛЛ СЕРВИС"
+  },
+  {
+   "entities": [],
+   "text": "РОМАШКА ТРЕЙД"
+  },
+  {
+   "entities": [],
+   "text": "ЗАО МЕТАЛЛТОРГ"
+  },
+  {
+   "entities": [],
+   "text": "ГЕНЕРАЛЬНЫЙ ДИРЕКТОР ДЕЙСТВУЕТ НА ОСНОВАНИИ УСТАВА"
+  },
+  {
+   "entities": [],
+   "text": "ОБЩЕСТВО С ОГРАНИЧЕННОЙ ОТВЕТСТВЕННОСТЬЮ СИБИРЬ СНАБ"
+  },
+  {
+   "entities": [],
+   "text": "СПЕЦИФИКАЦИЯ НА ПОСТАВКУ МЕТАЛЛОПРОКАТА"
+  },
+  {
+   "entities": [],
+   "text": "ДОГОВОР ПОСТАВКИ № 5 ОТ 01.09.2026"
+  },
+  {
+   "entities": [],
+   "text": "КОММЕРЧЕСКОЕ ПРЕДЛОЖЕНИЕ НА АРМАТУРУ"
+  },
+  {
+   "entities": [],
+   "text": "СТАЛЬ ИНВЕСТ ГРУПП"
+  },
+  {
+   "entities": [],
+   "text": "УРАЛ СТРОЙ ТОРГ"
+  },
+  {
+   "entities": [],
+   "text": "АКТ СВЕРКИ ВЗАИМОРАСЧЁТОВ"
+  },
+  {
+   "entities": [],
+   "text": "поставка арматуры и проволоки"
+  },
+  {
+   "entities": [],
+   "text": "ТЦ ЦЕНТР ТОРГ"
+  },
+  {
+   "entities": [],
+   "text": "АЛЬФА ПЛЮС"
+  },
+  {
+   "entities": [],
+   "text": "ВЕРА НАДЕЖДА ЛЮБОВЬ"
+  },
+  {
+   "entities": [
+    {
+     "token": "[ADDRESS_1]",
+     "type": "ADDRESS"
+    }
+   ],
+   "text": "[ADDRESS_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[ADDRESS_1]",
+     "type": "ADDRESS"
+    }
+   ],
+   "text": "Доставка: г. Москва, [ADDRESS_1]."
+  },
+  {
+   "entities": [
+    {
+     "token": "[ADDRESS_1]",
+     "type": "ADDRESS"
+    }
+   ],
+   "text": "Заберём на [ADDRESS_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[ADDRESS_1]",
+     "type": "ADDRESS"
+    }
+   ],
+   "text": "доставить на [ADDRESS_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[ADDRESS_1]",
+     "type": "ADDRESS"
+    }
+   ],
+   "text": "находится по [ADDRESS_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[ADDRESS_1]",
+     "type": "ADDRESS"
+    }
+   ],
+   "text": "[ADDRESS_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[ADDRESS_1]",
+     "type": "ADDRESS"
+    }
+   ],
+   "text": "[ADDRESS_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[ADDRESS_1]",
+     "type": "ADDRESS"
+    }
+   ],
+   "text": "[ADDRESS_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[ADDRESS_1]",
+     "type": "ADDRESS"
+    }
+   ],
+   "text": "[ADDRESS_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[ADDRESS_1]",
+     "type": "ADDRESS"
+    }
+   ],
+   "text": "[ADDRESS_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[ADDRESS_1]",
+     "type": "ADDRESS"
+    }
+   ],
+   "text": "[ADDRESS_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[ADDRESS_1]",
+     "type": "ADDRESS"
+    }
+   ],
+   "text": "г. Москва, [ADDRESS_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[ADDRESS_1]",
+     "type": "ADDRESS"
+    }
+   ],
+   "text": "по адресу: [ADDRESS_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[ADDRESS_1]",
+     "type": "ADDRESS"
+    }
+   ],
+   "text": "адрес доставки: [ADDRESS_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[ADDRESS_1]",
+     "type": "ADDRESS"
+    }
+   ],
+   "text": "[ADDRESS_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[ADDRESS_1]",
+     "type": "ADDRESS"
+    }
+   ],
+   "text": "[ADDRESS_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[ADDRESS_1]",
+     "type": "ADDRESS"
+    }
+   ],
+   "text": "[ADDRESS_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[ADDRESS_1]",
+     "type": "ADDRESS"
+    }
+   ],
+   "text": "[ADDRESS_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[ADDRESS_1]",
+     "type": "ADDRESS"
+    }
+   ],
+   "text": "[ADDRESS_1]"
+  },
+  {
+   "entities": [],
+   "text": "в переулке Тихом нет"
+  },
+  {
+   "entities": [
+    {
+     "token": "[ADDRESS_1]",
+     "type": "ADDRESS"
+    }
+   ],
+   "text": "[ADDRESS_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[ADDRESS_1]",
+     "type": "ADDRESS"
+    }
+   ],
+   "text": "[ADDRESS_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[ADDRESS_1]",
+     "type": "ADDRESS"
+    }
+   ],
+   "text": "[ADDRESS_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[ADDRESS_1]",
+     "type": "ADDRESS"
+    }
+   ],
+   "text": "[ADDRESS_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[ADDRESS_1]",
+     "type": "ADDRESS"
+    }
+   ],
+   "text": "[ADDRESS_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[ADDRESS_1]",
+     "type": "ADDRESS"
+    }
+   ],
+   "text": "[ADDRESS_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[ADDRESS_1]",
+     "type": "ADDRESS"
+    }
+   ],
+   "text": "[ADDRESS_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[ADDRESS_1]",
+     "type": "ADDRESS"
+    }
+   ],
+   "text": "[ADDRESS_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[ADDRESS_1]",
+     "type": "ADDRESS"
+    }
+   ],
+   "text": "[ADDRESS_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[ADDRESS_1]",
+     "type": "ADDRESS"
+    }
+   ],
+   "text": "г. Москва, [ADDRESS_1]."
+  },
+  {
+   "entities": [],
+   "text": "АБ-12 д.5"
+  },
+  {
+   "entities": [],
+   "text": "Артикул АБ-12 д.5 по ТУ"
+  },
+  {
+   "entities": [],
+   "text": "размер 10x20"
+  },
+  {
+   "entities": [],
+   "text": "ГОСТ 12345-2014"
+  },
+  {
+   "entities": [],
+   "text": "стр. 5 договора"
+  },
+  {
+   "entities": [],
+   "text": "д. 5 мм"
+  },
+  {
+   "entities": [],
+   "text": "лит. А, корп. 2"
+  },
+  {
+   "entities": [],
+   "text": "Светильник ул. LED 50W"
+  },
+  {
+   "entities": [],
+   "text": "Прожектор ул. Серия 5000"
+  },
+  {
+   "entities": [],
+   "text": "пр. 10"
+  },
+  {
+   "entities": [],
+   "text": "Примечание: пр. 10 штук"
+  },
+  {
+   "entities": [],
+   "text": "Цена 1500 руб, итого 12000"
+  },
+  {
+   "entities": [
+    {
+     "token": "[ACCOUNT_1]",
+     "type": "ACCOUNT"
+    }
+   ],
+   "text": "Счёт [ACCOUNT_1]"
+  },
+  {
+   "entities": [],
+   "text": "г. Москва, Заказ 5."
+  },
+  {
+   "entities": [],
+   "text": "в г. Москве"
+  },
+  {
+   "entities": [],
+   "text": "на улице Ленина"
+  },
+  {
+   "entities": [],
+   "text": "ул. Ленина 5 коробок"
+  },
+  {
+   "entities": [],
+   "text": "ул. Ленина д. 5 шт"
+  },
+  {
+   "entities": [],
+   "text": "Тираж 100000 экз., Санкт-Петербург"
+  },
+  {
+   "entities": [],
+   "text": "Серия 123456"
+  },
+  {
+   "entities": [],
+   "text": "1234567890"
+  },
+  {
+   "entities": [],
+   "text": "119019, цена 5"
+  },
+  {
+   "entities": [],
+   "text": "Позиция 119019 в прайсе"
+  },
+  {
+   "entities": [
+    {
+     "token": "[ADDRESS_1]",
+     "type": "ADDRESS"
+    }
+   ],
+   "text": "Везём по [ADDRESS_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[ADDRESS_1]",
+     "type": "ADDRESS"
+    }
+   ],
+   "text": "[ADDRESS_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[ADDRESS_1]",
+     "type": "ADDRESS"
+    },
+    {
+     "token": "[ADDRESS_2]",
+     "type": "ADDRESS"
+    }
+   ],
+   "text": "[ADDRESS_1], г. Москва, [ADDRESS_2]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[ADDRESS_1]",
+     "type": "ADDRESS"
+    }
+   ],
+   "text": "[ADDRESS_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[ADDRESS_1]",
+     "type": "ADDRESS"
+    }
+   ],
+   "text": "[ADDRESS_1]"
+  },
+  {
+   "entities": [],
+   "text": "Лист 10x20 мм, ГОСТ 12345-2014"
+  },
+  {
+   "entities": [],
+   "text": "см. стр. 5 договора"
+  },
+  {
+   "entities": [],
+   "text": "Труба d 20, д. 5 мм"
+  },
+  {
+   "entities": [],
+   "text": "Светильник ул. LED 50W, 12 шт"
+  },
+  {
+   "entities": [],
+   "text": "Примечание: пр. 10 штук в упаковке"
+  },
+  {
+   "entities": [
+    {
+     "token": "[ACCOUNT_1]",
+     "type": "ACCOUNT"
+    }
+   ],
+   "text": "Итого 12000 руб, счёт [ACCOUNT_1]"
+  },
+  {
+   "entities": [],
+   "text": "Склад в г. Москва, Заказ 5."
+  },
+  {
+   "entities": [],
+   "text": "Доставка на улице Ленина возможна"
+  },
+  {
+   "entities": [],
+   "text": "Партия 119019 отгружена"
+  },
+  {
+   "entities": [],
+   "text": "Награда органайзер 3050 2850 2620 2390 2180"
+  },
+  {
+   "entities": [],
+   "text": "3050 2850 2620 2390 2180 1990"
+  },
+  {
+   "entities": [
+    {
+     "token": "[CARD_1]",
+     "type": "CARD"
+    }
+   ],
+   "text": "[CARD_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[CARD_1]",
+     "type": "CARD"
+    }
+   ],
+   "text": "[CARD_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[CARD_1]",
+     "type": "CARD"
+    }
+   ],
+   "text": "[CARD_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[CARD_1]",
+     "type": "CARD"
+    }
+   ],
+   "text": "карта [CARD_1] до 12/27"
+  },
+  {
+   "entities": [
+    {
+     "token": "[CARD_1]",
+     "type": "CARD"
+    }
+   ],
+   "text": "номер карты: [CARD_1] спасибо"
+  },
+  {
+   "entities": [
+    {
+     "token": "[CARD_1]",
+     "type": "CARD"
+    }
+   ],
+   "text": "Оплата картой Visa [CARD_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[CARD_1]",
+     "type": "CARD"
+    }
+   ],
+   "text": "[CARD_1] 123"
+  },
+  {
+   "entities": [
+    {
+     "token": "[CARD_1]",
+     "type": "CARD"
+    }
+   ],
+   "text": "[CARD_1] 1500 руб"
+  },
+  {
+   "entities": [
+    {
+     "token": "[CARD_1]",
+     "type": "CARD"
+    }
+   ],
+   "text": "[CARD_1] 12/27"
+  },
+  {
+   "entities": [
+    {
+     "token": "[CARD_1]",
+     "type": "CARD"
+    }
+   ],
+   "text": "Клиент оплатил заказ на прошлой неделе по реквизитам [CARD_1] — 1500 руб"
+  },
+  {
+   "entities": [
+    {
+     "token": "[CARD_1]",
+     "type": "CARD"
+    }
+   ],
+   "text": "Клиент оплатил заказ на прошлой неделе и сообщил номер [CARD_1] CVV 123"
+  },
+  {
+   "entities": [
+    {
+     "token": "[CARD_1]",
+     "type": "CARD"
+    }
+   ],
+   "text": "[CARD_1] 123 2026"
+  },
+  {
+   "entities": [
+    {
+     "token": "[CARD_1]",
+     "type": "CARD"
+    }
+   ],
+   "text": "[CARD_1] 1500 2000"
+  },
+  {
+   "entities": [
+    {
+     "token": "[CARD_1]",
+     "type": "CARD"
+    }
+   ],
+   "text": "5000 [CARD_1] 1500"
+  },
+  {
+   "entities": [
+    {
+     "token": "[CARD_1]",
+     "type": "CARD"
+    }
+   ],
+   "text": "Органайзер | [CARD_1] | шт"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Позвоните [PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Передайте [PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Скажи [PERSON_1], что товар пришёл"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1]"
+  },
+  {
+   "entities": [],
+   "text": "Толстая Любовь Сергеевна"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Заказ у [PERSON_1] оформлен"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1], тел. снизу"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Поставщик [PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Генеральный директор [PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Директор: [PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "{\"owner\": \"[PERSON_1].\"}"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Нужен цемент М500, 40 тонн. Контакт: [PERSON_1]."
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1]"
+  },
+  {
+   "entities": [],
+   "text": "ООО Ромашка"
+  },
+  {
+   "entities": [],
+   "text": "АО «Металлторг»"
+  },
+  {
+   "entities": [],
+   "text": "ПАО Сбербанк"
+  },
+  {
+   "entities": [
+    {
+     "token": "[INN_1]",
+     "type": "INN"
+    }
+   ],
+   "text": "ИП ИНН [INN_1]"
+  },
+  {
+   "entities": [],
+   "text": "генеральный директор"
+  },
+  {
+   "entities": [],
+   "text": "Менеджер по закупкам"
+  },
+  {
+   "entities": [],
+   "text": "Главный бухгалтер"
+  },
+  {
+   "entities": [],
+   "text": "Исполнительный директор компании"
+  },
+  {
+   "entities": [
+    {
+     "token": "[ADDRESS_1]",
+     "type": "ADDRESS"
+    }
+   ],
+   "text": "[ADDRESS_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[ADDRESS_1]",
+     "type": "ADDRESS"
+    }
+   ],
+   "text": "[ADDRESS_1]"
+  },
+  {
+   "entities": [],
+   "text": "проспект Ленина"
+  },
+  {
+   "entities": [],
+   "text": "Москва, Тверская улица"
+  },
+  {
+   "entities": [],
+   "text": "школа имени Ивана Петрова"
+  },
+  {
+   "entities": [],
+   "text": "площадь Гагарина"
+  },
+  {
+   "entities": [],
+   "text": "Лада Веста"
+  },
+  {
+   "entities": [],
+   "text": "Магазин Камин"
+  },
+  {
+   "entities": [],
+   "text": "Sony Bravia 55"
+  },
+  {
+   "entities": [],
+   "text": "Цемент М500 ГОСТ 10178-85"
+  },
+  {
+   "entities": [],
+   "text": "Арматура А500С d12 мм"
+  },
+  {
+   "entities": [],
+   "text": "Швеллер 12П, 40 тонн"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1]"
+  },
+  {
+   "entities": [],
+   "text": "Это практична и логична"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    },
+    {
+     "token": "[PERSON_2]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Позвони [PERSON_1]. [PERSON_2] придёт позже"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    },
+    {
+     "token": "[PERSON_2]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1]. [PERSON_2] пришёл"
+  },
+  {
+   "entities": [],
+   "text": "John Smith"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PHONE_1]",
+     "type": "PHONE"
+    }
+   ],
+   "text": "[PHONE_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PHONE_1]",
+     "type": "PHONE"
+    }
+   ],
+   "text": "[PHONE_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PHONE_1]",
+     "type": "PHONE"
+    }
+   ],
+   "text": "[PHONE_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PHONE_1]",
+     "type": "PHONE"
+    }
+   ],
+   "text": "[PHONE_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PHONE_1]",
+     "type": "PHONE"
+    }
+   ],
+   "text": "[PHONE_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PHONE_1]",
+     "type": "PHONE"
+    }
+   ],
+   "text": "[PHONE_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PHONE_1]",
+     "type": "PHONE"
+    }
+   ],
+   "text": "[PHONE_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PHONE_1]",
+     "type": "PHONE"
+    }
+   ],
+   "text": "[PHONE_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PHONE_1]",
+     "type": "PHONE"
+    }
+   ],
+   "text": "[PHONE_1]"
+  },
+  {
+   "entities": [],
+   "text": "цена 1 234 567.89 руб"
+  },
+  {
+   "entities": [],
+   "text": "+12 345 000 000 руб"
+  },
+  {
+   "entities": [],
+   "text": "0012 345 678"
+  },
+  {
+   "entities": [],
+   "text": "+3 15 20 25 30"
+  },
+  {
+   "entities": [],
+   "text": "+20 000 000 000"
+  }
+ ],
+ "check": [
+  {
+   "has_pii": true,
+   "types": [
+    "PHONE"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PHONE"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PHONE"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PHONE"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PHONE"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PHONE"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PHONE"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PHONE"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PHONE"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PHONE"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PHONE"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PHONE"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PHONE"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PHONE"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PHONE"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PHONE"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PHONE"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PHONE"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PHONE"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PHONE"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PHONE"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PHONE"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PHONE"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PHONE"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PHONE"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PHONE"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PHONE"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PHONE"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PHONE"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PHONE"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "EMAIL"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "EMAIL"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "EMAIL"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "EMAIL"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "EMAIL"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "CARD"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "CARD"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "CARD"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "CARD"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "CARD"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "ACCOUNT"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "ACCOUNT"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "ACCOUNT"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "SNILS"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "SNILS"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "SNILS"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "SNILS"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "INN"
+   ]
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "INN"
+   ]
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON",
+    "PHONE"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "ADDRESS"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "ADDRESS"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "ADDRESS"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "ADDRESS"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "ADDRESS"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "ADDRESS"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "ADDRESS"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "ADDRESS"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "ADDRESS"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "ADDRESS"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "ADDRESS"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "ADDRESS"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "ADDRESS"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "ADDRESS"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "ADDRESS"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "ADDRESS"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "ADDRESS"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "ADDRESS"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "ADDRESS"
+   ]
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "ADDRESS"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "ADDRESS"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "ADDRESS"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "ADDRESS"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "ADDRESS"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "ADDRESS"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "ADDRESS"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "ADDRESS"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "ADDRESS"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "ADDRESS"
+   ]
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "ACCOUNT"
+   ]
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "ADDRESS"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "ADDRESS"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "ADDRESS"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "ADDRESS"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "ADDRESS"
+   ]
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "ACCOUNT"
+   ]
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "CARD"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "CARD"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "CARD"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "CARD"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "CARD"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "CARD"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "CARD"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "CARD"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "CARD"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "CARD"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "CARD"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "CARD"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "CARD"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "CARD"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "CARD"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "INN"
+   ]
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "ADDRESS"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "ADDRESS"
+   ]
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PHONE"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PHONE"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PHONE"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PHONE"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PHONE"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PHONE"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PHONE"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PHONE"
+   ]
+  },
+  {
+   "has_pii": true,
+   "types": [
+    "PHONE"
+   ]
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  },
+  {
+   "has_pii": false,
+   "types": []
+  }
+ ],
+ "health_keys": [
+  "status"
+ ],
+ "health_status": "ok",
+ "restore": [
+  {
+   "text": "звоните +7 (916) 123-45-67"
+  },
+  {
+   "text": "тел 8 916 123 45 67"
+  },
+  {
+   "text": "8–916–123–45–67"
+  },
+  {
+   "text": "8—916—123—45—67"
+  },
+  {
+   "text": "8‑916‑123‑45‑67"
+  },
+  {
+   "text": "8−916−123−45−67"
+  },
+  {
+   "text": "8/916/123/45/67"
+  },
+  {
+   "text": "916/123/45/67"
+  },
+  {
+   "text": "8.916.123.45.67"
+  },
+  {
+   "text": "+7.916.123.45.67"
+  },
+  {
+   "text": "+7 916 123 45 67"
+  },
+  {
+   "text": "８９１６１２３４５６７"
+  },
+  {
+   "text": "заказ 12 8 916 123 45 67"
+  },
+  {
+   "text": "+375 29 123-45-67"
+  },
+  {
+   "text": "+375 (29) 123 45 67"
+  },
+  {
+   "text": "(495) 123-45-67"
+  },
+  {
+   "text": "8 (495) 123-45-67"
+  },
+  {
+   "text": "8 (3812) 12-34-56"
+  },
+  {
+   "text": "8 (84922) 3-45-67"
+  },
+  {
+   "text": "тел. 9261234567"
+  },
+  {
+   "text": "Телефон для связи: 9261234567"
+  },
+  {
+   "text": "8​916​123​45​67"
+  },
+  {
+   "text": "тел +48 123 456 789"
+  },
+  {
+   "text": "тел +34 612 345 678"
+  },
+  {
+   "text": "тел +32 475 123 456"
+  },
+  {
+   "text": "тел +33 6 12 34 56 78"
+  },
+  {
+   "text": "тел +45 12 34 56 78"
+  },
+  {
+   "text": "тел +86 13800138000"
+  },
+  {
+   "text": "тел +90 5321234567"
+  },
+  {
+   "text": "тел 0086 138 0013 8000"
+  },
+  {
+   "text": "пишите ivan.petrov@example.ru срочно"
+  },
+  {
+   "text": "иван@пример.рф"
+  },
+  {
+   "text": "ivan@пример.рф"
+  },
+  {
+   "text": "ИВАН.ПЕТРОВ@ПОЧТА.РФ"
+  },
+  {
+   "text": "ivan＠example.com"
+  },
+  {
+   "text": "карта 4111 1111 1111 1111"
+  },
+  {
+   "text": "4111-1111-1111-1111"
+  },
+  {
+   "text": "карта 5555555555554444"
+  },
+  {
+   "text": "карта 2200 7007 1234 5676"
+  },
+  {
+   "text": "4111‑1111‑1111‑1111"
+  },
+  {
+   "text": "р/с 40702810123456789012"
+  },
+  {
+   "text": "счёт 40817810099910004312"
+  },
+  {
+   "text": "40817 810 0 9991 0004312"
+  },
+  {
+   "text": "СНИЛС 112-233-445 95"
+  },
+  {
+   "text": "112-233-445 95"
+  },
+  {
+   "text": "СНИЛС страхового свидетельства № 112-233-445 95"
+  },
+  {
+   "text": "СНИЛС (страховой номер): 11223344595"
+  },
+  {
+   "text": "ИНН 500100732259"
+  },
+  {
+   "text": "Заказ 12345, 250 шт, цена 1999.90 руб, артикул AB-100500"
+  },
+  {
+   "text": "артикул 9991234567"
+  },
+  {
+   "text": "тел 7707083893"
+  },
+  {
+   "text": "сумма 1 500 000 00 00"
+  },
+  {
+   "text": "заказ 123 456 78 90"
+  },
+  {
+   "text": "3,89991234567"
+  },
+  {
+   "text": "дата 12.09.2026"
+  },
+  {
+   "text": "партия 1234567890123"
+  },
+  {
+   "text": "срок 12/05/2024"
+  },
+  {
+   "text": "срок поставки 10–15 дней"
+  },
+  {
+   "text": "версия 1.2.3.4"
+  },
+  {
+   "text": "адрес 192.168.100.200"
+  },
+  {
+   "text": "артикул 1234 5678 9012 3456"
+  },
+  {
+   "text": "партия 1234567890123456"
+  },
+  {
+   "text": "счёт 12345678901234567890"
+  },
+  {
+   "text": "ТУ 14-1-5555-2012"
+  },
+  {
+   "text": "кол-во 2 500 000 00 00"
+  },
+  {
+   "text": "отношение 3/4 и 5-6"
+  },
+  {
+   "text": "ceny@ i @ptr"
+  },
+  {
+   "text": "1 234 567,89 руб"
+  },
+  {
+   "text": "+1 234 567 руб"
+  },
+  {
+   "text": "12 345 678"
+  },
+  {
+   "text": "Арт. 123-456-789"
+  },
+  {
+   "text": "итого 12 345 678 руб"
+  },
+  {
+   "text": "цена 1 234 567.89"
+  },
+  {
+   "text": "сумма +12 345 678 руб"
+  },
+  {
+   "text": "партия 123 456 789 шт"
+  },
+  {
+   "text": "размер 12 34 56 78 мм"
+  },
+  {
+   "text": "00 123 456 789 шт"
+  },
+  {
+   "text": "№ 0012 3456 789"
+  },
+  {
+   "text": "арт 12 34 56 78 90"
+  },
+  {
+   "text": "10 20 30 40 50 60 шт"
+  },
+  {
+   "text": "итого +1 200 000 000 руб"
+  },
+  {
+   "text": "допуск +3 15 20 25 30"
+  },
+  {
+   "text": "Иванов Пётр Сергеевич приедет завтра"
+  },
+  {
+   "text": "Контакт: Сидоров А.В., тел. снизу"
+  },
+  {
+   "text": "Договор подписал Кузнецов Алексей Петрович"
+  },
+  {
+   "text": "Менеджер Мария Петровна Смирнова ответила"
+  },
+  {
+   "text": "Здравствуйте, Мария Петровна!"
+  },
+  {
+   "text": "Директор Орлов О.О. подтвердил заказ"
+  },
+  {
+   "text": "Счёт выставил Козлов Иван"
+  },
+  {
+   "text": "Закупщик Фёдоров Дмитрий Николаевич на связи"
+  },
+  {
+   "text": "Ответственный: Никитина Ольга Владимировна"
+  },
+  {
+   "text": "Поставщик ИП Смирнов Алексей Петрович"
+  },
+  {
+   "text": "От Васильева Андрея Игоревича пришло письмо"
+  },
+  {
+   "text": "Подпись: Морозов В.П."
+  },
+  {
+   "text": "Кладовщик Захаров Сергей отгрузил цемент"
+  },
+  {
+   "text": "Бухгалтер Павлова Елена Сергеевна"
+  },
+  {
+   "text": "Вчера звонил Алексей Михайлович Громов"
+  },
+  {
+   "text": "Контактное лицо: Белов Артём"
+  },
+  {
+   "text": "Заказчик Тихонов Роман Олегович"
+  },
+  {
+   "text": "Получатель Крылова Анна"
+  },
+  {
+   "text": "ФИО: Соколов Максим Андреевич"
+  },
+  {
+   "text": "Подписант Лебедев И.И. отсутствует"
+  },
+  {
+   "text": "позвони Петрову, пожалуйста"
+  },
+  {
+   "text": "Передайте Иванову, что счёт оплачен"
+  },
+  {
+   "text": "Письмо от Ивановой получено"
+  },
+  {
+   "text": "Отправь счёт Кузнецовой Анне Викторовне"
+  },
+  {
+   "text": "Согласуй с Сидоровым и Козловым"
+  },
+  {
+   "text": "Мы говорили с Дмитрием Николаевичем вчера"
+  },
+  {
+   "text": "Скажи Ольге Владимировне, что товар пришёл"
+  },
+  {
+   "text": "Спроси у Смирнова про отгрузку"
+  },
+  {
+   "text": "Передай привет Алексею Громову"
+  },
+  {
+   "text": "Это заказ для Никитиной О.В."
+  },
+  {
+   "text": "Письмо подписано Васильевым А.И."
+  },
+  {
+   "text": "Свяжись с Тихоновым Р.О. по цене"
+  },
+  {
+   "text": "Менеджер сказал, что Морозов не приедет"
+  },
+  {
+   "text": "Позвонил Захаров, спросил про счёт"
+  },
+  {
+   "text": "Для Крыловой А. подготовить КП"
+  },
+  {
+   "text": "По вопросу оплаты обращайтесь к Павловой Елене"
+  },
+  {
+   "text": "На встрече были Белов и Соколова"
+  },
+  {
+   "text": "Наш закупщик Сидоров А.В., тел. 8-902-555-12-34"
+  },
+  {
+   "text": "Кузнецов К.К. просил перенести срок"
+  },
+  {
+   "text": "Файл прислал Иванов И.И. вчера вечером"
+  },
+  {
+   "text": "Файл Иванов Пётр прислал вчера"
+  },
+  {
+   "text": "Заявку подготовила Орлова Т."
+  },
+  {
+   "text": "Договор с Фёдоровым Д.Н. подписан"
+  },
+  {
+   "text": "Привет, Сергей! Как дела?"
+  },
+  {
+   "text": "Лебедеву Игорю Петровичу направлено уведомление"
+  },
+  {
+   "text": "Иванов_договор.docx"
+  },
+  {
+   "text": "договор_Иванова.docx"
+  },
+  {
+   "text": "Прайс_Петров_А.xlsx"
+  },
+  {
+   "text": "Счёт_Сидорову_2026.pdf"
+  },
+  {
+   "text": "КП_Кузнецов-Алексей.docx"
+  },
+  {
+   "text": "иванов_спецификация.xlsx"
+  },
+  {
+   "text": "ПЕТРОВ_ДОГОВОР.PDF"
+  },
+  {
+   "text": "Акт_сверки_Смирнова_Ольга.xlsx"
+  },
+  {
+   "text": "Заявка.Морозов.docx"
+  },
+  {
+   "text": "/home/Иванов/Документы/прайс.xlsx"
+  },
+  {
+   "text": "C:\\Users\\Сидорова\\Загрузки\\счёт.pdf"
+  },
+  {
+   "text": "/srv/data/Кузнецов_Алексей_Петрович/договор.docx"
+  },
+  {
+   "text": "./out/Павлова/КП_Павловой.pdf"
+  },
+  {
+   "text": "Вложение: Громов_Артём_прайс.xlsx (2 МБ)"
+  },
+  {
+   "text": "{\"path\":\"Документы/Соколов/Договор_Соколова.docx\"}"
+  },
+  {
+   "text": "https://example.com/files/Лебедев_договор.pdf"
+  },
+  {
+   "text": "Письмо_Дмитрию_Николаевичу.docx"
+  },
+  {
+   "text": "Фёдоров_Д.Н._доверенность.pdf"
+  },
+  {
+   "text": "ИВАНОВ ИВАН ИВАНОВИЧ"
+  },
+  {
+   "text": "СИДОРОВ АЛЕКСЕЙ НИКОЛАЕВИЧ"
+  },
+  {
+   "text": "иванов и.и."
+  },
+  {
+   "text": "ИВАНОВ И.И."
+  },
+  {
+   "text": "Подписант: ПЕТРОВ СЕРГЕЙ АНДРЕЕВИЧ, директор"
+  },
+  {
+   "text": "ГЕНЕРАЛЬНЫЙ ДИРЕКТОР СМИРНОВ АЛЕКСЕЙ ПЕТРОВИЧ"
+  },
+  {
+   "text": "от КУЗНЕЦОВОЙ АННЫ ВИКТОРОВНЫ получено"
+  },
+  {
+   "text": "менеджер иванов иван иванович ответил"
+  },
+  {
+   "text": "Контакт: И.И. ИВАНОВ"
+  },
+  {
+   "text": "ФИО: ФЁДОРОВ ДМИТРИЙ НИКОЛАЕВИЧ"
+  },
+  {
+   "text": "Металлопрокат_прайс.xlsx"
+  },
+  {
+   "text": "Счёт_на_оплату_2026.pdf"
+  },
+  {
+   "text": "Коммерческое_предложение_v2.docx"
+  },
+  {
+   "text": "Шаблон_договора_поставки.docx"
+  },
+  {
+   "text": "Спецификация_Арматура.docx"
+  },
+  {
+   "text": "Закупки_Урал_2026.pdf"
+  },
+  {
+   "text": "Прайс_Сибирь_июнь.xlsx"
+  },
+  {
+   "text": "Акт_сверки_взаиморасчётов.xlsx"
+  },
+  {
+   "text": "Накладная_№5_от_01.09.2026.pdf"
+  },
+  {
+   "text": "Протокол_разногласий.docx"
+  },
+  {
+   "text": "Реестр_платежей_Август.xlsx"
+  },
+  {
+   "text": "Каталог_Крепёж_Центр.pdf"
+  },
+  {
+   "text": "Сводная-таблица.Закупки.csv"
+  },
+  {
+   "text": "/srv/data/Металлопрокат/прайс.xlsx"
+  },
+  {
+   "text": "/home/user/Документы/Прайсы/Цемент_М500.xlsx"
+  },
+  {
+   "text": "C:\\Users\\Менеджер\\Загрузки\\Заявка_на_закупку.docx"
+  },
+  {
+   "text": "./out/Склад/Остатки_на_складе.csv"
+  },
+  {
+   "text": "Техническое_задание_Стройматериалы_опт.docx"
+  },
+  {
+   "text": "Отчёт_итоговый_Q3.pdf"
+  },
+  {
+   "text": "Приложение_1_Форма_заявки.docx"
+  },
+  {
+   "text": "ТЕХМЕТАЛЛ СЕРВИС"
+  },
+  {
+   "text": "РОМАШКА ТРЕЙД"
+  },
+  {
+   "text": "ЗАО МЕТАЛЛТОРГ"
+  },
+  {
+   "text": "ГЕНЕРАЛЬНЫЙ ДИРЕКТОР ДЕЙСТВУЕТ НА ОСНОВАНИИ УСТАВА"
+  },
+  {
+   "text": "ОБЩЕСТВО С ОГРАНИЧЕННОЙ ОТВЕТСТВЕННОСТЬЮ СИБИРЬ СНАБ"
+  },
+  {
+   "text": "СПЕЦИФИКАЦИЯ НА ПОСТАВКУ МЕТАЛЛОПРОКАТА"
+  },
+  {
+   "text": "ДОГОВОР ПОСТАВКИ № 5 ОТ 01.09.2026"
+  },
+  {
+   "text": "КОММЕРЧЕСКОЕ ПРЕДЛОЖЕНИЕ НА АРМАТУРУ"
+  },
+  {
+   "text": "СТАЛЬ ИНВЕСТ ГРУПП"
+  },
+  {
+   "text": "УРАЛ СТРОЙ ТОРГ"
+  },
+  {
+   "text": "АКТ СВЕРКИ ВЗАИМОРАСЧЁТОВ"
+  },
+  {
+   "text": "поставка арматуры и проволоки"
+  },
+  {
+   "text": "ТЦ ЦЕНТР ТОРГ"
+  },
+  {
+   "text": "АЛЬФА ПЛЮС"
+  },
+  {
+   "text": "ВЕРА НАДЕЖДА ЛЮБОВЬ"
+  },
+  {
+   "text": "ул. Ленина, д. 5, кв. 12"
+  },
+  {
+   "text": "Доставка: г. Москва, ул. Ленина, д. 5, кв. 12."
+  },
+  {
+   "text": "Заберём на улице Ленина, д. 5"
+  },
+  {
+   "text": "доставить на улицу Ленина 5а"
+  },
+  {
+   "text": "находится по ул. Ленина, д. 5"
+  },
+  {
+   "text": "УЛ. ЛЕНИНА, Д. 5"
+  },
+  {
+   "text": "ул.Ленина,д.5"
+  },
+  {
+   "text": "Ленина ул., д. 5"
+  },
+  {
+   "text": "Ленина улица 5"
+  },
+  {
+   "text": "дом 5 по улице Ленина"
+  },
+  {
+   "text": "д. 5, ул. Ленина"
+  },
+  {
+   "text": "г. Москва, Ленина 5"
+  },
+  {
+   "text": "по адресу: Ленина 5"
+  },
+  {
+   "text": "адрес доставки: Ленина, 5, оф. 3"
+  },
+  {
+   "text": "пр-т Мира, д. 10, корп. 2, стр. 1"
+  },
+  {
+   "text": "пр-кт Мира 10"
+  },
+  {
+   "text": "пр. Мира 10"
+  },
+  {
+   "text": "проспект Мира, 10"
+  },
+  {
+   "text": "пер. Тихий, 3"
+  },
+  {
+   "text": "в переулке Тихом нет"
+  },
+  {
+   "text": "б-р Яна Райниса, д.2"
+  },
+  {
+   "text": "наб. Фонтанки, 15 лит. А"
+  },
+  {
+   "text": "ш. Энтузиастов, 5"
+  },
+  {
+   "text": "пл. Революции, 2"
+  },
+  {
+   "text": "ул. 8 Марта, 4"
+  },
+  {
+   "text": "ул. Красной Армии, д. 7/2"
+  },
+  {
+   "text": "1-я Тверская-Ямская ул., 5"
+  },
+  {
+   "text": "119019, ул. Арбат, д. 1"
+  },
+  {
+   "text": "ул. Арбат, д. 1, 119019"
+  },
+  {
+   "text": "г. Москва, ул. Арбат, д. 1."
+  },
+  {
+   "text": "АБ-12 д.5"
+  },
+  {
+   "text": "Артикул АБ-12 д.5 по ТУ"
+  },
+  {
+   "text": "размер 10x20"
+  },
+  {
+   "text": "ГОСТ 12345-2014"
+  },
+  {
+   "text": "стр. 5 договора"
+  },
+  {
+   "text": "д. 5 мм"
+  },
+  {
+   "text": "лит. А, корп. 2"
+  },
+  {
+   "text": "Светильник ул. LED 50W"
+  },
+  {
+   "text": "Прожектор ул. Серия 5000"
+  },
+  {
+   "text": "пр. 10"
+  },
+  {
+   "text": "Примечание: пр. 10 штук"
+  },
+  {
+   "text": "Цена 1500 руб, итого 12000"
+  },
+  {
+   "text": "Счёт 40702810400000012345"
+  },
+  {
+   "text": "г. Москва, Заказ 5."
+  },
+  {
+   "text": "в г. Москве"
+  },
+  {
+   "text": "на улице Ленина"
+  },
+  {
+   "text": "ул. Ленина 5 коробок"
+  },
+  {
+   "text": "ул. Ленина д. 5 шт"
+  },
+  {
+   "text": "Тираж 100000 экз., Санкт-Петербург"
+  },
+  {
+   "text": "Серия 123456"
+  },
+  {
+   "text": "1234567890"
+  },
+  {
+   "text": "119019, цена 5"
+  },
+  {
+   "text": "Позиция 119019 в прайсе"
+  },
+  {
+   "text": "Везём по ул. Ленина, д. 5"
+  },
+  {
+   "text": "пр-т Мира, д. 10, корп. 2"
+  },
+  {
+   "text": "119019, г. Москва, ул. Арбат, д. 1"
+  },
+  {
+   "text": "ул. Ивана Франко, д. 4"
+  },
+  {
+   "text": "пр. Маршала Жукова, 7"
+  },
+  {
+   "text": "Лист 10x20 мм, ГОСТ 12345-2014"
+  },
+  {
+   "text": "см. стр. 5 договора"
+  },
+  {
+   "text": "Труба d 20, д. 5 мм"
+  },
+  {
+   "text": "Светильник ул. LED 50W, 12 шт"
+  },
+  {
+   "text": "Примечание: пр. 10 штук в упаковке"
+  },
+  {
+   "text": "Итого 12000 руб, счёт 40702810400000012345"
+  },
+  {
+   "text": "Склад в г. Москва, Заказ 5."
+  },
+  {
+   "text": "Доставка на улице Ленина возможна"
+  },
+  {
+   "text": "Партия 119019 отгружена"
+  },
+  {
+   "text": "Награда органайзер 3050 2850 2620 2390 2180"
+  },
+  {
+   "text": "3050 2850 2620 2390 2180 1990"
+  },
+  {
+   "text": "4276 1600 1234 5675"
+  },
+  {
+   "text": "4276160012345675"
+  },
+  {
+   "text": "4276-1600-1234-5675"
+  },
+  {
+   "text": "карта 4276 1600 1234 5675 до 12/27"
+  },
+  {
+   "text": "номер карты: 5469 3800 1234 5673 спасибо"
+  },
+  {
+   "text": "Оплата картой Visa 4111 1111 1111 1111"
+  },
+  {
+   "text": "4276 1600 1234 5675 123"
+  },
+  {
+   "text": "4276 1600 1234 5675 1500 руб"
+  },
+  {
+   "text": "4276 1600 1234 5675 12/27"
+  },
+  {
+   "text": "Клиент оплатил заказ на прошлой неделе по реквизитам 4276 1600 1234 5675 — 1500 руб"
+  },
+  {
+   "text": "Клиент оплатил заказ на прошлой неделе и сообщил номер 4276 1600 1234 5675 CVV 123"
+  },
+  {
+   "text": "4276 1600 1234 5675 123 2026"
+  },
+  {
+   "text": "4276 1600 1234 5675 1500 2000"
+  },
+  {
+   "text": "5000 4276 1600 1234 5675 1500"
+  },
+  {
+   "text": "Органайзер | 3050 2750 2620 2300 | шт"
+  },
+  {
+   "text": "Иванов Иван Иванович"
+  },
+  {
+   "text": "Иванова Мария Ивановна"
+  },
+  {
+   "text": "СИДОРОВ ПЕТР ИВАНОВИЧ"
+  },
+  {
+   "text": "Позвоните Ивану Петровичу"
+  },
+  {
+   "text": "Передайте Ольге Николаевне Смирновой"
+  },
+  {
+   "text": "Скажи Марии Сергеевне, что товар пришёл"
+  },
+  {
+   "text": "Мария Никитична"
+  },
+  {
+   "text": "Мария Ильинична"
+  },
+  {
+   "text": "Владимир Ильич"
+  },
+  {
+   "text": "иван иванович"
+  },
+  {
+   "text": "Петров Сергей"
+  },
+  {
+   "text": "Анна Петрова"
+  },
+  {
+   "text": "Толстая Любовь Сергеевна"
+  },
+  {
+   "text": "Достоевского Фёдора Михайловича"
+  },
+  {
+   "text": "Шевчук Мария"
+  },
+  {
+   "text": "Ткаченко Игорь"
+  },
+  {
+   "text": "Смирнова-Петрова Анна Игоревна"
+  },
+  {
+   "text": "Иванов И.И."
+  },
+  {
+   "text": "Иванов И. И."
+  },
+  {
+   "text": "И.И. Иванов"
+  },
+  {
+   "text": "И. И. Иванов"
+  },
+  {
+   "text": "Иванов И."
+  },
+  {
+   "text": "Цой В.Р."
+  },
+  {
+   "text": "Заказ у Петрова О.И. оформлен"
+  },
+  {
+   "text": "Сидоров А.В., тел. снизу"
+  },
+  {
+   "text": "ИП Иванов"
+  },
+  {
+   "text": "ИП Иванов И.И."
+  },
+  {
+   "text": "Поставщик ИП Петров Пётр"
+  },
+  {
+   "text": "Индивидуальный предприниматель Петров"
+  },
+  {
+   "text": "Генеральный директор Дудорова Марина Евгеньевна"
+  },
+  {
+   "text": "Директор: Иванов Иван Иванович"
+  },
+  {
+   "text": "{\"owner\": \"Сидоров А.В.\"}"
+  },
+  {
+   "text": "Нужен цемент М500, 40 тонн. Контакт: Иван Иванов."
+  },
+  {
+   "text": "Иван"
+  },
+  {
+   "text": "Иванов"
+  },
+  {
+   "text": "Мария"
+  },
+  {
+   "text": "ООО Ромашка"
+  },
+  {
+   "text": "АО «Металлторг»"
+  },
+  {
+   "text": "ПАО Сбербанк"
+  },
+  {
+   "text": "ИП ИНН 500100732259"
+  },
+  {
+   "text": "генеральный директор"
+  },
+  {
+   "text": "Менеджер по закупкам"
+  },
+  {
+   "text": "Главный бухгалтер"
+  },
+  {
+   "text": "Исполнительный директор компании"
+  },
+  {
+   "text": "ул. Александра Невского, д. 5"
+  },
+  {
+   "text": "улица Ленина 5"
+  },
+  {
+   "text": "проспект Ленина"
+  },
+  {
+   "text": "Москва, Тверская улица"
+  },
+  {
+   "text": "школа имени Ивана Петрова"
+  },
+  {
+   "text": "площадь Гагарина"
+  },
+  {
+   "text": "Лада Веста"
+  },
+  {
+   "text": "Магазин Камин"
+  },
+  {
+   "text": "Sony Bravia 55"
+  },
+  {
+   "text": "Цемент М500 ГОСТ 10178-85"
+  },
+  {
+   "text": "Арматура А500С d12 мм"
+  },
+  {
+   "text": "Швеллер 12П, 40 тонн"
+  },
+  {
+   "text": "Петр Первый"
+  },
+  {
+   "text": "Это практична и логична"
+  },
+  {
+   "text": "Королевна Мария"
+  },
+  {
+   "text": "Позвони Ивану. Петрович придёт позже"
+  },
+  {
+   "text": "Мария. Иванов пришёл"
+  },
+  {
+   "text": "John Smith"
+  },
+  {
+   "text": "+48 123 456 789"
+  },
+  {
+   "text": "+34 612 345 678"
+  },
+  {
+   "text": "+32 475 123 456"
+  },
+  {
+   "text": "+33 6 12 34 56 78"
+  },
+  {
+   "text": "+45 12 34 56 78"
+  },
+  {
+   "text": "+86 13800138000"
+  },
+  {
+   "text": "+90 5321234567"
+  },
+  {
+   "text": "0086 138 0013 8000"
+  },
+  {
+   "text": "0049 30 12345678"
+  },
+  {
+   "text": "цена 1 234 567.89 руб"
+  },
+  {
+   "text": "+12 345 000 000 руб"
+  },
+  {
+   "text": "0012 345 678"
+  },
+  {
+   "text": "+3 15 20 25 30"
+  },
+  {
+   "text": "+20 000 000 000"
+  }
+ ],
+ "signatory": [
+  {
+   "text": "директора Иванова Ивана Ивановича"
+  },
+  {
+   "text": "генерального директора Петровой Марии Сергеевны"
+  },
+  {
+   "text": "главного бухгалтера Сидорова Петра Алексеевича"
+  },
+  {
+   "text": "заместителя директора по закупкам Кузнецовой Анны Викторовны"
+  },
+  {
+   "text": null
+  }
+ ],
+ "single": [
+  {
+   "entities": [
+    {
+     "token": "[PHONE_1]",
+     "type": "PHONE"
+    }
+   ],
+   "text": "звоните [PHONE_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PHONE_1]",
+     "type": "PHONE"
+    }
+   ],
+   "text": "тел [PHONE_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PHONE_1]",
+     "type": "PHONE"
+    }
+   ],
+   "text": "[PHONE_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PHONE_1]",
+     "type": "PHONE"
+    }
+   ],
+   "text": "[PHONE_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PHONE_1]",
+     "type": "PHONE"
+    }
+   ],
+   "text": "[PHONE_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PHONE_1]",
+     "type": "PHONE"
+    }
+   ],
+   "text": "[PHONE_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PHONE_1]",
+     "type": "PHONE"
+    }
+   ],
+   "text": "[PHONE_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PHONE_1]",
+     "type": "PHONE"
+    }
+   ],
+   "text": "[PHONE_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PHONE_1]",
+     "type": "PHONE"
+    }
+   ],
+   "text": "[PHONE_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PHONE_1]",
+     "type": "PHONE"
+    }
+   ],
+   "text": "[PHONE_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PHONE_1]",
+     "type": "PHONE"
+    }
+   ],
+   "text": "[PHONE_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PHONE_1]",
+     "type": "PHONE"
+    }
+   ],
+   "text": "[PHONE_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PHONE_1]",
+     "type": "PHONE"
+    }
+   ],
+   "text": "заказ 12 [PHONE_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PHONE_1]",
+     "type": "PHONE"
+    }
+   ],
+   "text": "[PHONE_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PHONE_1]",
+     "type": "PHONE"
+    }
+   ],
+   "text": "[PHONE_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PHONE_1]",
+     "type": "PHONE"
+    }
+   ],
+   "text": "[PHONE_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PHONE_1]",
+     "type": "PHONE"
+    }
+   ],
+   "text": "[PHONE_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PHONE_1]",
+     "type": "PHONE"
+    }
+   ],
+   "text": "[PHONE_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PHONE_1]",
+     "type": "PHONE"
+    }
+   ],
+   "text": "[PHONE_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PHONE_1]",
+     "type": "PHONE"
+    }
+   ],
+   "text": "тел. [PHONE_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PHONE_1]",
+     "type": "PHONE"
+    }
+   ],
+   "text": "Телефон для связи: [PHONE_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PHONE_1]",
+     "type": "PHONE"
+    }
+   ],
+   "text": "[PHONE_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PHONE_1]",
+     "type": "PHONE"
+    }
+   ],
+   "text": "тел [PHONE_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PHONE_1]",
+     "type": "PHONE"
+    }
+   ],
+   "text": "тел [PHONE_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PHONE_1]",
+     "type": "PHONE"
+    }
+   ],
+   "text": "тел [PHONE_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PHONE_1]",
+     "type": "PHONE"
+    }
+   ],
+   "text": "тел [PHONE_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PHONE_1]",
+     "type": "PHONE"
+    }
+   ],
+   "text": "тел [PHONE_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PHONE_1]",
+     "type": "PHONE"
+    }
+   ],
+   "text": "тел [PHONE_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PHONE_1]",
+     "type": "PHONE"
+    }
+   ],
+   "text": "тел [PHONE_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PHONE_1]",
+     "type": "PHONE"
+    }
+   ],
+   "text": "тел [PHONE_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[EMAIL_1]",
+     "type": "EMAIL"
+    }
+   ],
+   "text": "пишите [EMAIL_1] срочно"
+  },
+  {
+   "entities": [
+    {
+     "token": "[EMAIL_1]",
+     "type": "EMAIL"
+    }
+   ],
+   "text": "[EMAIL_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[EMAIL_1]",
+     "type": "EMAIL"
+    }
+   ],
+   "text": "[EMAIL_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[EMAIL_1]",
+     "type": "EMAIL"
+    }
+   ],
+   "text": "[EMAIL_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[EMAIL_1]",
+     "type": "EMAIL"
+    }
+   ],
+   "text": "[EMAIL_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[CARD_1]",
+     "type": "CARD"
+    }
+   ],
+   "text": "карта [CARD_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[CARD_1]",
+     "type": "CARD"
+    }
+   ],
+   "text": "[CARD_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[CARD_1]",
+     "type": "CARD"
+    }
+   ],
+   "text": "карта [CARD_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[CARD_1]",
+     "type": "CARD"
+    }
+   ],
+   "text": "карта [CARD_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[CARD_1]",
+     "type": "CARD"
+    }
+   ],
+   "text": "[CARD_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[ACCOUNT_1]",
+     "type": "ACCOUNT"
+    }
+   ],
+   "text": "р/с [ACCOUNT_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[ACCOUNT_1]",
+     "type": "ACCOUNT"
+    }
+   ],
+   "text": "счёт [ACCOUNT_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[ACCOUNT_1]",
+     "type": "ACCOUNT"
+    }
+   ],
+   "text": "[ACCOUNT_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[SNILS_1]",
+     "type": "SNILS"
+    }
+   ],
+   "text": "СНИЛС [SNILS_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[SNILS_1]",
+     "type": "SNILS"
+    }
+   ],
+   "text": "[SNILS_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[SNILS_1]",
+     "type": "SNILS"
+    }
+   ],
+   "text": "СНИЛС страхового свидетельства № [SNILS_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[SNILS_1]",
+     "type": "SNILS"
+    }
+   ],
+   "text": "СНИЛС (страховой номер): [SNILS_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[INN_1]",
+     "type": "INN"
+    }
+   ],
+   "text": "ИНН [INN_1]"
+  },
+  {
+   "entities": [],
+   "text": "Заказ 12345, 250 шт, цена 1999.90 руб, артикул AB-100500"
+  },
+  {
+   "entities": [],
+   "text": "артикул 9991234567"
+  },
+  {
+   "entities": [
+    {
+     "token": "[INN_1]",
+     "type": "INN"
+    }
+   ],
+   "text": "тел [INN_1]"
+  },
+  {
+   "entities": [],
+   "text": "сумма 1 500 000 00 00"
+  },
+  {
+   "entities": [],
+   "text": "заказ 123 456 78 90"
+  },
+  {
+   "entities": [],
+   "text": "3,89991234567"
+  },
+  {
+   "entities": [],
+   "text": "дата 12.09.2026"
+  },
+  {
+   "entities": [],
+   "text": "партия 1234567890123"
+  },
+  {
+   "entities": [],
+   "text": "срок 12/05/2024"
+  },
+  {
+   "entities": [],
+   "text": "срок поставки 10–15 дней"
+  },
+  {
+   "entities": [],
+   "text": "версия 1.2.3.4"
+  },
+  {
+   "entities": [],
+   "text": "адрес 192.168.100.200"
+  },
+  {
+   "entities": [],
+   "text": "артикул 1234 5678 9012 3456"
+  },
+  {
+   "entities": [],
+   "text": "партия 1234567890123456"
+  },
+  {
+   "entities": [],
+   "text": "счёт 12345678901234567890"
+  },
+  {
+   "entities": [],
+   "text": "ТУ 14-1-5555-2012"
+  },
+  {
+   "entities": [],
+   "text": "кол-во 2 500 000 00 00"
+  },
+  {
+   "entities": [],
+   "text": "отношение 3/4 и 5-6"
+  },
+  {
+   "entities": [],
+   "text": "ceny@ i @ptr"
+  },
+  {
+   "entities": [],
+   "text": "1 234 567,89 руб"
+  },
+  {
+   "entities": [],
+   "text": "+1 234 567 руб"
+  },
+  {
+   "entities": [],
+   "text": "12 345 678"
+  },
+  {
+   "entities": [],
+   "text": "Арт. 123-456-789"
+  },
+  {
+   "entities": [],
+   "text": "итого 12 345 678 руб"
+  },
+  {
+   "entities": [],
+   "text": "цена 1 234 567.89"
+  },
+  {
+   "entities": [],
+   "text": "сумма +12 345 678 руб"
+  },
+  {
+   "entities": [],
+   "text": "партия 123 456 789 шт"
+  },
+  {
+   "entities": [],
+   "text": "размер 12 34 56 78 мм"
+  },
+  {
+   "entities": [],
+   "text": "00 123 456 789 шт"
+  },
+  {
+   "entities": [],
+   "text": "№ 0012 3456 789"
+  },
+  {
+   "entities": [],
+   "text": "арт 12 34 56 78 90"
+  },
+  {
+   "entities": [],
+   "text": "10 20 30 40 50 60 шт"
+  },
+  {
+   "entities": [],
+   "text": "итого +1 200 000 000 руб"
+  },
+  {
+   "entities": [],
+   "text": "допуск +3 15 20 25 30"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1] приедет завтра"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Контакт: [PERSON_1], тел. снизу"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Договор подписал [PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Менеджер [PERSON_1] ответила"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Здравствуйте, [PERSON_1]!"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Директор [PERSON_1] подтвердил заказ"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Счёт выставил [PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1] на связи"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Ответственный: [PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Поставщик [PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "От [PERSON_1] пришло письмо"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Подпись: [PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1] отгрузил цемент"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Вчера звонил [PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Контактное лицо: [PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Заказчик [PERSON_1]"
+  },
+  {
+   "entities": [],
+   "text": "Получатель Крылова Анна"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "ФИО: [PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1]. отсутствует"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "позвони [PERSON_1], пожалуйста"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Передайте [PERSON_1], что счёт оплачен"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Письмо от [PERSON_1] получено"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Отправь счёт [PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    },
+    {
+     "token": "[PERSON_2]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Согласуй с [PERSON_1] и [PERSON_2]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Мы говорили с [PERSON_1] вчера"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Скажи [PERSON_1], что товар пришёл"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Спроси у [PERSON_1] про отгрузку"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Передай привет [PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Это заказ для [PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Письмо подписано [PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Свяжись с [PERSON_1] по цене"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Менеджер сказал, что [PERSON_1] не приедет"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Позвонил [PERSON_1], спросил про счёт"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Для [PERSON_1] подготовить КП"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "По вопросу оплаты обращайтесь к [PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    },
+    {
+     "token": "[PERSON_2]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "На встрече были [PERSON_1] и [PERSON_2]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    },
+    {
+     "token": "[PHONE_1]",
+     "type": "PHONE"
+    }
+   ],
+   "text": "Наш закупщик [PERSON_1], тел. [PHONE_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1] просил перенести срок"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Файл прислал [PERSON_1] вчера вечером"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Файл [PERSON_1] прислал вчера"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Заявку подготовила [PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Договор с [PERSON_1] подписан"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Привет, [PERSON_1]! Как дела?"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1] направлено уведомление"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1]_договор.docx"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "договор_[PERSON_1].docx"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Прайс_[PERSON_1]_А.xlsx"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Счёт_[PERSON_1]_2026.pdf"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    },
+    {
+     "token": "[PERSON_2]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "КП_[PERSON_1]-[PERSON_2].docx"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1]_спецификация.xlsx"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1]_ДОГОВОР.PDF"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    },
+    {
+     "token": "[PERSON_2]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Акт_сверки_[PERSON_1]_[PERSON_2].xlsx"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Заявка.[PERSON_1].docx"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "/home/[PERSON_1]/Документы/прайс.xlsx"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "C:\\Users\\[PERSON_1]\\Загрузки\\счёт.pdf"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    },
+    {
+     "token": "[PERSON_2]",
+     "type": "PERSON"
+    },
+    {
+     "token": "[PERSON_3]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "/srv/data/[PERSON_1]_[PERSON_2]_[PERSON_3]/договор.docx"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    },
+    {
+     "token": "[PERSON_2]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "./out/[PERSON_1]/КП_[PERSON_2].pdf"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    },
+    {
+     "token": "[PERSON_2]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Вложение: [PERSON_1]_[PERSON_2]_прайс.xlsx (2 МБ)"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    },
+    {
+     "token": "[PERSON_2]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "{\"path\":\"Документы/[PERSON_1]/Договор_[PERSON_2].docx\"}"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "https://example.com/files/[PERSON_1]_договор.pdf"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    },
+    {
+     "token": "[PERSON_2]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Письмо_[PERSON_1]_[PERSON_2].docx"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1]_Д.Н._доверенность.pdf"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Подписант: [PERSON_1], директор"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "ГЕНЕРАЛЬНЫЙ ДИРЕКТОР [PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "от [PERSON_1] получено"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "менеджер [PERSON_1] ответил"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Контакт: [PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "ФИО: [PERSON_1]"
+  },
+  {
+   "entities": [],
+   "text": "Металлопрокат_прайс.xlsx"
+  },
+  {
+   "entities": [],
+   "text": "Счёт_на_оплату_2026.pdf"
+  },
+  {
+   "entities": [],
+   "text": "Коммерческое_предложение_v2.docx"
+  },
+  {
+   "entities": [],
+   "text": "Шаблон_договора_поставки.docx"
+  },
+  {
+   "entities": [],
+   "text": "Спецификация_Арматура.docx"
+  },
+  {
+   "entities": [],
+   "text": "Закупки_Урал_2026.pdf"
+  },
+  {
+   "entities": [],
+   "text": "Прайс_Сибирь_июнь.xlsx"
+  },
+  {
+   "entities": [],
+   "text": "Акт_сверки_взаиморасчётов.xlsx"
+  },
+  {
+   "entities": [],
+   "text": "Накладная_№5_от_01.09.2026.pdf"
+  },
+  {
+   "entities": [],
+   "text": "Протокол_разногласий.docx"
+  },
+  {
+   "entities": [],
+   "text": "Реестр_платежей_Август.xlsx"
+  },
+  {
+   "entities": [],
+   "text": "Каталог_Крепёж_Центр.pdf"
+  },
+  {
+   "entities": [],
+   "text": "Сводная-таблица.Закупки.csv"
+  },
+  {
+   "entities": [],
+   "text": "/srv/data/Металлопрокат/прайс.xlsx"
+  },
+  {
+   "entities": [],
+   "text": "/home/user/Документы/Прайсы/Цемент_М500.xlsx"
+  },
+  {
+   "entities": [],
+   "text": "C:\\Users\\Менеджер\\Загрузки\\Заявка_на_закупку.docx"
+  },
+  {
+   "entities": [],
+   "text": "./out/Склад/Остатки_на_складе.csv"
+  },
+  {
+   "entities": [],
+   "text": "Техническое_задание_Стройматериалы_опт.docx"
+  },
+  {
+   "entities": [],
+   "text": "Отчёт_итоговый_Q3.pdf"
+  },
+  {
+   "entities": [],
+   "text": "Приложение_1_Форма_заявки.docx"
+  },
+  {
+   "entities": [],
+   "text": "ТЕХМЕТАЛЛ СЕРВИС"
+  },
+  {
+   "entities": [],
+   "text": "РОМАШКА ТРЕЙД"
+  },
+  {
+   "entities": [],
+   "text": "ЗАО МЕТАЛЛТОРГ"
+  },
+  {
+   "entities": [],
+   "text": "ГЕНЕРАЛЬНЫЙ ДИРЕКТОР ДЕЙСТВУЕТ НА ОСНОВАНИИ УСТАВА"
+  },
+  {
+   "entities": [],
+   "text": "ОБЩЕСТВО С ОГРАНИЧЕННОЙ ОТВЕТСТВЕННОСТЬЮ СИБИРЬ СНАБ"
+  },
+  {
+   "entities": [],
+   "text": "СПЕЦИФИКАЦИЯ НА ПОСТАВКУ МЕТАЛЛОПРОКАТА"
+  },
+  {
+   "entities": [],
+   "text": "ДОГОВОР ПОСТАВКИ № 5 ОТ 01.09.2026"
+  },
+  {
+   "entities": [],
+   "text": "КОММЕРЧЕСКОЕ ПРЕДЛОЖЕНИЕ НА АРМАТУРУ"
+  },
+  {
+   "entities": [],
+   "text": "СТАЛЬ ИНВЕСТ ГРУПП"
+  },
+  {
+   "entities": [],
+   "text": "УРАЛ СТРОЙ ТОРГ"
+  },
+  {
+   "entities": [],
+   "text": "АКТ СВЕРКИ ВЗАИМОРАСЧЁТОВ"
+  },
+  {
+   "entities": [],
+   "text": "поставка арматуры и проволоки"
+  },
+  {
+   "entities": [],
+   "text": "ТЦ ЦЕНТР ТОРГ"
+  },
+  {
+   "entities": [],
+   "text": "АЛЬФА ПЛЮС"
+  },
+  {
+   "entities": [],
+   "text": "ВЕРА НАДЕЖДА ЛЮБОВЬ"
+  },
+  {
+   "entities": [
+    {
+     "token": "[ADDRESS_1]",
+     "type": "ADDRESS"
+    }
+   ],
+   "text": "[ADDRESS_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[ADDRESS_1]",
+     "type": "ADDRESS"
+    }
+   ],
+   "text": "Доставка: г. Москва, [ADDRESS_1]."
+  },
+  {
+   "entities": [
+    {
+     "token": "[ADDRESS_1]",
+     "type": "ADDRESS"
+    }
+   ],
+   "text": "Заберём на [ADDRESS_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[ADDRESS_1]",
+     "type": "ADDRESS"
+    }
+   ],
+   "text": "доставить на [ADDRESS_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[ADDRESS_1]",
+     "type": "ADDRESS"
+    }
+   ],
+   "text": "находится по [ADDRESS_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[ADDRESS_1]",
+     "type": "ADDRESS"
+    }
+   ],
+   "text": "[ADDRESS_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[ADDRESS_1]",
+     "type": "ADDRESS"
+    }
+   ],
+   "text": "[ADDRESS_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[ADDRESS_1]",
+     "type": "ADDRESS"
+    }
+   ],
+   "text": "[ADDRESS_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[ADDRESS_1]",
+     "type": "ADDRESS"
+    }
+   ],
+   "text": "[ADDRESS_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[ADDRESS_1]",
+     "type": "ADDRESS"
+    }
+   ],
+   "text": "[ADDRESS_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[ADDRESS_1]",
+     "type": "ADDRESS"
+    }
+   ],
+   "text": "[ADDRESS_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[ADDRESS_1]",
+     "type": "ADDRESS"
+    }
+   ],
+   "text": "г. Москва, [ADDRESS_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[ADDRESS_1]",
+     "type": "ADDRESS"
+    }
+   ],
+   "text": "по адресу: [ADDRESS_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[ADDRESS_1]",
+     "type": "ADDRESS"
+    }
+   ],
+   "text": "адрес доставки: [ADDRESS_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[ADDRESS_1]",
+     "type": "ADDRESS"
+    }
+   ],
+   "text": "[ADDRESS_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[ADDRESS_1]",
+     "type": "ADDRESS"
+    }
+   ],
+   "text": "[ADDRESS_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[ADDRESS_1]",
+     "type": "ADDRESS"
+    }
+   ],
+   "text": "[ADDRESS_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[ADDRESS_1]",
+     "type": "ADDRESS"
+    }
+   ],
+   "text": "[ADDRESS_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[ADDRESS_1]",
+     "type": "ADDRESS"
+    }
+   ],
+   "text": "[ADDRESS_1]"
+  },
+  {
+   "entities": [],
+   "text": "в переулке Тихом нет"
+  },
+  {
+   "entities": [
+    {
+     "token": "[ADDRESS_1]",
+     "type": "ADDRESS"
+    }
+   ],
+   "text": "[ADDRESS_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[ADDRESS_1]",
+     "type": "ADDRESS"
+    }
+   ],
+   "text": "[ADDRESS_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[ADDRESS_1]",
+     "type": "ADDRESS"
+    }
+   ],
+   "text": "[ADDRESS_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[ADDRESS_1]",
+     "type": "ADDRESS"
+    }
+   ],
+   "text": "[ADDRESS_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[ADDRESS_1]",
+     "type": "ADDRESS"
+    }
+   ],
+   "text": "[ADDRESS_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[ADDRESS_1]",
+     "type": "ADDRESS"
+    }
+   ],
+   "text": "[ADDRESS_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[ADDRESS_1]",
+     "type": "ADDRESS"
+    }
+   ],
+   "text": "[ADDRESS_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[ADDRESS_1]",
+     "type": "ADDRESS"
+    }
+   ],
+   "text": "[ADDRESS_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[ADDRESS_1]",
+     "type": "ADDRESS"
+    }
+   ],
+   "text": "[ADDRESS_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[ADDRESS_1]",
+     "type": "ADDRESS"
+    }
+   ],
+   "text": "г. Москва, [ADDRESS_1]."
+  },
+  {
+   "entities": [],
+   "text": "АБ-12 д.5"
+  },
+  {
+   "entities": [],
+   "text": "Артикул АБ-12 д.5 по ТУ"
+  },
+  {
+   "entities": [],
+   "text": "размер 10x20"
+  },
+  {
+   "entities": [],
+   "text": "ГОСТ 12345-2014"
+  },
+  {
+   "entities": [],
+   "text": "стр. 5 договора"
+  },
+  {
+   "entities": [],
+   "text": "д. 5 мм"
+  },
+  {
+   "entities": [],
+   "text": "лит. А, корп. 2"
+  },
+  {
+   "entities": [],
+   "text": "Светильник ул. LED 50W"
+  },
+  {
+   "entities": [],
+   "text": "Прожектор ул. Серия 5000"
+  },
+  {
+   "entities": [],
+   "text": "пр. 10"
+  },
+  {
+   "entities": [],
+   "text": "Примечание: пр. 10 штук"
+  },
+  {
+   "entities": [],
+   "text": "Цена 1500 руб, итого 12000"
+  },
+  {
+   "entities": [
+    {
+     "token": "[ACCOUNT_1]",
+     "type": "ACCOUNT"
+    }
+   ],
+   "text": "Счёт [ACCOUNT_1]"
+  },
+  {
+   "entities": [],
+   "text": "г. Москва, Заказ 5."
+  },
+  {
+   "entities": [],
+   "text": "в г. Москве"
+  },
+  {
+   "entities": [],
+   "text": "на улице Ленина"
+  },
+  {
+   "entities": [],
+   "text": "ул. Ленина 5 коробок"
+  },
+  {
+   "entities": [],
+   "text": "ул. Ленина д. 5 шт"
+  },
+  {
+   "entities": [],
+   "text": "Тираж 100000 экз., Санкт-Петербург"
+  },
+  {
+   "entities": [],
+   "text": "Серия 123456"
+  },
+  {
+   "entities": [],
+   "text": "1234567890"
+  },
+  {
+   "entities": [],
+   "text": "119019, цена 5"
+  },
+  {
+   "entities": [],
+   "text": "Позиция 119019 в прайсе"
+  },
+  {
+   "entities": [
+    {
+     "token": "[ADDRESS_1]",
+     "type": "ADDRESS"
+    }
+   ],
+   "text": "Везём по [ADDRESS_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[ADDRESS_1]",
+     "type": "ADDRESS"
+    }
+   ],
+   "text": "[ADDRESS_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[ADDRESS_1]",
+     "type": "ADDRESS"
+    },
+    {
+     "token": "[ADDRESS_2]",
+     "type": "ADDRESS"
+    }
+   ],
+   "text": "[ADDRESS_1], г. Москва, [ADDRESS_2]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[ADDRESS_1]",
+     "type": "ADDRESS"
+    }
+   ],
+   "text": "[ADDRESS_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[ADDRESS_1]",
+     "type": "ADDRESS"
+    }
+   ],
+   "text": "[ADDRESS_1]"
+  },
+  {
+   "entities": [],
+   "text": "Лист 10x20 мм, ГОСТ 12345-2014"
+  },
+  {
+   "entities": [],
+   "text": "см. стр. 5 договора"
+  },
+  {
+   "entities": [],
+   "text": "Труба d 20, д. 5 мм"
+  },
+  {
+   "entities": [],
+   "text": "Светильник ул. LED 50W, 12 шт"
+  },
+  {
+   "entities": [],
+   "text": "Примечание: пр. 10 штук в упаковке"
+  },
+  {
+   "entities": [
+    {
+     "token": "[ACCOUNT_1]",
+     "type": "ACCOUNT"
+    }
+   ],
+   "text": "Итого 12000 руб, счёт [ACCOUNT_1]"
+  },
+  {
+   "entities": [],
+   "text": "Склад в г. Москва, Заказ 5."
+  },
+  {
+   "entities": [],
+   "text": "Доставка на улице Ленина возможна"
+  },
+  {
+   "entities": [],
+   "text": "Партия 119019 отгружена"
+  },
+  {
+   "entities": [],
+   "text": "Награда органайзер 3050 2850 2620 2390 2180"
+  },
+  {
+   "entities": [],
+   "text": "3050 2850 2620 2390 2180 1990"
+  },
+  {
+   "entities": [
+    {
+     "token": "[CARD_1]",
+     "type": "CARD"
+    }
+   ],
+   "text": "[CARD_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[CARD_1]",
+     "type": "CARD"
+    }
+   ],
+   "text": "[CARD_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[CARD_1]",
+     "type": "CARD"
+    }
+   ],
+   "text": "[CARD_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[CARD_1]",
+     "type": "CARD"
+    }
+   ],
+   "text": "карта [CARD_1] до 12/27"
+  },
+  {
+   "entities": [
+    {
+     "token": "[CARD_1]",
+     "type": "CARD"
+    }
+   ],
+   "text": "номер карты: [CARD_1] спасибо"
+  },
+  {
+   "entities": [
+    {
+     "token": "[CARD_1]",
+     "type": "CARD"
+    }
+   ],
+   "text": "Оплата картой Visa [CARD_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[CARD_1]",
+     "type": "CARD"
+    }
+   ],
+   "text": "[CARD_1] 123"
+  },
+  {
+   "entities": [
+    {
+     "token": "[CARD_1]",
+     "type": "CARD"
+    }
+   ],
+   "text": "[CARD_1] 1500 руб"
+  },
+  {
+   "entities": [
+    {
+     "token": "[CARD_1]",
+     "type": "CARD"
+    }
+   ],
+   "text": "[CARD_1] 12/27"
+  },
+  {
+   "entities": [
+    {
+     "token": "[CARD_1]",
+     "type": "CARD"
+    }
+   ],
+   "text": "Клиент оплатил заказ на прошлой неделе по реквизитам [CARD_1] — 1500 руб"
+  },
+  {
+   "entities": [
+    {
+     "token": "[CARD_1]",
+     "type": "CARD"
+    }
+   ],
+   "text": "Клиент оплатил заказ на прошлой неделе и сообщил номер [CARD_1] CVV 123"
+  },
+  {
+   "entities": [
+    {
+     "token": "[CARD_1]",
+     "type": "CARD"
+    }
+   ],
+   "text": "[CARD_1] 123 2026"
+  },
+  {
+   "entities": [
+    {
+     "token": "[CARD_1]",
+     "type": "CARD"
+    }
+   ],
+   "text": "[CARD_1] 1500 2000"
+  },
+  {
+   "entities": [
+    {
+     "token": "[CARD_1]",
+     "type": "CARD"
+    }
+   ],
+   "text": "5000 [CARD_1] 1500"
+  },
+  {
+   "entities": [
+    {
+     "token": "[CARD_1]",
+     "type": "CARD"
+    }
+   ],
+   "text": "Органайзер | [CARD_1] | шт"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Позвоните [PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Передайте [PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Скажи [PERSON_1], что товар пришёл"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1]"
+  },
+  {
+   "entities": [],
+   "text": "Толстая Любовь Сергеевна"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Заказ у [PERSON_1] оформлен"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1], тел. снизу"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Поставщик [PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Генеральный директор [PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Директор: [PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "{\"owner\": \"[PERSON_1].\"}"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Нужен цемент М500, 40 тонн. Контакт: [PERSON_1]."
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1]"
+  },
+  {
+   "entities": [],
+   "text": "ООО Ромашка"
+  },
+  {
+   "entities": [],
+   "text": "АО «Металлторг»"
+  },
+  {
+   "entities": [],
+   "text": "ПАО Сбербанк"
+  },
+  {
+   "entities": [
+    {
+     "token": "[INN_1]",
+     "type": "INN"
+    }
+   ],
+   "text": "ИП ИНН [INN_1]"
+  },
+  {
+   "entities": [],
+   "text": "генеральный директор"
+  },
+  {
+   "entities": [],
+   "text": "Менеджер по закупкам"
+  },
+  {
+   "entities": [],
+   "text": "Главный бухгалтер"
+  },
+  {
+   "entities": [],
+   "text": "Исполнительный директор компании"
+  },
+  {
+   "entities": [
+    {
+     "token": "[ADDRESS_1]",
+     "type": "ADDRESS"
+    }
+   ],
+   "text": "[ADDRESS_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[ADDRESS_1]",
+     "type": "ADDRESS"
+    }
+   ],
+   "text": "[ADDRESS_1]"
+  },
+  {
+   "entities": [],
+   "text": "проспект Ленина"
+  },
+  {
+   "entities": [],
+   "text": "Москва, Тверская улица"
+  },
+  {
+   "entities": [],
+   "text": "школа имени Ивана Петрова"
+  },
+  {
+   "entities": [],
+   "text": "площадь Гагарина"
+  },
+  {
+   "entities": [],
+   "text": "Лада Веста"
+  },
+  {
+   "entities": [],
+   "text": "Магазин Камин"
+  },
+  {
+   "entities": [],
+   "text": "Sony Bravia 55"
+  },
+  {
+   "entities": [],
+   "text": "Цемент М500 ГОСТ 10178-85"
+  },
+  {
+   "entities": [],
+   "text": "Арматура А500С d12 мм"
+  },
+  {
+   "entities": [],
+   "text": "Швеллер 12П, 40 тонн"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1]"
+  },
+  {
+   "entities": [],
+   "text": "Это практична и логична"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    },
+    {
+     "token": "[PERSON_2]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Позвони [PERSON_1]. [PERSON_2] придёт позже"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    },
+    {
+     "token": "[PERSON_2]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1]. [PERSON_2] пришёл"
+  },
+  {
+   "entities": [],
+   "text": "John Smith"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PHONE_1]",
+     "type": "PHONE"
+    }
+   ],
+   "text": "[PHONE_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PHONE_1]",
+     "type": "PHONE"
+    }
+   ],
+   "text": "[PHONE_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PHONE_1]",
+     "type": "PHONE"
+    }
+   ],
+   "text": "[PHONE_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PHONE_1]",
+     "type": "PHONE"
+    }
+   ],
+   "text": "[PHONE_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PHONE_1]",
+     "type": "PHONE"
+    }
+   ],
+   "text": "[PHONE_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PHONE_1]",
+     "type": "PHONE"
+    }
+   ],
+   "text": "[PHONE_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PHONE_1]",
+     "type": "PHONE"
+    }
+   ],
+   "text": "[PHONE_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PHONE_1]",
+     "type": "PHONE"
+    }
+   ],
+   "text": "[PHONE_1]"
+  },
+  {
+   "entities": [
+    {
+     "token": "[PHONE_1]",
+     "type": "PHONE"
+    }
+   ],
+   "text": "[PHONE_1]"
+  },
+  {
+   "entities": [],
+   "text": "цена 1 234 567.89 руб"
+  },
+  {
+   "entities": [],
+   "text": "+12 345 000 000 руб"
+  },
+  {
+   "entities": [],
+   "text": "0012 345 678"
+  },
+  {
+   "entities": [],
+   "text": "+3 15 20 25 30"
+  },
+  {
+   "entities": [],
+   "text": "+20 000 000 000"
+  }
+ ],
+ "texts": 350,
+ "unknown_route_status": 404
+}

@@ -6,7 +6,7 @@
 (тег или коммит), а не из рабочей папки, поэтому незакоммиченные правки не попадут.
 
 Части (--parts, через запятую):
-  guard    режим «только проверка»: labops_pii/{__init__,profiles,pii_patterns}.py и guard/
+  guard    режим «только проверка»: labops_pii/{__init__,errors,pii_patterns}.py и guard/
            (без natasha и pymorphy: образ шлюза остаётся лёгким);
   service  ядро и HTTP-сервис псевдонимизации (всё, кроме guard/ и media/);
   media    labops_pii/media/ (extras: Pillow, OpenCV, pypdfium2);
@@ -44,7 +44,7 @@ TS_DIR = "ts"
 TS_FILES = ("ts/package.json", "ts/bun.lock")
 TS_SRC_PREFIX = "ts/src/"
 # Файлы верхнего уровня пакета, нужные guard без морфологии
-GUARD_TOP_FILES = frozenset({"__init__.py", "profiles.py", "pii_patterns.py"})
+GUARD_TOP_FILES = frozenset({"__init__.py", "errors.py", "pii_patterns.py"})
 EXTRA_FILES = ("LICENSE",)
 HASH_ALGORITHM = "sha256"
 HEADER = (

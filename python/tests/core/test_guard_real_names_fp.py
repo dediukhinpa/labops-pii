@@ -1,6 +1,6 @@
-"""Ложные блокировки guard на названиях товаров: синтетические аналоги замера Прагматики.
+"""Ложные блокировки guard на названиях товаров: синтетические аналоги замера.
 
-Замер 05.11.26 на 75 752 реальных названиях БД Прагматики (сами строки в репо не кладутся):
+Замер 05.11.26 на 75 752 реальных названиях товаров (сами строки в репо не кладутся):
 морфология v0.6.0 добавляла 396 ложных блокировок, списки размеров давали телефон и карту,
 торговая марка с инициалом - ФИО. Здесь по одному аналогу на каждую причину.
 """
@@ -10,6 +10,7 @@ from __future__ import annotations
 import pytest
 from labops_pii.guard import detector
 from labops_pii.guard.names import NAME_TYPE
+from tests.env_sets import ENV_SETS, use_env_set
 
 # Каждая строка блокировалась морфологией v0.6.0 (проверено); морфология убрана в 0.7.0, и
 # старая переменная PII_GUARD_NAMES_MORPH=on больше ничего не включает
@@ -25,18 +26,18 @@ SLASH_LISTS = (
     "Набор банок для сыпучих 450/750/1000 мл",  # был телефон 3-3-4
     "Кронштейн для SSD M.2 2280/2260/2242/2230",  # была карта 4-4-4-4
 )
-BRAND_WITH_INITIAL = "Пектин С.ПУДОВЪ яблочный /пакет/ 10г"
+BRAND_WITH_INITIAL = "Пектин С.ОРЛОВЪ яблочный /пакет/ 10г"
 REAL_PII = (
     ("звони 8/916/123/45/67", "phone"),
     ("тел 916/123/45/67", "phone"),
-    ("Пудов С.А. звонил вчера", NAME_TYPE),
+    ("Орлов С.А. звонил вчера", NAME_TYPE),
     ("Передай Иванову Петру Сергеевичу", NAME_TYPE),
 )
 
 
 @pytest.fixture(autouse=True)
-def _pragmatika_enforce(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv("LABOPS_PII_PROFILE", "pragmatika")
+def _sqlite_v2_enforce(monkeypatch: pytest.MonkeyPatch) -> None:
+    use_env_set(monkeypatch, "sqlite_v2")
     monkeypatch.setenv("PII_GUARD_NAMES_MODE", "enforce")
     monkeypatch.setenv("PII_GUARD_ADDRESS_MODE", "enforce")
 
@@ -67,12 +68,12 @@ ORG_INN = "7707083893"  # 10 цифр, контрольная сумма вер�
 PERSON_INN = "500100732259"  # 12 цифр, ИНН физлица или ИП
 
 
-@pytest.mark.parametrize("profile", ["labops", "pragmatika", "webapp_v2"])
-def test_inn_of_any_length_blocked_in_every_profile(
-    monkeypatch: pytest.MonkeyPatch, profile: str
+@pytest.mark.parametrize("env_set", sorted(ENV_SETS))
+def test_inn_of_any_length_blocked_in_every_env_set(
+    monkeypatch: pytest.MonkeyPatch, env_set: str
 ) -> None:
-    """ИНН организации и физлица - ПДн во всех профилях (решение владельца 05.11.26)."""
-    monkeypatch.setenv("LABOPS_PII_PROFILE", profile)
+    """ИНН организации и физлица - ПДн при любом наборе переменных (решение владельца 05.11.26)."""
+    use_env_set(monkeypatch, env_set)
     assert "inn" in detector.find_pii_types(f"Поставщик ИНН {ORG_INN}")
     assert "inn" in detector.find_pii_types(f"ИП, ИНН {PERSON_INN}")
 

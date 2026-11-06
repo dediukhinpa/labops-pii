@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import os
-
 import pytest
 from cryptography.fernet import Fernet
 from fastapi.testclient import TestClient
@@ -13,6 +11,11 @@ from labops_pii.config import Settings
 from labops_pii.detector import PiiDetector
 from labops_pii.service import Pseudonymizer
 from labops_pii.store import MemoryReplacementStore, ReplacementStore, SqliteReplacementStore
+from tests.env_sets import ensure_env_set
+
+# Набор воспроизводит поведение исходной копии: переменные задаёт tools/run_tests.sh, а при
+# прямом запуске pytest - этот вызов, до создания детекторов и настроек
+ensure_env_set("labops")
 
 CONTACTS = ["Вася Рабочий", "Дядя Коля"]
 # Тестовый общий секрет API (R4-SEC-3) и заголовок, который клиент обязан слать
@@ -110,8 +113,3 @@ def client(
 ) -> TestClient:
     """HTTP-клиент поверх приложения (детектор подменяем на общий, чтобы не грузить модель)."""
     return make_client(detector, monkeypatch, store, key=fernet_key)
-
-
-# Набор воспроизводит поведение исходной копии: профиль задаётся при сборе тестов, до создания
-# детекторов и настроек (запускать набор отдельным процессом, см. tools/run_tests.sh)
-os.environ["LABOPS_PII_PROFILE"] = "labops"

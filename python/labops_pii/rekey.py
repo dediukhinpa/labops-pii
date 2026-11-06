@@ -26,11 +26,13 @@ from labops_pii.config import (
     DEFAULT_DB,
     ENV_DB,
     ENV_KEY,
+    ENV_KEY_SCHEME,
     ENV_STORE,
     STORE_SQLITE,
     ConfigError,
     load_settings,
 )
+from labops_pii.errors import reject_legacy_profile
 from labops_pii.store import SqliteReplacementStore
 
 logger = logging.getLogger("pseudonymizer.rekey")
@@ -109,8 +111,17 @@ def main(argv: Sequence[str] | None = None) -> int:
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
     args = _parse(argv)
     try:
+        reject_legacy_profile()
+    except ConfigError as exc:
+        logger.error("%s", exc)
+        return EXIT_USAGE
+    try:
         settings = load_settings(
-            {ENV_KEY: os.environ.get(ENV_KEY, ""), ENV_STORE: STORE_SQLITE},
+            {
+                ENV_KEY: os.environ.get(ENV_KEY, ""),
+                ENV_STORE: STORE_SQLITE,
+                ENV_KEY_SCHEME: os.environ.get(ENV_KEY_SCHEME, ""),
+            },
             require_api_token=False
         )
     except ConfigError as exc:
@@ -124,7 +135,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         "ВНИМАНИЕ: перед перешифрованием должен быть снят бэкап (scripts/backup.sh), "
         "запись в сервис остановлена."
     )
-    store = SqliteReplacementStore(db_path, settings.key)
+    store = SqliteReplacementStore(
+        db_path, settings.key, key_scheme=settings.key_scheme
+    )
     try:
         # Пробная расшифровка всех строк ДО копии: с неверным ключом копия не создаётся
         # (иначе каждая неудачная попытка оставляла бы ещё один файл с таблицей замен).

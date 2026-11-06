@@ -23,6 +23,7 @@ from labops_pii.config import (
     max_body_bytes,
 )
 from labops_pii.detector import PiiDetector
+from labops_pii.errors import reject_legacy_profile
 from labops_pii.inflect import signatory_genitive
 from labops_pii.jsonlog import (
     EVENT_RESTORE_FAILED,
@@ -31,13 +32,13 @@ from labops_pii.jsonlog import (
     JsonLogMiddleware,
     log_event,
 )
-from labops_pii.profiles import get_profile
 from labops_pii.service import Pseudonymizer, TooManyTokensError
 from labops_pii.store import (
     SECONDS_PER_HOUR,
     MemoryReplacementStore,
     ReplacementStore,
     SqliteReplacementStore,
+    resolve_key_scheme,
 )
 
 logger = logging.getLogger(__name__)
@@ -53,7 +54,7 @@ HTTP_BUSY = 503
 BEARER_SCHEME = "bearer"
 # Пути с телом JSON: токен и размер тела проверяются в BodyGuardMiddleware до его чтения
 GUARDED_PATHS = ("/pseudonymize", "/pseudonymize_batch", "/restore", "/check")
-# Подписант (профиль pragmatika): должность и ФИО в родительном падеже без участия модели
+# Подписант (ENABLE_INFLECT_SIGNATORY): должность и ФИО в родительном падеже без участия модели
 SIGNATORY_ROUTE = "/inflect_signatory"
 # Должность и ФИО - короткие строки; длиннее - явно не подписант
 MAX_SIGNATORY_FIELD_CHARS = 200
@@ -218,16 +219,18 @@ def create_app(
     Raises:
         ConfigError: Не задан или невалиден PSEUDONYMIZER_KEY; не задан токен API.
     """
+    reject_legacy_profile()
     settings = settings or load_settings()
     api_token = settings.api_token.strip()
     if not api_token:
         # Fail closed (R4-SEC-3): без секрета API не поднимается, тихого отката нет
         raise ConfigError("Не задан токен API (PSEUDONYMIZER_API_TOKEN): сервис не стартует")
     expected_token = api_token.encode()
-    profile = get_profile(settings.profile)
     if store is None:
         store = (
-            SqliteReplacementStore(settings.db_path, settings.key, key_scheme=profile.key_scheme)
+            SqliteReplacementStore(
+                settings.db_path, settings.key, key_scheme=resolve_key_scheme(settings.key_scheme)
+            )
             if settings.store_backend == STORE_SQLITE
             else MemoryReplacementStore()
         )
@@ -273,11 +276,11 @@ def create_app(
         finally:
             slots.release()
 
-    # Форма API зависит от профиля: маршруты и поля сверх прежнего поведения проекта выключены
-    guarded_paths = (*GUARDED_PATHS, SIGNATORY_ROUTE) if profile.enable_inflect_signatory else (
+    # Форма API задаётся флагами PSEUDONYMIZER_ENABLE_*; не включённые явно маршруты выключены
+    guarded_paths = (*GUARDED_PATHS, SIGNATORY_ROUTE) if settings.enable_inflect_signatory else (
         GUARDED_PATHS
     )
-    delete_prefixes = GUARDED_DELETE_PREFIXES if profile.enable_delete_threads else ()
+    delete_prefixes = GUARDED_DELETE_PREFIXES if settings.enable_delete_threads else ()
     app = FastAPI(title="pseudonymizer", lifespan=_lifespan)
     # Токен и предел тела - до чтения тела (иначе тело на сотни МБ попадает в память).
     app.add_middleware(
@@ -338,7 +341,7 @@ def create_app(
         ensure_size(req.text)
         retention.run_if_due()
         text, entities = service.pseudonymize(
-            req.thread_id, req.text, req.case_labels and profile.accept_case_labels
+            req.thread_id, req.text, req.case_labels and settings.enable_case_labels
         )
         return PseudonymizeResponse(
             text=text, entities=[EntityOut(type=e.type, token=e.token) for e in entities]
@@ -356,7 +359,7 @@ def create_app(
         ensure_batch_size(req.texts)
         retention.run_if_due()
         results = service.pseudonymize_batch(
-            req.thread_id, req.texts, req.case_labels and profile.accept_case_labels
+            req.thread_id, req.texts, req.case_labels and settings.enable_case_labels
         )
         return PseudonymizeBatchResponse(
             items=[
@@ -385,7 +388,7 @@ def create_app(
         types = service.check(req.text, req.thread_id)
         return CheckResponse(has_pii=bool(types), types=types)
 
-    if profile.enable_delete_threads:
+    if settings.enable_delete_threads:
 
         @app.delete(
             "/threads/{thread_id}",
@@ -398,7 +401,7 @@ def create_app(
             service.delete_thread(thread_id)
             return Response(status_code=HTTP_NO_CONTENT)
 
-    if profile.enable_inflect_signatory:
+    if settings.enable_inflect_signatory:
 
         @app.post(SIGNATORY_ROUTE, dependencies=guarded, response_model=SignatoryResponse)
         def inflect_signatory(req: SignatoryRequest) -> SignatoryResponse:
@@ -407,7 +410,7 @@ def create_app(
 
     @app.get("/health")
     def health() -> dict[str, str]:
-        if profile.expose_boot_id:
+        if settings.enable_expose_boot_id:
             return {"status": "ok", "boot_id": BOOT_ID}
         return {"status": "ok"}
 

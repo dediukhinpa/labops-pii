@@ -1,4 +1,4 @@
-"""HTTP-обёртка gate: POST /images/detect-text (контракт сервиса documents Прагматики).
+"""HTTP-обёртка gate: POST /images/detect-text (контракт сервиса documents потребителя).
 
 Ответы: 200 `{"result": "no_text"|"text"|"not_recognized"}`; 415 формат не поддержан;
 413 файл больше лимита; 422 заголовок повреждён; 503 с Retry-After — очередь переполнена.

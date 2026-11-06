@@ -51,3 +51,17 @@ export class MediaMaskerError extends Error {
     this.name = 'MediaMaskerError';
   }
 }
+
+/** Подсказка по миграции: прежние профили удалены в 1.0.0. */
+const MIGRATION_DOC = 'docs/MIGRATION.md';
+
+/** В настройках детектора передан удалённый параметр `profile`. */
+export class LegacyProfileError extends Error {
+  constructor() {
+    super(
+      `параметр profile удалён в 1.0.0: задайте maskAddresses и allowedWords явно, ` +
+        `таблица соответствия в ${MIGRATION_DOC}`,
+    );
+    this.name = 'LegacyProfileError';
+  }
+}

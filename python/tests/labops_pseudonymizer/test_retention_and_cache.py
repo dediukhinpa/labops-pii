@@ -12,6 +12,7 @@ from labops_pii.config import (
     DEFAULT_RETENTION_HOURS,
     ENV_API_TOKEN,
     ENV_KEY,
+    ENV_KEY_SCHEME,
     ENV_RETENTION_DAYS,
     ENV_RETENTION_HOURS,
     ENV_STORE,
@@ -151,7 +152,9 @@ def test_runtime_purge_not_more_often_than_interval(
 
 def test_retention_settings() -> None:
     key = Fernet.generate_key().decode()
-    base = {ENV_KEY: key, ENV_API_TOKEN: API_TOKEN, ENV_STORE: "sqlite"}
+    base = {
+        ENV_KEY: key, ENV_API_TOKEN: API_TOKEN, ENV_STORE: "sqlite", ENV_KEY_SCHEME: "v3"
+    }
     assert load_settings(base).retention_hours == DEFAULT_RETENTION_HOURS == 24
     assert load_settings({**base, ENV_RETENTION_HOURS: "6"}).retention_hours == 6
     assert load_settings({**base, ENV_RETENTION_HOURS: "0"}).retention_hours == 0

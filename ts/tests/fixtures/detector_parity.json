@@ -1,5 +1,8 @@
 {
- "profile": "pragmatika",
+ "env": {
+  "PSEUDONYMIZER_ADDRESS_MASK": "on",
+  "PII_ALLOWED_WORDS": "вектрик"
+ },
  "items": [
   {
    "source": "names_negative",
@@ -2317,7 +2320,7 @@
   },
   {
    "source": "page_negative",
-   "text": "Прагматика — сервис закупок. Войти в Прагматику, написать в Прагматике, отчёт Прагматики.",
+   "text": "Вектрика — сервис заявок. Войти в Вектрику, написать в Вектрике, отчёт Вектрики.",
    "person": [],
    "address": []
   },

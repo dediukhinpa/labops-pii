@@ -9,13 +9,14 @@ from pathlib import Path
 
 from cryptography.fernet import Fernet
 
-from labops_pii.profiles import (
-    HOURS_PER_DAY,
-    STORE_MEMORY,
-    STORE_SQLITE,
-    Profile,
-    get_profile,
-)
+from labops_pii.errors import ConfigError, reject_legacy_profile
+from labops_pii.store import ENV_KEY_SCHEME, resolve_key_scheme
+
+__all__ = ["ConfigError", "Settings", "env_mask_addresses", "load_settings"]
+
+HOURS_PER_DAY = 24
+STORE_MEMORY = "memory"
+STORE_SQLITE = "sqlite"
 
 ENV_KEY = "PSEUDONYMIZER_KEY"
 ENV_API_TOKEN = "PSEUDONYMIZER_API_TOKEN"
@@ -26,6 +27,14 @@ ENV_RETENTION_DAYS = "PSEUDONYMIZER_RETENTION_DAYS"
 ENV_DB = "PSEUDONYMIZER_DB"
 ENV_MASK_LEGAL = "PSEUDONYMIZER_MASK_LEGAL_ENTITY"
 ENV_ADDRESS_MASK = "PSEUDONYMIZER_ADDRESS_MASK"
+# Адреса (улица + дом, индекс) маскируются, пока их явно не выключили: забытая переменная
+# не должна пропускать адрес в модель (1.0.0; раньше по умолчанию было выключено)
+DEFAULT_ADDRESS_MASK = True
+# Флаги маршрутов и полей API: по умолчанию все выключены (включает потребитель)
+ENV_ENABLE_INFLECT_SIGNATORY = "PSEUDONYMIZER_ENABLE_INFLECT_SIGNATORY"
+ENV_ENABLE_DELETE_THREADS = "PSEUDONYMIZER_ENABLE_DELETE_THREADS"
+ENV_ENABLE_EXPOSE_BOOT_ID = "PSEUDONYMIZER_ENABLE_EXPOSE_BOOT_ID"
+ENV_ENABLE_CASE_LABELS = "PSEUDONYMIZER_ENABLE_CASE_LABELS"
 ENV_CONTACTS = "PSEUDONYMIZER_CONTACTS_FILE"
 ENV_HOST = "PSEUDONYMIZER_HOST"
 ENV_PORT = "PSEUDONYMIZER_PORT"
@@ -91,9 +100,7 @@ BUSY_TIMEOUT_SECONDS = min(
 STORE_BACKENDS = frozenset({STORE_MEMORY, STORE_SQLITE})
 # Сколько часов хранится таблица замен треда без обращений. Через столько часов после
 # последней записи/восстановления тред удаляется целиком. 0 в окружении — не удалять.
-# Значение по умолчанию задаёт профиль (labops 24 ч, pragmatika 90 суток), это — для labops.
 DEFAULT_RETENTION_HOURS = 24
-DEFAULT_RETENTION_DAYS = 90
 TRUE_VALUES = frozenset({"1", "true", "yes", "on"})
 FALSE_VALUES = frozenset({"0", "false", "no", "off"})
 
@@ -111,17 +118,13 @@ def max_body_bytes(max_text_chars: int, max_batch_items: int) -> int:
     )
 
 
-class ConfigError(RuntimeError):
-    """Ошибка конфигурации: сервис не должен стартовать."""
-
-
 @dataclass(frozen=True, slots=True)
 class Settings:
     """Настройки сервиса.
 
     Attributes:
-        profile: Имя профиля (labops, pragmatika, webapp_v2): форма API и схема ключей SQLite.
         key: Ключ Fernet (в логи и repr не попадает); нужен только для store_backend=sqlite.
+        key_scheme: Схема ключей SQLite при записи ("v2" или "v3"); обязательна при sqlite.
         store_backend: Хранилище замен: "memory" (по умолчанию) или "sqlite".
         api_token: Общий секрет клиентов (Authorization: Bearer ...); в repr не попадает.
         retention_hours: Срок хранения замен треда без обращений, часов (0 — без удаления).
@@ -136,18 +139,27 @@ class Settings:
         max_concurrency: Предел одновременно обрабатываемых запросов.
         max_batch_items: Предел числа текстов в одном /pseudonymize_batch.
         busy_timeout_seconds: Ожидание слота до ответа 503.
+        enable_inflect_signatory: Есть ли маршрут POST /inflect_signatory.
+        enable_delete_threads: Есть ли маршрут DELETE /threads/{id}.
+        enable_expose_boot_id: Отдавать ли boot_id в /health.
+        enable_case_labels: Принимает ли /pseudonymize флаг case_labels (падежные метки).
+
+    Значения по умолчанию полей, которые задаются переменными окружения, читаются из окружения
+    процесса в момент создания (так набор тестов задаёт конфигурацию одним блоком переменных).
     """
 
-    profile: str = field(default_factory=lambda: get_profile().name)
     key: str = field(default="", repr=False)
-    store_backend: str = field(default_factory=lambda: get_profile().store_backend)
+    key_scheme: str = field(default_factory=lambda: _env_key_scheme(os.environ))
+    store_backend: str = field(default_factory=lambda: _env_store(os.environ))
     api_token: str = field(default="", repr=False)
-    retention_hours: int = field(default_factory=lambda: get_profile().retention_hours)
+    retention_hours: int = field(default_factory=lambda: _retention_hours(os.environ))
     db_path: Path = DEFAULT_DB
     mask_legal_entity_requisites: bool = field(
-        default_factory=lambda: get_profile().mask_legal_entity_requisites
+        default_factory=lambda: _bool_env(os.environ, ENV_MASK_LEGAL, default=True)
     )
-    mask_addresses: bool = field(default_factory=lambda: get_profile().mask_addresses)
+    mask_addresses: bool = field(
+        default_factory=lambda: _strict_bool_env(os.environ, ENV_ADDRESS_MASK, default=DEFAULT_ADDRESS_MASK)
+    )
     contacts: tuple[str, ...] = ()
     host: str = DEFAULT_HOST
     port: int = DEFAULT_PORT
@@ -156,10 +168,26 @@ class Settings:
     max_concurrency: int = DEFAULT_MAX_CONCURRENCY
     max_batch_items: int = DEFAULT_MAX_BATCH_ITEMS
     busy_timeout_seconds: float = BUSY_TIMEOUT_SECONDS
+    enable_inflect_signatory: bool = field(
+        default_factory=lambda: _strict_bool_env(os.environ, ENV_ENABLE_INFLECT_SIGNATORY,
+                                                 default=False)
+    )
+    enable_delete_threads: bool = field(
+        default_factory=lambda: _strict_bool_env(os.environ, ENV_ENABLE_DELETE_THREADS,
+                                                 default=False)
+    )
+    enable_expose_boot_id: bool = field(
+        default_factory=lambda: _strict_bool_env(os.environ, ENV_ENABLE_EXPOSE_BOOT_ID,
+                                                 default=False)
+    )
+    enable_case_labels: bool = field(
+        default_factory=lambda: _strict_bool_env(os.environ, ENV_ENABLE_CASE_LABELS,
+                                                 default=False)
+    )
 
     @property
     def retention_days(self) -> int:
-        """Срок хранения в целых сутках (для настроек, заданных в днях, как в Прагматике)."""
+        """Срок хранения в целых сутках (для настроек, заданных в днях)."""
         return self.retention_hours // HOURS_PER_DAY
 
 
@@ -215,23 +243,55 @@ def _strict_bool_env(env: Mapping[str, str], name: str, *, default: bool) -> boo
     raise ConfigError(f"{name} должна быть on/off (true/false, 1/0, yes/no)")
 
 
-def _retention_hours(env: Mapping[str, str], profile: Profile) -> int:
+def _retention_hours(env: Mapping[str, str]) -> int:
     """Срок ретенции в часах: HOURS главнее устаревшей DAYS (она переводится в часы).
 
     Raises:
         ConfigError: Значение не число или отрицательное.
     """
     if env.get(ENV_RETENTION_HOURS, "").strip():
-        return _int_env(env, ENV_RETENTION_HOURS, profile.retention_hours, allow_zero=True)
+        return _int_env(env, ENV_RETENTION_HOURS, DEFAULT_RETENTION_HOURS, allow_zero=True)
     if env.get(ENV_RETENTION_DAYS, "").strip():
         return HOURS_PER_DAY * _int_env(env, ENV_RETENTION_DAYS, 1, allow_zero=True)
-    return profile.retention_hours
+    return DEFAULT_RETENTION_HOURS
+
+
+def env_mask_addresses(env: Mapping[str, str] | None = None) -> bool:
+    """Маскировать ли адреса: PSEUDONYMIZER_ADDRESS_MASK (по умолчанию включено).
+
+    Raises:
+        ConfigError: Значение не on/off.
+    """
+    return _strict_bool_env(os.environ if env is None else env, ENV_ADDRESS_MASK, default=DEFAULT_ADDRESS_MASK)
+
+
+def _env_store(env: Mapping[str, str]) -> str:
+    """Хранилище из PSEUDONYMIZER_STORE (по умолчанию memory).
+
+    Raises:
+        ConfigError: Значение не из memory/sqlite.
+    """
+    backend = env.get(ENV_STORE, "").strip().lower() or STORE_MEMORY
+    if backend not in STORE_BACKENDS:
+        raise ConfigError(f"{ENV_STORE} должна быть одной из: {', '.join(sorted(STORE_BACKENDS))}")
+    return backend
+
+
+def _env_key_scheme(env: Mapping[str, str]) -> str:
+    """Схема ключей SQLite из PSEUDONYMIZER_KEY_SCHEME; пусто, если хранилище не sqlite.
+
+    Raises:
+        ConfigError: Хранилище sqlite, а схема не задана или неверна.
+    """
+    raw = env.get(ENV_KEY_SCHEME, "")
+    if _env_store(env) != STORE_SQLITE:
+        return raw.strip().lower()
+    return resolve_key_scheme(raw)
 
 
 def load_settings(
     env: Mapping[str, str] | None = None,
     require_api_token: bool = True,
-    profile: str | None = None,
 ) -> Settings:
     """Собирает настройки из окружения.
 
@@ -239,17 +299,15 @@ def load_settings(
         env: Окружение (по умолчанию os.environ).
         require_api_token: Требовать PSEUDONYMIZER_API_TOKEN (fail closed). Только для
             автономных утилит без HTTP (rekey.py), которым API-секрет не нужен.
-        profile: Имя профиля (labops, pragmatika, webapp_v2); по умолчанию из
-            LABOPS_PII_PROFILE. Профиль задаёт значения по умолчанию, окружение главнее.
 
     Raises:
-        ConfigError: Нет ключа или токена API, ключ невалиден или не найден файл контактов.
+        ConfigError: Задана прежняя LABOPS_PII_PROFILE; нет ключа, схемы ключей (при sqlite) или
+            токена API; ключ невалиден; не найден файл контактов.
     """
     env = os.environ if env is None else env
-    prof = get_profile(profile, env)
-    backend = env.get(ENV_STORE, "").strip().lower() or prof.store_backend
-    if backend not in STORE_BACKENDS:
-        raise ConfigError(f"{ENV_STORE} должна быть одной из: {', '.join(sorted(STORE_BACKENDS))}")
+    reject_legacy_profile(env)
+    backend = _env_store(env)
+    key_scheme = _env_key_scheme(env)
     key = env.get(ENV_KEY, "").strip()
     # Ключ нужен только SQLite (шифрование на диске); в памяти шифровать нечего
     if backend == STORE_SQLITE:
@@ -265,24 +323,25 @@ def load_settings(
         raise ConfigError(f"Не задана переменная {ENV_API_TOKEN}: сервис не стартует без токена")
     contacts_file = env.get(ENV_CONTACTS, "").strip()
     return Settings(
-        profile=prof.name,
         key=key,
+        key_scheme=key_scheme,
         store_backend=backend,
         api_token=api_token,
-        retention_hours=_retention_hours(env, prof),
+        retention_hours=_retention_hours(env),
         db_path=Path(env.get(ENV_DB, str(DEFAULT_DB))),
-        mask_legal_entity_requisites=_bool_env(
-            env, ENV_MASK_LEGAL, default=prof.mask_legal_entity_requisites
-        ),
-        mask_addresses=_strict_bool_env(env, ENV_ADDRESS_MASK, default=prof.mask_addresses),
-        contacts=(
-            (*prof.contacts, *load_contacts(Path(contacts_file))) if contacts_file
-            else prof.contacts
-        ),
+        mask_legal_entity_requisites=_bool_env(env, ENV_MASK_LEGAL, default=True),
+        mask_addresses=_strict_bool_env(env, ENV_ADDRESS_MASK, default=DEFAULT_ADDRESS_MASK),
+        contacts=load_contacts(Path(contacts_file)) if contacts_file else (),
         host=env.get(ENV_HOST, DEFAULT_HOST),
         port=int(env.get(ENV_PORT, str(DEFAULT_PORT))),
         max_text_chars=_int_env(env, ENV_MAX_TEXT, DEFAULT_MAX_TEXT_CHARS),
         max_restore_tokens=_int_env(env, ENV_MAX_RESTORE_TOKENS, DEFAULT_MAX_RESTORE_TOKENS),
         max_concurrency=_int_env(env, ENV_MAX_CONCURRENCY, DEFAULT_MAX_CONCURRENCY),
         max_batch_items=_int_env(env, ENV_MAX_BATCH_ITEMS, DEFAULT_MAX_BATCH_ITEMS),
+        enable_inflect_signatory=_strict_bool_env(
+            env, ENV_ENABLE_INFLECT_SIGNATORY, default=False
+        ),
+        enable_delete_threads=_strict_bool_env(env, ENV_ENABLE_DELETE_THREADS, default=False),
+        enable_expose_boot_id=_strict_bool_env(env, ENV_ENABLE_EXPOSE_BOOT_ID, default=False),
+        enable_case_labels=_strict_bool_env(env, ENV_ENABLE_CASE_LABELS, default=False),
     )

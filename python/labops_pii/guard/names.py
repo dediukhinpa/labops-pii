@@ -25,7 +25,6 @@ from collections import deque
 from enum import Enum
 from functools import lru_cache
 
-from labops_pii.profiles import get_profile
 
 # Переменная окружения режима и значение по умолчанию
 NAMES_MODE_ENV = "PII_GUARD_NAMES_MODE"
@@ -40,20 +39,20 @@ class NamesMode(str, Enum):
     ENFORCE = "enforce"
 
 
-# Для профиля pragmatika режим по умолчанию - log_only (он же прежнее значение), для web-app-v2 и
-# labops - off: их guard ФИО не искал. Задаёт профиль, переменная окружения главнее.
-DEFAULT_NAMES_MODE = NamesMode.LOG_ONLY
+# Нейтральное значение по умолчанию: ФИО в guard не ищутся, пока потребитель не задал
+# PII_GUARD_NAMES_MODE (log_only или enforce)
+DEFAULT_NAMES_MODE = NamesMode.OFF
 
 
 def default_names_mode() -> NamesMode:
-    """Режим ФИО по умолчанию для активного профиля."""
-    return NamesMode(get_profile().guard_names_mode)
+    """Режим ФИО по умолчанию (когда PII_GUARD_NAMES_MODE не задана)."""
+    return DEFAULT_NAMES_MODE
 
 
 def parse_names_mode(raw: str | None) -> NamesMode:
     """Разбирает значение PII_GUARD_NAMES_MODE строго.
 
-    Пусто или не задано - режим по умолчанию (log_only). Неизвестное значение - ошибка:
+    Пусто или не задано - режим по умолчанию (off). Неизвестное значение - ошибка:
     приложение при старте не запускается, чтобы опечатка («enforсe», «on») не превратилась
     молча в выключенную защиту.
 

@@ -20,6 +20,7 @@ from fastapi import FastAPI, Request, Response
 from fastapi.responses import JSONResponse, StreamingResponse
 from starlette.types import Receive, Scope, Send
 
+from labops_pii.errors import ConfigError, reject_legacy_profile
 from labops_pii.guard.address import ADDRESS_MODE_ENV, parse_address_mode
 from labops_pii.guard.detector import (
     DEFAULT_MAX_SCAN_BYTES,
@@ -287,7 +288,10 @@ def create_app(
     Raises:
         ValueError: Недопустимое значение MAX_BODY_BYTES, VISION_MAX_* или
             PII_GUARD_NAMES_MODE или PII_GUARD_ADDRESS_MODE.
+        ConfigError: Задана прежняя LABOPS_PII_PROFILE или маршрут поиска включён без
+            SEARCH_ALLOWED_MODELS.
     """
+    reject_legacy_profile()
     base = (upstream_url or os.environ.get(UPSTREAM_URL_ENV, DEFAULT_UPSTREAM)).rstrip("/")
     max_body = _max_body_bytes()
     # Неизвестный режим ФИО - ошибка старта, а не тихое отключение защиты (см. parse_names_mode)
@@ -303,8 +307,14 @@ def create_app(
     inflight = asyncio.Semaphore(max_inflight)
     if search_enabled is None:
         search_enabled = os.environ.get(SEARCH_ENABLED_ENV, "0").strip() == "1"
-    # Список допустимых моделей маршрута поиска; не задан - любая строка до 128 символов
     allowed_models = parse_allowed_models(os.environ.get(SEARCH_ALLOWED_MODELS_ENV))
+    # Включённый маршрут поиска без списка моделей пропускал бы любую модель (fail open):
+    # такой конфиг - ошибка старта, а не молчаливое снятие ограничения
+    if search_enabled and allowed_models is None:
+        raise ConfigError(
+            f"{SEARCH_ENABLED_ENV}=1 требует {SEARCH_ALLOWED_MODELS_ENV} (список моделей через "
+            "запятую): без него маршрут поиска не ограничивал бы модель"
+        )
     if vision_enabled is None:
         vision_enabled = os.environ.get(VISION_ENABLED_ENV, "0").strip() == "1"
     limits = vision_limits or VisionLimits.from_env()

@@ -1,0 +1,41 @@
+{
+ "allowed_stems": [
+  "вектрик"
+ ],
+ "guard_address_mode": "off",
+ "guard_names_mode": "off",
+ "profile": {
+  "accept_case_labels": true,
+  "allowed_words": [
+   "вектрик"
+  ],
+  "contacts": [],
+  "enable_delete_threads": true,
+  "enable_inflect_signatory": false,
+  "expose_boot_id": true,
+  "guard_address_mode": "off",
+  "guard_names_mode": "off",
+  "key_scheme": "v3",
+  "mask_addresses": false,
+  "mask_legal_entity_requisites": true,
+  "name": "webapp_v2",
+  "retention_hours": 24,
+  "store_backend": "memory"
+ },
+ "settings": {
+  "busy_timeout_seconds": 4.0,
+  "contacts": [],
+  "db_path": "data/pseudonymizer.sqlite3",
+  "host": "127.0.0.1",
+  "mask_addresses": false,
+  "mask_legal_entity_requisites": true,
+  "max_batch_items": 500,
+  "max_concurrency": 2,
+  "max_restore_tokens": 5000,
+  "max_text_chars": 70000,
+  "port": 8300,
+  "profile": "webapp_v2",
+  "retention_hours": 24,
+  "store_backend": "memory"
+ }
+}

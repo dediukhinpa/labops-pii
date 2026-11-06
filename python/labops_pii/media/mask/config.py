@@ -10,6 +10,7 @@ from pathlib import Path
 from labops_pii.config import ENV_ADDRESS_MASK as ENV_SERVICE_ADDRESS_MASK
 from labops_pii.config import ConfigError as _ServiceConfigError
 from labops_pii.config import _strict_bool_env, load_contacts
+from labops_pii.errors import reject_legacy_profile
 
 ENV_API_TOKEN = "MEDIA_MASKER_API_TOKEN"
 ENV_HOST = "MEDIA_MASKER_HOST"
@@ -23,7 +24,7 @@ ENV_OCR_TIMEOUT = "MEDIA_MASKER_OCR_TIMEOUT_S"
 ENV_MASK_LEGAL = "MEDIA_MASKER_MASK_LEGAL_ENTITY"
 ENV_CONTACTS = "MEDIA_MASKER_CONTACTS_FILE"
 ENV_HIDE_UNREADABLE = "MEDIA_MASKER_HIDE_UNREADABLE"
-# Адреса на картинках: свой флаг, иначе флаг сервиса псевдонимизации, иначе профиль.
+# Адреса на картинках: свой флаг, иначе флаг сервиса псевдонимизации, иначе выкл.
 # Без этого при PSEUDONYMIZER_ADDRESS_MASK=on адрес становился токеном в тексте, но
 # оставался видимым на самой картинке (найдено при переходе labops на библиотеку).
 ENV_ADDRESS_MASK = "MEDIA_MASKER_ADDRESS_MASK"
@@ -74,7 +75,8 @@ class Settings:
         contacts: Словарь контактов для детектора.
         hide_unreadable: Закрашивать ли области с признаками письма, которые OCR не
             распознал (рукопись, подпись).
-        mask_addresses: Закрашивать ли адреса; None - по профилю (LABOPS_PII_PROFILE).
+        mask_addresses: Закрашивать ли адреса; None - из PSEUDONYMIZER_ADDRESS_MASK
+            (по умолчанию выкл.).
     """
 
     api_token: str
@@ -131,6 +133,10 @@ def load_settings(env: Mapping[str, str] | None = None) -> Settings:
         ConfigError: Нет токена или значение неверно.
     """
     source = os.environ if env is None else env
+    try:
+        reject_legacy_profile(source)
+    except _ServiceConfigError as exc:
+        raise ConfigError(str(exc)) from exc
     token = source.get(ENV_API_TOKEN, "").strip()
     if not token:
         # Fail closed: без секрета сервис не поднимается
