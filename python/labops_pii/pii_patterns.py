@@ -269,6 +269,13 @@ CARD_CONTEXT_LEFT = 32
 CARD_CONTEXT_RIGHT = 16
 # Число-столбец рядом с группами: 3-5 цифр, отделённое тем же разделителем, без десятичной части.
 PRICE_NEIGHBOR_DIGITS = "3,5"
+PRICE_NEIGHBOR_MIN_LEN = 3
+PRICE_NEIGHBOR_MAX_LEN = 5
+# Символы, после которых число слева - не отдельный столбец (часть дроби или другого числа)
+PRICE_LEFT_STOP = frozenset("0123456789.,")
+# Предел соседей с каждой стороны: ряды тиражей короче, а без предела проверка росла с длиной
+# текста на каждом кандидате в карту
+PRICE_NEIGHBORS_MAX = 16
 # Соседние цены в ряду тиражей отличаются не более чем в 1/0.6 раза (скидка за тираж).
 PRICE_STEP_MIN_RATIO = 0.6
 PRICE_ROW_MIN_NEIGHBORS = 2
@@ -283,24 +290,38 @@ def _card_context_near(text: str, start: int, end: int) -> bool:
 
 
 def _price_neighbors(text: str, start: int, end: int, sep: str) -> tuple[list[int], list[int]]:
-    """Числа-столбцы (3-5 цифр) слева и справа вплотную к группам через тот же разделитель."""
-    esc = re.escape(sep)
+    """Числа-столбцы (3-5 цифр) слева и справа вплотную к группам через тот же разделитель.
+
+    Разбор ручной и ограничен PRICE_NEIGHBORS_MAX числами с каждой стороны: прежний поиск
+    `re.search(..., text[:start])` с якорем «$» на каждом шаге сканировал всю голову текста, и
+    длинный ряд «4242 4242 ...» обрабатывался кубическое время (часы на 70 000 символов).
+    """
+    sep_len = len(sep)
     left: list[int] = []
-    head = text[:start]
-    while True:
-        found = re.search(rf"(?<![\d.,])(\d{{{PRICE_NEIGHBOR_DIGITS}}}){esc}$", head)
-        if not found:
+    pos = start
+    while len(left) < PRICE_NEIGHBORS_MAX and pos >= sep_len and text[pos - sep_len : pos] == sep:
+        digits_end = pos - sep_len
+        digits_start = digits_end
+        while digits_start > 0 and text[digits_start - 1].isdecimal() and (
+            digits_end - digits_start < PRICE_NEIGHBOR_MAX_LEN + 1
+        ):
+            digits_start -= 1
+        length = digits_end - digits_start
+        if not PRICE_NEIGHBOR_MIN_LEN <= length <= PRICE_NEIGHBOR_MAX_LEN:
             break
-        left.insert(0, int(found.group(1)))
-        head = head[: found.start()]
+        if digits_start > 0 and text[digits_start - 1] in PRICE_LEFT_STOP:
+            break
+        left.insert(0, int(text[digits_start:digits_end]))
+        pos = digits_start
     right: list[int] = []
+    pattern = re.compile(rf"{re.escape(sep)}(\d{{{PRICE_NEIGHBOR_DIGITS}}})(?![\d.,/])")
     pos = end
-    while True:
-        found = re.match(rf"{esc}(\d{{{PRICE_NEIGHBOR_DIGITS}}})(?![\d.,/])", text[pos:])
+    while len(right) < PRICE_NEIGHBORS_MAX:
+        found = pattern.match(text, pos)
         if not found:
             break
         right.append(int(found.group(1)))
-        pos += found.end()
+        pos = found.end()
     return left, right
 
 
