@@ -12,23 +12,13 @@ import os
 from collections.abc import AsyncIterator
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import asynccontextmanager
-from typing import Any
-from urllib.parse import unquote, unquote_plus
 
 import httpx
 from fastapi import FastAPI, Request, Response
-from fastapi.responses import JSONResponse, StreamingResponse
-from starlette.types import Receive, Scope, Send
 
 from labops_pii.errors import ConfigError, reject_legacy_profile
 from labops_pii.guard.address import ADDRESS_MODE_ENV, parse_address_mode
-from labops_pii.guard.detector import (
-    DEFAULT_MAX_SCAN_BYTES,
-    BodyNotJsonError,
-    BodyTooLargeError,
-    find_pii_types,
-    scan_body,
-)
+from labops_pii.guard.detector import BodyNotJsonError, BodyTooLargeError
 from labops_pii.guard.litellm.jsonlog import (
     EVENT_PII_OBSERVED,
     EVENT_SERVICE_STARTED,
@@ -83,18 +73,25 @@ from labops_pii.guard.litellm.webpage_route import (
 from labops_pii.guard.metrics import METRICS
 from labops_pii.guard.names import NAMES_MODE_ENV, parse_names_mode
 from labops_pii.guard.policy import Findings, split_findings
+from labops_pii.guard.proxy import (
+    SCAN_WORKERS,
+    Slot,
+    SlotStreamingResponse,
+    forward_headers,
+    has_identity_encoding,
+    max_body_bytes,
+    read_body,
+    scan_request,
+    send_unless_disconnected,
+    stream_upstream,
+    upstream_client,
+)
+from labops_pii.guard.proxy import error_response as _error
 
 logger = logging.getLogger("pii_guard")
 
 UPSTREAM_URL_ENV = "UPSTREAM_URL"
 DEFAULT_UPSTREAM = "http://litellm:4000"
-MAX_BODY_ENV = "MAX_BODY_BYTES"
-# Единственный предел размера: он же передаётся детектору как предел сканирования.
-DEFAULT_MAX_BODY = DEFAULT_MAX_SCAN_BYTES
-UPSTREAM_TIMEOUT_ENV = "UPSTREAM_TIMEOUT_SECONDS"
-DEFAULT_UPSTREAM_TIMEOUT = 600.0
-CONNECT_TIMEOUT = 10.0
-
 HTTP_PII = 422
 HTTP_FORBIDDEN = 403
 HTTP_NOT_FOUND = 404
@@ -118,14 +115,6 @@ CODE_BODY_NOT_JSON = "body_not_json"
 CODE_SCAN_FAILURE = "scan_failure"
 CODE_UPSTREAM_FAILURE = "upstream_failure"
 CODE_CLIENT_DISCONNECTED = "client_disconnected"
-# Проверка идёт в отдельных потоках, чтобы не занимать цикл событий (R3-SEC-15). Потоков
-# немного: проверка грузит процессор, а очередь сверх этого только копит память под тела.
-SCAN_WORKERS = 4
-# Кодирование тела, при котором содержимое можно читать как есть
-IDENTITY_ENCODINGS = frozenset({"", "identity"})
-# Как часто проверять, не ушёл ли клиент, пока апстрим молчит (до первого заголовка).
-DISCONNECT_POLL_SECONDS = 0.5
-
 # Предел запросов в полёте (R5-PY-8). Слот занят от чтения тела до конца отдачи ответа: всё
 # это время тело (до 8 МиБ) живёт в памяти, а у запроса к апстриму оно же в `response.request`.
 # Бюджет под mem_limit 1g: интерпретатор ~60 МБ + пул проверки 4 x ~105 МБ пика скана
@@ -148,115 +137,6 @@ SEARCH_DROP_HEADERS = frozenset({"anthropic-beta"})
 VISION_DROP_HEADERS = frozenset({"anthropic-beta"})
 # И на маршруте страниц сайтов beta-заголовки не нужны
 WEBPAGE_DROP_HEADERS = frozenset({"anthropic-beta"})
-SKIP_REQUEST_HEADERS = frozenset(
-    {"host", "content-length", "connection", "keep-alive", "transfer-encoding", "te",
-     "upgrade", "proxy-authorization", "proxy-authenticate", "trailer"}
-)
-SKIP_RESPONSE_HEADERS = frozenset(
-    {"content-length", "connection", "keep-alive", "transfer-encoding", "te", "upgrade",
-     "trailer", "content-encoding"}
-)
-
-
-def _error(status: int, kind: str, message: str, **extra: Any) -> JSONResponse:
-    """Формирует ошибку в формате API модели (type=error, error.type, error.message)."""
-    payload: dict[str, Any] = {
-        "type": "error",
-        "error": {"type": kind, "message": message},
-    }
-    payload.update(extra)
-    return JSONResponse(status_code=status, content=payload)
-
-
-class _Slot:
-    """Слот запроса в полёте: освобождается ровно один раз, с любой стороны."""
-
-    def __init__(
-        self, semaphore: asyncio.Semaphore, extra: asyncio.Semaphore | None = None
-    ) -> None:
-        # extra - слот маршрута зрения: живёт ровно столько же, сколько слот запроса
-        self._semaphores: list[asyncio.Semaphore] = [semaphore]
-        if extra is not None:
-            self._semaphores.append(extra)
-
-    def release(self) -> None:
-        """Возвращает слот (повторный вызов ничего не делает)."""
-        semaphores, self._semaphores = self._semaphores, []
-        for semaphore in semaphores:
-            semaphore.release()
-
-
-class _SlotStreamingResponse(StreamingResponse):
-    """Потоковый ответ, который держит слот до конца отдачи (в том числе при обрыве)."""
-
-    def __init__(self, *args: Any, slot: _Slot, **kwargs: Any) -> None:
-        super().__init__(*args, **kwargs)
-        self._slot = slot
-
-    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
-        """Отдаёт ответ и освобождает слот, даже если клиент оборвал соединение."""
-        try:
-            await super().__call__(scope, receive, send)
-        finally:
-            self._slot.release()
-
-
-async def _send_unless_disconnected(
-    request: Request,
-    client: httpx.AsyncClient,
-    upstream_req: httpx.Request,
-) -> httpx.Response | None:
-    """Отправляет запрос в апстрим и отменяет его, если клиент ушёл раньше ответа.
-
-    Без этого брошенный ядром запрос (таймаут 120 с) продолжал бы исполняться в LiteLLM
-    (до 600 с, с повтором и fallback) и тратить бюджет впустую.
-
-    Args:
-        request: Входящий запрос (источник сигнала об отключении клиента).
-        client: Клиент httpx к LiteLLM.
-        upstream_req: Подготовленный запрос к апстриму.
-
-    Returns:
-        Ответ апстрима (поток открыт) или None, если клиент отключился.
-
-    Raises:
-        Exception: Любая ошибка апстрима пробрасывается вызывающему.
-    """
-    task = asyncio.ensure_future(client.send(upstream_req, stream=True))
-    try:
-        while True:
-            done, _ = await asyncio.wait({task}, timeout=DISCONNECT_POLL_SECONDS)
-            if done:
-                return task.result()
-            if await request.is_disconnected():
-                task.cancel()
-                await asyncio.gather(task, return_exceptions=True)
-                return None
-    except BaseException:
-        # Отмена самого обработчика (сервер оборвал запрос): апстрим тоже отменяем.
-        task.cancel()
-        await asyncio.gather(task, return_exceptions=True)
-        raise
-
-
-def _max_body_bytes() -> int:
-    """Читает предел тела из MAX_BODY_BYTES.
-
-    Raises:
-        ValueError: Значение не целое или не больше нуля (приложение не запускается).
-    """
-    raw = os.environ.get(MAX_BODY_ENV)
-    if raw is None:
-        return DEFAULT_MAX_BODY
-    try:
-        value = int(raw)
-    except ValueError as exc:
-        raise ValueError(f"{MAX_BODY_ENV} должна быть целым числом байт") from exc
-    if value <= 0:
-        raise ValueError(f"{MAX_BODY_ENV} должна быть больше нуля")
-    return value
-
-
 def create_app(
     upstream_url: str | None = None,
     transport: httpx.AsyncBaseTransport | None = None,
@@ -293,16 +173,12 @@ def create_app(
     """
     reject_legacy_profile()
     base = (upstream_url or os.environ.get(UPSTREAM_URL_ENV, DEFAULT_UPSTREAM)).rstrip("/")
-    max_body = _max_body_bytes()
+    max_body = max_body_bytes()
     # Неизвестный режим ФИО - ошибка старта, а не тихое отключение защиты (см. parse_names_mode)
     parse_names_mode(os.environ.get(NAMES_MODE_ENV))
     # То же для режима адресов (parse_address_mode)
     parse_address_mode(os.environ.get(ADDRESS_MODE_ENV))
-    timeout = httpx.Timeout(
-        float(os.environ.get(UPSTREAM_TIMEOUT_ENV, DEFAULT_UPSTREAM_TIMEOUT)),
-        connect=CONNECT_TIMEOUT,
-    )
-    client = httpx.AsyncClient(base_url=base, timeout=timeout, transport=transport)
+    client = upstream_client(transport, base)
     scan_pool = ThreadPoolExecutor(max_workers=SCAN_WORKERS, thread_name_prefix="pii-scan")
     inflight = asyncio.Semaphore(max_inflight)
     if search_enabled is None:
@@ -336,20 +212,6 @@ def create_app(
     app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None, lifespan=lifespan)
     # Внешний слой: пишет одну JSON-строку на запрос (тело не читает)
     app.add_middleware(JsonLogMiddleware)
-
-    async def _scan(body: bytes, path: str, query: str) -> set[str]:
-        """Проверяет тело (должно быть JSON) и адрес запроса в пуле потоков.
-
-        Адрес проверяется после раскодирования %-последовательностей, в том числе Unicode:
-        ПДн в пути или в строке запроса так же недопустимы, как в теле.
-        """
-        loop = asyncio.get_running_loop()
-        found: set[str] = set()
-        if body:
-            found |= await loop.run_in_executor(scan_pool, scan_body, body, max_body, True)
-        address = unquote(path) + "\n" + unquote_plus(query)
-        found |= await loop.run_in_executor(scan_pool, find_pii_types, address)
-        return found
 
     def _record_findings(request: Request, findings: Findings) -> None:
         """Метрика находок и запись о наблюдаемых типах (log_only); значений ПДн здесь нет."""
@@ -462,7 +324,7 @@ def create_app(
             )
             response.headers["retry-after"] = str(RETRY_AFTER_SECONDS)
             return response
-        slot = _Slot(inflight, vision_slots if is_vision else None)
+        slot = Slot(inflight, vision_slots) if is_vision else Slot(inflight)
         try:
             if is_search:
                 response = await _handle_search(request, slot)
@@ -475,42 +337,33 @@ def create_app(
         except BaseException:
             slot.release()
             raise
-        if not isinstance(response, _SlotStreamingResponse):
+        if not isinstance(response, SlotStreamingResponse):
             # Отказ или ошибка: ответ маленький, слот нужен только до этого момента
             slot.release()
         return response
 
-    async def _handle(path: str, request: Request, slot: _Slot) -> Response:
+    def _too_large(request: Request) -> Response:
+        mark_denied(request.scope, CODE_BODY_TOO_LARGE)
+        return _error(HTTP_TOO_LARGE, "request_too_large", "request body too large")
+
+    async def _handle(path: str, request: Request, slot: Slot) -> Response:
         """Проверяет тело на ПДн и проксирует запрос в LiteLLM."""
-        encoding = request.headers.get("content-encoding", "").strip().lower()
-        if encoding not in IDENTITY_ENCODINGS:
+        if not has_identity_encoding(request):
             # Сжатое тело не прочитать, а пропустить непроверенным нельзя
             mark_denied(request.scope, CODE_CONTENT_ENCODING)
             return _error(
                 HTTP_UNSUPPORTED_MEDIA, "invalid_request_error", "content-encoding not supported"
             )
+        # Куски тела живут только внутри read_body: вторая копия не держится всё время
+        # ожидания апстрима (до 600 с)
+        body = await read_body(request, max_body)
+        if body is None:
+            return _too_large(request)
         try:
-            declared = request.headers.get("content-length")
-            if declared is not None and int(declared) > max_body:
-                mark_denied(request.scope, CODE_BODY_TOO_LARGE)
-                return _error(HTTP_TOO_LARGE, "request_too_large", "request body too large")
-            chunks: list[bytes] = []
-            received = 0
-            async for chunk in request.stream():
-                received += len(chunk)
-                if received > max_body:
-                    mark_denied(request.scope, CODE_BODY_TOO_LARGE)
-                    return _error(HTTP_TOO_LARGE, "request_too_large", "request body too large")
-                chunks.append(chunk)
-            body = b"".join(chunks)
-            # Куски больше не нужны; без этого они жили бы вместе с body всё время
-            # ожидания апстрима (до 600 с) и держали вторую копию тела (R5-PY-8).
-            del chunks
-            found = await _scan(body, path, request.url.query)
+            found = await scan_request(scan_pool, body, path, request.url.query, max_body)
         except BodyTooLargeError:
             # Страховка: детектор получил тот же предел, но непроверенное тело не пропускаем
-            mark_denied(request.scope, CODE_BODY_TOO_LARGE)
-            return _error(HTTP_TOO_LARGE, "request_too_large", "request body too large")
+            return _too_large(request)
         except BodyNotJsonError:
             mark_denied(request.scope, CODE_BODY_NOT_JSON)
             return _error(
@@ -529,7 +382,7 @@ def create_app(
 
         return await _forward(request, "/" + path, request.url.query, body, slot)
 
-    async def _handle_search(request: Request, slot: _Slot) -> Response:
+    async def _handle_search(request: Request, slot: Slot) -> Response:
         """Проверяет форму запроса поиска (не ПДн) и пересылает его в /v1/messages."""
         encoding = request.headers.get("content-encoding", "")
         limit = SEARCH_CONTINUATION_MAX_BODY_BYTES
@@ -537,14 +390,9 @@ def create_app(
         # Пустое тело даёт REASON_NOT_JSON; отказ по методу, query и кодированию - сразу.
         if reason not in (None, REASON_NOT_JSON):
             return _search_reject(request, reason)
-        chunks: list[bytes] = []
-        received = 0
-        async for chunk in request.stream():
-            received += len(chunk)
-            if received > limit:
-                return _search_reject(request, REASON_SIZE)
-            chunks.append(chunk)
-        body = b"".join(chunks)
+        body = await read_body(request, limit)
+        if body is None:
+            return _search_reject(request, REASON_SIZE)
         reason = check_search_form(
             request.method, request.url.query, encoding, body, allowed_models
         )
@@ -554,24 +402,15 @@ def create_app(
             request, SEARCH_UPSTREAM_PATH, "", body, slot, SEARCH_DROP_HEADERS,
         )
 
-    async def _handle_vision(request: Request, slot: _Slot) -> Response:
+    async def _handle_vision(request: Request, slot: Slot) -> Response:
         """Проверяет запрос с картинками (форма, base64, размеры, ПДн в тексте), шлёт в LiteLLM."""
         encoding = request.headers.get("content-encoding", "")
         reason = check_vision_head(request.method, request.url.query, encoding)
         if reason is not None:
             return _vision_reject(request, reason)
-        declared = request.headers.get("content-length")
-        if declared is not None and declared.isdigit() and int(declared) > limits.max_body_bytes:
+        body = await read_body(request, limits.max_body_bytes)
+        if body is None:
             return _vision_reject(request, REASON_SIZE)
-        chunks: list[bytes] = []
-        received = 0
-        async for chunk in request.stream():
-            received += len(chunk)
-            if received > limits.max_body_bytes:
-                return _vision_reject(request, REASON_SIZE)
-            chunks.append(chunk)
-        body = b"".join(chunks)
-        del chunks  # вторая копия тела не нужна на время ожидания апстрима
         loop = asyncio.get_running_loop()
         try:
             # Разбор JSON и декодирование base64 - в пуле потоков, чтобы не держать цикл событий
@@ -597,24 +436,15 @@ def create_app(
             request, VISION_UPSTREAM_PATH, "", body, slot, VISION_DROP_HEADERS,
         )
 
-    async def _handle_webpage(request: Request, slot: _Slot) -> Response:
+    async def _handle_webpage(request: Request, slot: Slot) -> Response:
         """Проверяет запрос со страницей сайта (форма, ПДн кроме phone/email), шлёт в LiteLLM."""
         encoding = request.headers.get("content-encoding", "")
         reason = check_webpage_head(request.method, request.url.query, encoding)
         if reason is not None:
             return _webpage_reject(request, reason)
-        declared = request.headers.get("content-length")
-        if declared is not None and declared.isdigit() and int(declared) > WEBPAGE_MAX_BODY_BYTES:
+        body = await read_body(request, WEBPAGE_MAX_BODY_BYTES)
+        if body is None:
             return _webpage_reject(request, REASON_SIZE)
-        chunks: list[bytes] = []
-        received = 0
-        async for chunk in request.stream():
-            received += len(chunk)
-            if received > WEBPAGE_MAX_BODY_BYTES:
-                return _webpage_reject(request, REASON_SIZE)
-            chunks.append(chunk)
-        body = b"".join(chunks)
-        del chunks
         loop = asyncio.get_running_loop()
         try:
             verdict = await loop.run_in_executor(
@@ -677,46 +507,23 @@ def create_app(
         upstream_path: str,
         query: str,
         body: bytes,
-        slot: _Slot,
+        slot: Slot,
         drop_headers: frozenset[str] = frozenset(),
     ) -> Response:
         """Пересылает проверенное тело в LiteLLM и отдаёт ответ потоком."""
-        headers = {
-            k: v
-            for k, v in request.headers.items()
-            if k.lower() not in SKIP_REQUEST_HEADERS and k.lower() not in drop_headers
-        }
         url = httpx.URL(path=upstream_path, query=query.encode())
         try:
             upstream_req = client.build_request(
-                request.method, url, headers=headers, content=body
+                request.method, url, headers=forward_headers(request, drop_headers), content=body
             )
-            sent = await _send_unless_disconnected(request, client, upstream_req)
+            sent = await send_unless_disconnected(request, client, upstream_req)
         except Exception as exc:  # noqa: BLE001 - fail closed
             mark_failed(request.scope, CODE_UPSTREAM_FAILURE, exc)
             return _error(HTTP_BAD_GATEWAY, "api_error", "upstream unavailable")
         if sent is None:
             mark_denied(request.scope, CODE_CLIENT_DISCONNECTED)
             return Response(status_code=HTTP_CLIENT_CLOSED)
-        upstream = sent
-
-        async def body_iter() -> AsyncIterator[bytes]:
-            """Отдаёт ответ апстрима кусками, не накапливая."""
-            try:
-                async for part in upstream.aiter_raw():
-                    yield part
-            finally:
-                await upstream.aclose()
-
-        resp_headers = {
-            k: v for k, v in upstream.headers.items() if k.lower() not in SKIP_RESPONSE_HEADERS
-        }
-        # aiter_raw отдаёт байты как есть, поэтому content-encoding оставляем
-        if "content-encoding" in upstream.headers:
-            resp_headers["content-encoding"] = upstream.headers["content-encoding"]
-        return _SlotStreamingResponse(
-            body_iter(), status_code=upstream.status_code, headers=resp_headers, slot=slot
-        )
+        return stream_upstream(sent, slot)
 
     return app
 

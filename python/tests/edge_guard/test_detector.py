@@ -150,7 +150,7 @@ def test_scan_limit_fail_closed() -> None:
 
 def test_scan_limit_default_equals_default_body_limit() -> None:
     """Один источник истины: без явного предела действует предел тела по умолчанию."""
-    from labops_pii.guard.edge import app
+    from labops_pii.guard import proxy as app
     from labops_pii.guard import detector
 
     assert app.DEFAULT_MAX_BODY == detector.DEFAULT_MAX_SCAN_BYTES

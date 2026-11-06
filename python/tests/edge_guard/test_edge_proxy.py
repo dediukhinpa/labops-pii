@@ -225,7 +225,7 @@ async def test_scan_failure_is_503_without_retry(monkeypatch: pytest.MonkeyPatch
     def boom(*_: object) -> set[str]:
         raise RuntimeError("boom")
 
-    monkeypatch.setattr("labops_pii.guard.edge.app.scan_body", boom)
+    monkeypatch.setattr("labops_pii.guard.proxy.scan_body", boom)
     seen: list[httpx.Request] = []
     for mode in (GuardMode.BLOCK, GuardMode.LOG):
         async with _client(_recording(seen), mode) as c:
