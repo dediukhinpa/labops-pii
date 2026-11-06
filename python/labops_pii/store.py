@@ -79,6 +79,11 @@ SECONDS_PER_DAY = 86_400
 # Метку последнего обращения к треду пишем не чаще раза в этот интервал: запись на диск
 # на каждый запрос не нужна, а точность до часа для ретенции в днях достаточна.
 ACTIVITY_TOUCH_INTERVAL_SECONDS = 3_600
+# Метка отстаёт от настоящего обращения не больше интервала записи, поэтому интервал не должен
+# быть сравним со сроком хранения: при сроке 1 ч активный тред с меткой часовой давности
+# удалялся посреди разговора. purge_idle сжимает интервал до доли срока и прибавляет его к сроку.
+ACTIVITY_TOUCH_RETENTION_SHARE = 4
+ACTIVITY_TOUCH_MIN_SECONDS = 60
 # Сколько пар (тред, тип) держит кэш расшифрованных ключей list_keys. Кэш только ускоряет
 # повторные чтения и перестраивается из таблицы; хранит нормализованные ключи в памяти
 # процесса так же, как их держит сам запрос при разборе текста.
@@ -248,6 +253,8 @@ class SqliteReplacementStore:
         self._key_cache_entries = max(1, key_cache_entries)
         self._key_cache: OrderedDict[tuple[str, str], list[tuple[str, str]]] = OrderedDict()
         self._touched: dict[str, int] = {}
+        # Интервал записи метки активности; purge_idle сжимает его под срок хранения
+        self._touch_interval = ACTIVITY_TOUCH_INTERVAL_SECONDS
         # Счётчики строк по (тред, тип); значение всегда равно COUNT(*) либо записи нет.
         # Версия файла нужна, чтобы увидеть запись другим соединением/процессом.
         self._counts: OrderedDict[tuple[str, str], int] = OrderedDict()
@@ -330,7 +337,7 @@ class SqliteReplacementStore:
         """Отмечает обращение к треду (не чаще интервала); вызывать под self._lock."""
         now = int(self._clock())
         last = self._touched.get(thread_id)
-        if last is not None and now - last < ACTIVITY_TOUCH_INTERVAL_SECONDS:
+        if last is not None and now - last < self._touch_interval:
             return
         if len(self._touched) >= TOUCHED_MAP_LIMIT:
             self._touched.clear()
@@ -526,10 +533,19 @@ class SqliteReplacementStore:
         """
         if max_idle_seconds <= 0:
             return 0
-        cutoff = int(self._clock() - max_idle_seconds)
         with self._lock:
             if self._in_batch:
                 return 0
+            # Интервал записи метки - не больше доли срока; к сроку прибавляется сам интервал,
+            # на который метка может отставать от последнего обращения
+            self._touch_interval = max(
+                ACTIVITY_TOUCH_MIN_SECONDS,
+                min(
+                    ACTIVITY_TOUCH_INTERVAL_SECONDS,
+                    int(max_idle_seconds) // ACTIVITY_TOUCH_RETENTION_SHARE,
+                ),
+            )
+            cutoff = int(self._clock() - max_idle_seconds - self._touch_interval)
             expired = [
                 str(row[0]) for row in self._conn.execute(
                     "SELECT thread_id FROM thread_activity WHERE last_seen < ?", (cutoff,)
