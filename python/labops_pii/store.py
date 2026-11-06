@@ -210,6 +210,7 @@ class SqliteReplacementStore:
         clock: Callable[[], float] = time.time,
         key_cache_entries: int = DEFAULT_KEY_CACHE_ENTRIES,
         key_scheme: str | None = None,
+        read_only: bool = False,
     ) -> None:
         """Открывает (создаёт) базу.
 
@@ -222,6 +223,9 @@ class SqliteReplacementStore:
                 "v2" (общий ключ, прежний формат: файл читается и прежним кодом).
                 По умолчанию из PSEUDONYMIZER_KEY_SCHEME (нет переменной - ConfigError).
                 Читаются всегда все схемы (v3, v2, v1).
+            read_only: Открыть существующий файл только на чтение (пробный прогон rekey):
+                без создания таблиц и меток активности. Запись в такое хранилище - ошибка
+                sqlite3.
 
         Raises:
             ConfigError: Схема не задана ни аргументом, ни окружением.
@@ -244,11 +248,15 @@ class SqliteReplacementStore:
         # v3: наборы ключей по префиксам тредов, выводятся лениво
         self._master = master
         self._prefix_keys: dict[str, _PrefixKeys] = {}
-        if str(path) != ":memory:":
+        if str(path) != ":memory:" and not read_only:
             Path(path).parent.mkdir(parents=True, exist_ok=True)
         self._lock = threading.Lock()
         self._in_batch = False
-        self._conn = sqlite3.connect(str(path), check_same_thread=False)
+        if read_only:
+            uri = f"{Path(path).resolve().as_uri()}?mode=ro"
+            self._conn = sqlite3.connect(uri, uri=True, check_same_thread=False)
+        else:
+            self._conn = sqlite3.connect(str(path), check_same_thread=False)
         self._clock = clock
         self._key_cache_entries = max(1, key_cache_entries)
         self._key_cache: OrderedDict[tuple[str, str], list[tuple[str, str]]] = OrderedDict()
@@ -259,6 +267,8 @@ class SqliteReplacementStore:
         # Версия файла нужна, чтобы увидеть запись другим соединением/процессом.
         self._counts: OrderedDict[tuple[str, str], int] = OrderedDict()
         self._counts_version: int | None = None
+        if read_only:
+            return
         self._conn.execute(SCHEMA)
         self._conn.execute(ACTIVITY_SCHEMA)
         # Удалённые строки с ПДн затираются на странице, а не остаются в свободном месте

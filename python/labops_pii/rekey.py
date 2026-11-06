@@ -135,18 +135,22 @@ def main(argv: Sequence[str] | None = None) -> int:
         "ВНИМАНИЕ: перед перешифрованием должен быть снят бэкап (scripts/backup.sh), "
         "запись в сервис остановлена."
     )
-    store = SqliteReplacementStore(
-        db_path, settings.key, key_scheme=settings.key_scheme
+    # Пробная расшифровка всех строк ДО копии и только на чтение: с неверным ключом копия не
+    # создаётся, а --dry-run и проверка перед копией ничего не пишут в файл (раньше открытие
+    # хранилища добавляло метки активности ещё до бэкапа)
+    probe = SqliteReplacementStore(
+        db_path, settings.key, key_scheme=settings.key_scheme, read_only=True
     )
+    store: SqliteReplacementStore | None = None
     try:
-        # Пробная расшифровка всех строк ДО копии: с неверным ключом копия не создаётся
-        # (иначе каждая неудачная попытка оставляла бы ещё один файл с таблицей замен).
-        report = store.rekey_legacy(dry_run=True)
+        report = probe.rekey_legacy(dry_run=True)
+        left = probe.legacy_row_count()
         if not args.dry_run:
             if not args.no_backup:
                 logger.info("копия файла базы: %s", make_backup(db_path))
+            store = SqliteReplacementStore(db_path, settings.key, key_scheme=settings.key_scheme)
             report = store.rekey_legacy()
-        left = store.legacy_row_count()
+            left = store.legacy_row_count()
     except InvalidToken:
         # Значения не печатаем: только факт отказа
         logger.error("расшифровка не удалась: неверный PSEUDONYMIZER_KEY или повреждённые данные;"
@@ -156,7 +160,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         logger.error("копия файла базы не создана (%s); база не изменена", type(exc).__name__)
         return EXIT_FAILED
     finally:
-        store.close()
+        probe.close()
+        if store is not None:
+            store.close()
     logger.info(
         "всего строк: %d, на схеме v1 было: %d, переведено: %d, осталось на v1: %d%s",
         report.total, report.legacy, report.migrated, left,
