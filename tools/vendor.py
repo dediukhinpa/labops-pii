@@ -6,8 +6,9 @@
 (тег или коммит), а не из рабочей папки, поэтому незакоммиченные правки не попадут.
 
 Части (--parts, через запятую):
-  guard    режим «только проверка»: labops_pii/{__init__,errors,pii_patterns}.py и guard/
-           (без natasha и pymorphy: образ шлюза остаётся лёгким);
+  guard    режим «только проверка»: labops_pii/{__init__,errors,pii_patterns,allowlist}.py и
+           guard/ (без natasha и pymorphy: образ шлюза остаётся лёгким);
+К каждой части добавляются все модули пакета, которые она импортирует (транзитивно).
   service  ядро и HTTP-сервис псевдонимизации (всё, кроме guard/ и media/);
   media    labops_pii/media/ (extras: Pillow, OpenCV, pypdfium2);
   ts       TS-пакет @labops/pii: ts/src, ts/package.json, ts/bun.lock, ts/LICENSE
