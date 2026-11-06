@@ -17,6 +17,30 @@ import type { Pseudonymizer } from './pseudonymizer-client';
 import { RequestWalker } from './request-walker';
 import { chunkBatches, mapLimited, splitText } from './text-split';
 
+/**
+ * Через сколько простоя треда его записи кэша и памяти восстановлений перестают использоваться.
+ * Сервис удаляет тред по сроку хранения (по умолчанию 24 ч простоя) без смены boot_id и начинает
+ * нумерацию заново: старая маска из кэша дала бы [PERSON_1] другому человеку. Срок короче любого
+ * разумного хранения на сервере; промах кэша безопасен (сервис вернёт ту же маску, если тред жив).
+ */
+export const THREAD_IDLE_RESET_MS = 30 * 60 * 1000;
+/** Предел числа тредов, для которых помнится поколение кэша (старые вытесняются). */
+const THREAD_EPOCHS_MAX = 100_000;
+
+/** Настройки кэша по тредам. */
+export interface MaskerOptions {
+  /** Простой треда, после которого его кэш не используется; по умолчанию THREAD_IDLE_RESET_MS. */
+  readonly threadIdleResetMs?: number | undefined;
+  /** Часы в миллисекундах (для тестов). */
+  readonly now?: (() => number) | undefined;
+}
+
+/** Поколение кэша треда: новое поколение делает старые записи недостижимыми. */
+interface ThreadEpoch {
+  epoch: number;
+  lastUsed: number;
+}
+
 /** Предел числа записей кэша «текст проверен, ПДн нет» (стоимость 0, ключ - sha256). */
 const CLEAN_CACHE_MAX_ENTRIES = 200_000;
 const CLEAN_COST = 1;
@@ -57,13 +81,19 @@ export class RequestMasker {
   private readonly rememberCache = new BoundedCache(REMEMBER_CACHE_MAX_CHARS);
   private readonly cleanCache = new BoundedCache(CLEAN_CACHE_MAX_ENTRIES * CLEAN_COST, () => 0);
   private readonly boot: BootTracker;
+  private readonly epochs = new Map<string, ThreadEpoch>();
+  private readonly idleResetMs: number;
+  private readonly now: () => number;
 
   constructor(
     private readonly service: Pseudonymizer,
     private readonly imagePolicy: ImagePolicy,
     private readonly caseLabels = false,
     private readonly media?: MediaProcessor,
+    options: MaskerOptions = {},
   ) {
+    this.idleResetMs = options.threadIdleResetMs ?? THREAD_IDLE_RESET_MS;
+    this.now = options.now ?? (() => Date.now());
     // Таблица замен сервиса потеряна: память восстановлений теряет смысл так же, как кэш.
     this.boot = new BootTracker(service, () => {
       this.maskCache.clear();
@@ -86,7 +116,39 @@ export class RequestMasker {
    * Ключ совпадает с ключом кэша маскирования: тред, boot_id и строка листа.
    */
   remember(threadId: string, bootId: string, restored: string, original: string): void {
-    this.rememberCache.set(maskCacheKey(threadId, bootId, restored, this.caseLabels), original);
+    const scope = this.threadScope(threadId);
+    this.rememberCache.set(maskCacheKey(scope, bootId, restored, this.caseLabels), original);
+  }
+
+  /**
+   * Забыть кэш треда. Вызывать после `deleteThread` у сервиса: тред удалён, нумерация на сервере
+   * начнётся заново, и прежние маски этого треда больше не годятся.
+   */
+  forgetThread(threadId: string): void {
+    const entry = this.epochs.get(threadId);
+    this.epochs.delete(threadId);
+    this.epochs.set(threadId, { epoch: (entry?.epoch ?? 0) + 1, lastUsed: this.now() });
+    this.trimEpochs();
+  }
+
+  /** Ключ треда для кэша с поколением; долгий простой открывает новое поколение. */
+  private threadScope(threadId: string): string {
+    const now = this.now();
+    const entry = this.epochs.get(threadId) ?? { epoch: 0, lastUsed: now };
+    if (now - entry.lastUsed > this.idleResetMs) entry.epoch += 1;
+    entry.lastUsed = now;
+    // Переставляем в конец: вытесняются давно не использованные треды
+    this.epochs.delete(threadId);
+    this.epochs.set(threadId, entry);
+    this.trimEpochs();
+    return entry.epoch === 0 ? threadId : `${threadId}\u0000epoch${entry.epoch}`;
+  }
+
+  private trimEpochs(): void {
+    for (const key of this.epochs.keys()) {
+      if (this.epochs.size <= THREAD_EPOCHS_MAX) break;
+      this.epochs.delete(key);
+    }
   }
 
   /**
@@ -95,6 +157,7 @@ export class RequestMasker {
    *   RequestRejectedError при ПДн после маски.
    */
   async mask(body: JsonObject, threadId: string): Promise<MaskStats> {
+    const scope = this.threadScope(threadId);
     const walker = new RequestWalker(this.imagePolicy, this.media);
     await walker.walk(body);
     for (let attempt = 0; attempt < MASK_BOOT_ATTEMPTS; attempt++) {
@@ -102,7 +165,7 @@ export class RequestMasker {
       // кэш хранит маски старой таблицы, и [PERSON_1] из кэша и [PERSON_1] новой таблицы
       // могли бы оказаться разными людьми. Тогда кэш сброшен (onReset), маскируем заново.
       const bootId = await this.boot.current(true);
-      let pass = await this.maskOnce(walker, threadId, bootId);
+      let pass = await this.maskOnce(walker, threadId, scope, bootId);
       if ((await this.boot.current(true)) !== bootId) continue;
       let found = await this.findPii(pass.maskedTexts);
       // Свой текст модели идёт мимо сервиса, и /check может найти в нём «ФИО», которое
@@ -112,7 +175,7 @@ export class RequestMasker {
       const stale = pass.remembered.filter((r) => found.dirty.has(r.text));
       if (stale.length > 0) {
         stale.forEach((r) => this.rememberCache.delete(r.key));
-        pass = await this.maskOnce(walker, threadId, bootId);
+        pass = await this.maskOnce(walker, threadId, scope, bootId);
         if ((await this.boot.current(true)) !== bootId) continue;
         found = await this.findPii(pass.maskedTexts);
       }
@@ -127,6 +190,7 @@ export class RequestMasker {
   private async maskOnce(
     walker: RequestWalker,
     threadId: string,
+    scope: string,
     bootId: string,
   ): Promise<{
     stats: Omit<MaskStats, 'forgottenLeaves'>;
@@ -134,7 +198,7 @@ export class RequestMasker {
     remembered: RememberedLeaf[];
   }> {
     const keys = walker.leaves.map(
-      (l) => maskCacheKey(threadId, bootId, l.text, this.caseLabels),
+      (l) => maskCacheKey(scope, bootId, l.text, this.caseLabels),
     );
     // Уже известные маски снимаем сразу: запись кэша может быть вытеснена новыми.
     const resolved = new Map<string, string>();
