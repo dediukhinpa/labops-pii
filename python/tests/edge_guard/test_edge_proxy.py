@@ -271,6 +271,21 @@ def test_account_email_template_exempt_only_when_allowed() -> None:
     assert scan_body(_context_body(), require_json=True) == {"email"}
 
 
+@pytest.mark.parametrize(
+    "smuggled",
+    [
+        "+79161234567,500100732259,4242424242424242,ivan@mail.ru",
+        "4242424242424242",
+        "ivan@mail.ru,+79161234567",
+    ],
+)
+def test_account_email_template_does_not_hide_other_pii(smuggled: str) -> None:
+    # Вместо почты в шаблон вписаны телефон, ИНН и карта: вырезаться должен только один адрес
+    text = f"The user's email address is {smuggled}. Use it only to identify the user"
+    body = json.dumps({"messages": [{"role": "user", "content": text}]}).encode()
+    assert scan_body(body, require_json=True, allow_account_email=True)
+
+
 def test_other_email_next_to_template_still_found() -> None:
     body = _context_body(" Клиент: ivan@firma.ru")
     assert scan_body(body, require_json=True, allow_account_email=True) == {"email"}
