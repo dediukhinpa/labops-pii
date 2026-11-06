@@ -199,6 +199,10 @@ class ReplacementStore(Protocol):
         """Удаляет все замены треда; True, если тред был. Нет треда — не ошибка."""
         ...
 
+    def touch(self, thread_id: str) -> None:
+        """Отмечает обращение к существующему треду, даже если в запросе не было ПДн."""
+        ...
+
 
 class SqliteReplacementStore:
     """SQLite-хранилище для разработки. Ключи и значения шифруются Fernet."""
@@ -359,6 +363,28 @@ class SqliteReplacementStore:
         self._touched[thread_id] = now
         if not self._in_batch:
             self._conn.commit()
+
+    def touch(self, thread_id: str) -> None:
+        """Отмечает обращение к треду, у которого уже есть замены (не чаще интервала).
+
+        Метка раньше обновлялась только при чтении или записи ПДн: сессия без ПДн в новых
+        сообщениях удалялась по сроку хранения, хотя шла, и нумерация начиналась заново поверх
+        кэша клиента. Новый тред без замен метку не получает (ему нечего хранить).
+        """
+        now = int(self._clock())
+        with self._lock:
+            last = self._touched.get(thread_id)
+            if last is not None and now - last < self._touch_interval:
+                return
+            cursor = self._conn.execute(
+                "UPDATE thread_activity SET last_seen=? WHERE thread_id=?", (now, thread_id)
+            )
+            if cursor.rowcount:
+                if len(self._touched) >= TOUCHED_MAP_LIMIT:
+                    self._touched.clear()
+                self._touched[thread_id] = now
+                if not self._in_batch:
+                    self._conn.commit()
 
     def find_token(self, thread_id: str, pii_type: str, key: str) -> str | None:
         with self._lock:
@@ -716,6 +742,13 @@ class MemoryReplacementStore:
     def _touch_locked(self, thread: _MemoryThread) -> None:
         """Отмечает обращение к треду; под self._lock."""
         thread.last_seen = self._clock()
+
+    def touch(self, thread_id: str) -> None:
+        """Отмечает обращение к существующему треду (см. SqliteReplacementStore.touch)."""
+        with self._lock:
+            thread = self._threads.get(thread_id)
+            if thread is not None:
+                self._touch_locked(thread)
 
     def find_token(self, thread_id: str, pii_type: str, key: str) -> str | None:
         with self._lock:

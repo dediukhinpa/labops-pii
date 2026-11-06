@@ -217,6 +217,8 @@ class Pseudonymizer:
             Пара (текст с токенами, уникальные сущности в порядке появления).
         """
         with self._lock:
+            # Любое обращение продлевает жизнь треда, даже текст без ПДн
+            self._store.touch(thread_id)
             known = self._known_lemmas(thread_id)
         detections = self._detector.detect(text, known)
         parts: list[str] = []
@@ -307,6 +309,7 @@ class Pseudonymizer:
         Raises:
             TooManyTokensError: Разных токенов в тексте больше предела.
         """
+        self._store.touch(thread_id)
         # Метки одного токена с разными падежами считаются одним токеном.
         tokens = {
             f"[{m.group(2)}_{m.group(3)}]"
@@ -363,6 +366,7 @@ class Pseudonymizer:
         known: set[str] = set()
         if thread_id is not None:
             with self._lock:
+                self._store.touch(thread_id)
                 known = self._known_lemmas(thread_id)
         return sorted({d.pii_type.value for d in self._detector.detect(text, known)})
 
