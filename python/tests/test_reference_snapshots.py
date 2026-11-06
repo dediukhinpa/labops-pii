@@ -1,10 +1,11 @@
 """Сверка библиотеки с эталонными снимками исходных копий (побайтно, по наборам переменных).
 
 Эталоны в tests/fixtures/reference/*.json сняты tools/reference_snapshot.py на КОДЕ ИСХОДНЫХ
-копий: labops-ai-assistant e271609, копия с хранилищем sqlite v2 53c84abc, web-app-v2 1aebe40.
+копий: копия с хранилищем v3 e271609, копия с хранилищем sqlite v2 53c84abc, копия edge-guard
+1aebe40.
 Библиотека снимается в отдельном процессе с набором переменных бывшего профиля
 (tests/env_sets.py). Для sqlite_v2 расхождений
-быть не должно вообще. Для labops и webapp_v2 допустимы только расхождения из
+быть не должно вообще. Для labops и edge допустимы только расхождения из
 fixtures/accepted_divergences.json (осознанные фиксы, см. CHANGELOG): любое новое
 расхождение роняет тест, пока его не разобрали и не записали.
 """
@@ -31,7 +32,7 @@ CASES = {
     "sqlite_v2_pseudonymizer": ["--kind", "pseudonymizer", "--env-set", "sqlite_v2",
                                  "--with-signatory"],
     "sqlite_v2_guard": ["--kind", "guard-litellm", "--env-set", "sqlite_v2"],
-    "webapp_v2_guard": ["--kind", "guard-edge", "--env-set", "webapp_v2"],
+    "edge_guard": ["--kind", "guard-edge", "--env-set", "edge"],
 }
 
 

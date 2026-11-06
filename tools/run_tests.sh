@@ -18,7 +18,7 @@ SUITES=(
   tests/labops_pseudonymizer:labops
   tests/sqlite_v2_pseudonymizer:sqlite_v2
   tests/sqlite_v2_guard:sqlite_v2
-  tests/webapp_v2_guard:webapp_v2
+  tests/edge_guard:edge
   tests/media
   tests/core
   tests/test_reference_snapshots.py

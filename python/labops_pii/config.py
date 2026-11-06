@@ -46,7 +46,7 @@ ENV_MAX_BATCH_ITEMS = "PSEUDONYMIZER_MAX_BATCH_ITEMS"
 DEFAULT_DB = Path("data/pseudonymizer.sqlite3")
 DEFAULT_HOST = "127.0.0.1"
 DEFAULT_PORT = 8300
-# Таймаут клиента (pii-proxy, 10 000 мс): запрос, который
+# Таймаут TS-клиента (10 000 мс): запрос, который
 # обрабатывается дольше, для клиента всё равно потерян, а процесс при этом занят.
 CLIENT_TIMEOUT_SECONDS = 10.0
 # Худшее измеренное время на символ (README, «Пределы и время»; ВМ 2 vCPU): текст из

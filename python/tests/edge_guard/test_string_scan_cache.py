@@ -13,7 +13,7 @@ from labops_pii.guard.detector import (
     find_pii_types,
     scan_body,
 )
-from tests.webapp_v2_guard.pii_corpus import NEGATIVE, POSITIVE
+from tests.edge_guard.pii_corpus import NEGATIVE, POSITIVE
 
 # Длиннее STRING_CACHE_MIN_CHARS, иначе строка в кэш не попадёт
 FILLER = "служебный текст без персональных данных " * 3

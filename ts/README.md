@@ -1,8 +1,8 @@
 # @labops/pii (фаза 2)
 
-Перенесено (0.4.0): пункты 1–4 плана ниже, ядро pii-proxy; пункт 5 (детектор) ведётся отдельно.
+Перенесено: пункты 1–4 плана ниже, ядро TS-прокси маскирования; пункт 5 (детектор) ведётся отдельно.
 Библиотека не читает окружение: настройки (URL, токены, политика вложений) передаёт проект.
-Вендоринг: `tools/vendor.sh <проект> <тег> service,media,ts`. План (из /home/labops/reports/pii-shared-library-plan.md):
+Вендоринг: `tools/vendor.sh <проект> <тег> service,media,ts`. План:
 
 1. Клиент HTTP-сервиса: `pseudonymize`, `pseudonymizeBatch`, `restore`, `check`, `deleteThread`,
    разбор `boot_id` (потеря таблицы в памяти), таймауты и повторы.
@@ -14,7 +14,7 @@
    «Иванов Иван»); шаблоны берутся из `python/labops_pii/pii_patterns.py`, паритет проверяется
    общим корпусом `python/tests/fixtures/common_corpus.json`.
 
-Из этого собираются pii-proxy (labops), `PseudonymizingModelGateway` (шлюз модели потребителя), turn-pii (v2).
+Из этого проекты собирают свои прокси и шлюзы модели.
 
 ## Детектор ФИО и адресов (`src/detector/`)
 

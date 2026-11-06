@@ -30,7 +30,7 @@ from labops_pii.store import SqliteReplacementStore, resolve_key_scheme
 from tests.env_sets import ENV_SETS, MANAGED_KEYS
 
 TOKEN = "startup-token-0123456789abcdef"
-LEGACY_NAMES = ("labops", "sqlite_v2", "webapp_v2", "nope")
+LEGACY_NAMES = ("labops", "sqlite_v2", "edge", "nope")
 
 
 @pytest.fixture(autouse=True)
@@ -138,7 +138,7 @@ def test_guard_apps_refuse_legacy_profile(monkeypatch: pytest.MonkeyPatch) -> No
     from labops_pii.guard.edge import app as edge_app
     from labops_pii.guard.litellm import app as litellm_app
 
-    monkeypatch.setenv(LEGACY_PROFILE_ENV, "webapp_v2")
+    monkeypatch.setenv(LEGACY_PROFILE_ENV, "edge")
     with pytest.raises(ConfigError, match="MIGRATION"):
         litellm_app.create_app(upstream_url="http://upstream.test")
     with pytest.raises(ConfigError, match="MIGRATION"):

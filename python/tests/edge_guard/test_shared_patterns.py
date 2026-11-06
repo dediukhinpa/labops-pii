@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from tests.webapp_v2_guard.pii_corpus import NEGATIVE, POSITIVE
+from tests.edge_guard.pii_corpus import NEGATIVE, POSITIVE
 from labops_pii.guard.detector import (
     SCAN_OVERLAP,
     SCAN_WINDOW,
@@ -21,7 +21,7 @@ from labops_pii.pii_patterns import is_luhn_valid, normalize_text
 
 GUARD_DIR = Path(__file__).resolve().parents[1]
 CHECK_SCRIPT = GUARD_DIR / "scripts" / "check-pii-patterns.sh"
-# Каталог проекта общего сервиса (labops-ai-assistant/pseudonymizer); не задан - сверка
+# Каталог проекта общего сервиса (каталог pseudonymizer/ исходной копии); не задан - сверка
 # пропускается (guard ставится на edge без исходников сервиса)
 CANON_ENV = "PSEUDONYMIZER_SRC"
 STRICT_TYPES = {"phone", "card", "account", "email"}

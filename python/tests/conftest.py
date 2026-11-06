@@ -6,7 +6,7 @@ import pytest
 
 # Наборы, которые воспроизводят бывшие профили собственным набором переменных (env_sets.py)
 ENV_SET_SUITES = ("labops_pseudonymizer", "sqlite_v2_pseudonymizer", "sqlite_v2_guard",
-                  "webapp_v2_guard")
+                  "edge_guard")
 
 
 def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:

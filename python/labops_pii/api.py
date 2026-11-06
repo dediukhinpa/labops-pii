@@ -74,7 +74,7 @@ MEMORY_RETENTION_CHECK_INTERVAL_SECONDS = 10 * SECONDS_PER_MINUTE
 def batch_cost_chars(texts: list[str]) -> int:
     """Длина пачки в «символах худшего текста»: сумма длин плюс цена каждого текста после первого.
 
-    Ту же формулу применяет клиент (pii-proxy), когда режет листья на пачки.
+    Ту же формулу применяет TS-клиент (`@labops/pii`), когда режет листья на пачки.
     """
     return sum(len(text) for text in texts) + BATCH_ITEM_COST_CHARS * max(len(texts) - 1, 0)
 

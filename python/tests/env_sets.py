@@ -40,8 +40,8 @@ _LABOPS: dict[str, str] = {
 
 ENV_SETS: dict[str, dict[str, str]] = {
     "labops": _LABOPS,
-    # web-app v2 жил на тех же значениях, что labops (общий сервис)
-    "webapp_v2": dict(_LABOPS),
+    # Набор edge (guard на edge-узле) совпадает с labops: сервис у них общий
+    "edge": dict(_LABOPS),
     "sqlite_v2": {
         "PSEUDONYMIZER_STORE": "sqlite",
         "PSEUDONYMIZER_KEY_SCHEME": "v2",
@@ -68,7 +68,7 @@ def apply_env_set(name: str, environ: MutableMapping[str, str] | None = None) ->
     """Задаёт набор переменных (прежние значения управляемых ключей сбрасываются).
 
     Args:
-        name: Имя набора (labops, webapp_v2, sqlite_v2).
+        name: Имя набора (labops, edge, sqlite_v2).
         environ: Куда писать (по умолчанию os.environ).
 
     Raises:
