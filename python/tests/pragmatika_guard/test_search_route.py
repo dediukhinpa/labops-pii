@@ -7,6 +7,7 @@ from typing import Any
 import httpx
 import pytest
 
+from labops_pii.errors import ConfigError
 from labops_pii.guard.litellm.app import create_app
 from labops_pii.guard.litellm.search_route import (
     SEARCH_CONTINUATION_MAX_BODY_BYTES,
@@ -18,6 +19,15 @@ from labops_pii.guard.litellm.search_route import (
 
 PII_TEXT = "найди ООО по ИНН 7707083893, директор Иванов Иван Иванович, +7 916 123 45 67"
 TOOL = {"type": "web_search_20260209", "name": "web_search", "max_uses": 3}
+# Модель тела по умолчанию и самое длинное допустимое имя (граница 128 символов)
+DEFAULT_MODEL = "agent-main"
+LONGEST_MODEL = "m" * 128
+
+
+@pytest.fixture(autouse=True)
+def _allowed_models(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Включённый маршрут поиска требует списка моделей; тесты формы работают с этим списком."""
+    monkeypatch.setenv("SEARCH_ALLOWED_MODELS", f"{DEFAULT_MODEL},{LONGEST_MODEL}")
 
 
 async def _stream(data: bytes):
@@ -488,7 +498,7 @@ async def test_scalar_params_rejected(over: dict[str, Any]) -> None:
 
 
 async def test_scalar_params_boundaries_allowed() -> None:
-    assert await _status(_body(max_tokens=8192, temperature=0, model="m" * 128)) == 200
+    assert await _status(_body(max_tokens=8192, temperature=0, model=LONGEST_MODEL)) == 200
     assert await _status(_body(max_tokens=1, temperature=1.0)) == 200
 
 
@@ -501,9 +511,26 @@ async def test_allowed_models_from_env(monkeypatch: pytest.MonkeyPatch) -> None:
     assert await _status(body) == 403
 
 
-async def test_any_model_without_env(monkeypatch: pytest.MonkeyPatch) -> None:
+@pytest.mark.parametrize("raw", [None, "", " , "])
+def test_enabled_route_without_models_refuses_to_start(
+    monkeypatch: pytest.MonkeyPatch, raw: str | None
+) -> None:
+    # Пустой список при включённом маршруте раньше пропускал любую модель (fail open)
+    if raw is None:
+        monkeypatch.delenv("SEARCH_ALLOWED_MODELS", raising=False)
+    else:
+        monkeypatch.setenv("SEARCH_ALLOWED_MODELS", raw)
+    with pytest.raises(ConfigError, match="SEARCH_ALLOWED_MODELS"):
+        create_app("http://upstream", search_enabled=True)
+    monkeypatch.setenv("SEARCH_ROUTE_ENABLED", "1")
+    with pytest.raises(ConfigError, match="SEARCH_ALLOWED_MODELS"):
+        create_app("http://upstream")
+
+
+def test_disabled_route_without_models_starts(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.delenv("SEARCH_ALLOWED_MODELS", raising=False)
-    assert await _status(_body(model="whatever")) == 200
+    monkeypatch.delenv("SEARCH_ROUTE_ENABLED", raising=False)
+    assert create_app("http://upstream") is not None
 
 
 async def test_anthropic_beta_not_forwarded_on_search_route() -> None:

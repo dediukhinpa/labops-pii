@@ -476,7 +476,11 @@ def _params_ok(data: Mapping[str, Any], allowed_models: frozenset[str] | None) -
 
 
 def parse_allowed_models(raw: str | None) -> frozenset[str] | None:
-    """Список допустимых моделей из строки через запятую; пусто - без ограничения."""
+    """Список допустимых моделей из строки через запятую; пусто - None (нет списка).
+
+    Для маршрута поиска None при включённом маршруте - ошибка старта (`create_app`); маршруты
+    зрения и страниц подставляют вместо None свой алиас по умолчанию.
+    """
     names = frozenset(p.strip() for p in (raw or "").split(",") if p.strip())
     return names or None
 
