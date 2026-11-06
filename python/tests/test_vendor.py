@@ -54,7 +54,13 @@ def test_guard_part_does_not_need_morphology(tmp_path: Path) -> None:
     code = (
         "import sys; import labops_pii.guard.litellm.app, labops_pii.guard.edge.app;"
         "bad=[m for m in ('natasha','pymorphy3','labops_pii.detector','labops_pii.morph')"
-        " if m in sys.modules]; assert not bad, bad"
+        " if m in sys.modules]; assert not bad, bad;"
+        # Все модули пакета должны прийти из вендоренной копии: editable-установка библиотеки
+        # в dev-venv молча подставляла недостающие файлы, и тест проходил ложно
+        f"root={str(vendor_dir)!r};"
+        "outside=[n for n, m in sys.modules.items() if n.startswith('labops_pii')"
+        " and not (getattr(m, '__file__', '') or '').startswith(root)];"
+        "assert not outside, outside"
     )
     subprocess.run(
         [sys.executable, "-c", code], check=True, capture_output=True,
@@ -150,3 +156,29 @@ def test_vendor_rejects_unknown_ref(tmp_path: Path) -> None:
     )
     assert result.returncode != 0
     assert not (tmp_path / "vendor").exists()
+
+
+@pytest.mark.parametrize("parts", ["guard", "service", "media", "guard,media"])
+def test_vendored_imports_resolve_inside_copy(tmp_path: Path, parts: str) -> None:
+    """Каждый импорт `labops_pii.*` вендоренной части указывает на файл этой же копии."""
+    sys.path.insert(0, str(ROOT / "tools"))
+    try:
+        import vendor  # noqa: PLC0415 (инструмент не пакет)
+    finally:
+        sys.path.remove(str(ROOT / "tools"))
+    vendor_dir = _vendor(tmp_path, parts)
+    present = {
+        str(f.relative_to(vendor_dir)) for f in vendor_dir.rglob("*.py")
+    }
+    missing: list[str] = []
+    for name in sorted(present):
+        module = vendor.file_module(name)
+        context = f"{module}.__init__" if name.endswith("/__init__.py") else module
+        for dep in vendor.imported_modules((vendor_dir / name).read_bytes(), context):
+            if not any(c in present for c in vendor.module_files(dep)):
+                # `from labops_pii.x import Name` даёт и кандидата `labops_pii.x.Name`
+                parent = dep.rsplit(".", 1)[0]
+                if any(c in present for c in vendor.module_files(parent)):
+                    continue
+                missing.append(f"{name} -> {dep}")
+    assert not missing, missing
