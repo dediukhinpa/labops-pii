@@ -22,6 +22,8 @@
   После `deleteThread` у сервиса вызывайте `masker.forgetThread(threadId)`.
 - **edge-guard:** ФИО и адрес решает их режим (`log_only` только наблюдает, раньше блокировал
   как `enforce`); неизвестный режим — ошибка старта.
+  Эталоны `fixtures/profiles/*__guard-edge.json` пересняты: изменились только ответы
+  режима `log_only` (422 → 200 на текстах, где из находок только ФИО или адрес).
 - **Строгие флаги:** `PSEUDONYMIZER_MASK_LEGAL_ENTITY`, `MEDIA_MASKER_MASK_LEGAL_ENTITY`,
   `MEDIA_MASKER_HIDE_UNREADABLE` — опечатка теперь ошибка старта (раньше молча выключала
   маскирование названий; у media «off» не выключал вовсе).
