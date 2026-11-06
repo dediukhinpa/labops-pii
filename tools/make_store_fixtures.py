@@ -8,8 +8,11 @@ from __future__ import annotations
 
 import argparse
 import json
+import logging
 import sys
 from pathlib import Path
+
+logger = logging.getLogger("make_store_fixtures")
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "python" / "tests" / "fixtures" / "stores"
@@ -24,6 +27,7 @@ ROWS = [
 
 def main() -> None:
     """Пишет базу и ожидаемые значения слепых индексов."""
+    logging.basicConfig(level=logging.INFO, format="%(message)s")
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--src", type=Path, required=True)
     parser.add_argument("--name", required=True)
@@ -43,7 +47,7 @@ def main() -> None:
     (OUT / f"{args.name}.hashes.json").write_text(
         json.dumps({"key": TEST_KEY, "rows": ROWS, "hashes": hashes},
                    ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
-    print(f"{db}")
+    logger.info("%s", db)
 
 
 if __name__ == "__main__":

@@ -9,8 +9,11 @@ from __future__ import annotations
 
 import importlib
 import json
+import logging
 import sys
 from pathlib import Path
+
+logger = logging.getLogger("build_common_corpus")
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "python" / "tests" / "fixtures" / "common_corpus.json"
@@ -39,6 +42,7 @@ def first_text(item: object) -> str | None:
 
 def main() -> None:
     """Импортирует наборы, склеивает без повторов (порядок стабилен) и пишет JSON."""
+    logging.basicConfig(level=logging.INFO, format="%(message)s")
     sys.path.insert(0, str(ROOT / "python" / "tests"))
     texts: list[str] = []
     seen: set[str] = set()
@@ -51,7 +55,7 @@ def main() -> None:
                     seen.add(text)
                     texts.append(text)
     OUT.write_text(json.dumps(texts, ensure_ascii=False, indent=0) + "\n", encoding="utf-8")
-    print(f"{len(texts)} текстов -> {OUT}")
+    logger.info("%d текстов -> %s", len(texts), OUT)
 
 
 if __name__ == "__main__":
