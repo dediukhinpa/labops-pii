@@ -26,6 +26,7 @@ from fastapi.responses import JSONResponse, StreamingResponse
 from starlette.types import Receive, Scope, Send
 
 from labops_pii.errors import reject_legacy_profile
+from labops_pii.guard.address import ADDRESS_MODE_ENV, parse_address_mode
 from labops_pii.guard.detector import (
     DEFAULT_MAX_SCAN_BYTES,
     BodyNotJsonError,
@@ -50,6 +51,8 @@ from labops_pii.guard.edge.jsonlog import (
     mark_observed,
     mark_upstream,
 )
+from labops_pii.guard.names import NAMES_MODE_ENV, parse_names_mode
+from labops_pii.guard.policy import split_findings
 
 logger = logging.getLogger("pii_guard")
 
@@ -241,6 +244,10 @@ def create_app(
         ConfigError: Задана прежняя LABOPS_PII_PROFILE.
     """
     reject_legacy_profile()
+    # Неизвестный режим ФИО или адресов - ошибка старта, как в guard.litellm: раньше edge их не
+    # проверял, и опечатка молча давала режим по умолчанию
+    parse_names_mode(os.environ.get(NAMES_MODE_ENV))
+    parse_address_mode(os.environ.get(ADDRESS_MODE_ENV))
     routes = dict(upstreams) if upstreams is not None else load_upstreams()
     guard_mode = mode if mode is not None else load_mode()
     max_body = _max_body_bytes()
@@ -375,22 +382,28 @@ def create_app(
                 HTTP_GUARD_FAILURE, "api_error", "pii guard failure", headers=NO_RETRY_HEADERS
             )
 
-        if found:
-            types = sorted(found)
+        # ФИО и адрес решает их собственный режим (log_only только наблюдает), как на маршрутах
+        # guard.litellm: раньше edge блокировал любую находку, и log_only работал как enforce
+        findings = split_findings(found)
+        if guard_mode is GuardMode.LOG:
+            blocking: frozenset[str] = frozenset()
+            observed = findings.blocking | findings.observed
+        else:
+            blocking, observed = findings.blocking, findings.observed
+        if observed and not blocking:
             # Код - только имена категорий (phone, email, inn, ...), без значений
-            code = "+".join(types)
-            if guard_mode is GuardMode.LOG:
-                mark_observed(request.scope, code)
-            else:
-                mark_denied(request.scope, code)
-                return _error(
-                    HTTP_PII,
-                    "invalid_request_error",
-                    f"{PII_REJECTED_CODE}: request contains personal data: {', '.join(types)}",
-                    headers=NO_RETRY_HEADERS,
-                    code=PII_REJECTED_CODE,
-                    pii_types=types,
-                )
+            mark_observed(request.scope, "+".join(sorted(observed)))
+        if blocking:
+            types = sorted(blocking)
+            mark_denied(request.scope, "+".join(types))
+            return _error(
+                HTTP_PII,
+                "invalid_request_error",
+                f"{PII_REJECTED_CODE}: request contains personal data: {', '.join(types)}",
+                headers=NO_RETRY_HEADERS,
+                code=PII_REJECTED_CODE,
+                pii_types=types,
+            )
 
         return await _forward(request, upstream, rest, body, slot)
 

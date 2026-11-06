@@ -2,8 +2,8 @@
 
 Прогоняет `PiiDetector` с настройкой набора sqlite_v2 (адреса включены, юрлица
 нет) на корпусах из `python/tests/fixtures` и тестов, сохраняет найденные спаны ФИО (PERSON)
-и адресов (ADDRESS) в `ts/tests/fixtures/detector_parity.json`. TS-тест сравнивает свой детектор с этим
-эталоном по перекрытию спанов и проверяет пороги полноты и ложных срабатываний.
+и адресов (ADDRESS) в `ts/tests/fixtures/detector_parity.json`. TS-тест сравнивает свой
+детектор с этим эталоном по перекрытию спанов и проверяет пороги полноты и ложных срабатываний.
 
 Запуск: .venv/bin/python tools/build_ts_detector_fixture.py
 """
@@ -58,10 +58,11 @@ def collect_corpora() -> list[dict[str, object]]:
     add("recall_hard", [t for t, _ in recall.HARD])
     add("caps_pii", [t for t, _ in recall.CAPS_PII])
     add("caps_clean", list(recall.CAPS_CLEAN))
-    addr = load_module(PY_DIR / "tests" / "sqlite_v2_pseudonymizer" / "test_address_patterns.py", "ap")
+    suite = PY_DIR / "tests" / "sqlite_v2_pseudonymizer"
+    addr = load_module(suite / "test_address_patterns.py", "ap")
     add("address_positive", [t for t, _ in addr.POSITIVE])
     add("address_negative", list(addr.NEGATIVE))
-    det = load_module(PY_DIR / "tests" / "sqlite_v2_pseudonymizer" / "test_address_detector.py", "ad")
+    det = load_module(suite / "test_address_detector.py", "ad")
     add("address_masked", [t for t, _ in det.MASKED])
     add("address_clean", list(det.CLEAN))
     pages = json.loads((TS_FIXTURES / "web_page_fragments.json").read_text(encoding="utf-8"))

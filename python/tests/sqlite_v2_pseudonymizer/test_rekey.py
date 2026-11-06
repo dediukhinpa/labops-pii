@@ -244,3 +244,15 @@ def test_backup_does_not_overwrite_existing_file(
     with pytest.raises(FileExistsError):
         rekey.make_backup(db)
     assert first.read_bytes() == content
+
+
+def test_rekey_cli_dry_run_leaves_file_byte_identical(
+    tmp_path: Path, fernet_key: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # Раньше открытие хранилища в --dry-run дописывало метки активности тредов
+    db = tmp_path / "d.sqlite3"
+    _write_v1(db, fernet_key)
+    before = db.read_bytes()
+    monkeypatch.setenv(ENV_KEY, fernet_key)
+    assert rekey.main(["--db", str(db), "--dry-run"]) == rekey.EXIT_OK
+    assert db.read_bytes() == before

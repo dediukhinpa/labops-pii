@@ -68,17 +68,26 @@ export class RequestWalker {
 
   /** Обойти тело запроса /v1/messages (или count_tokens). */
   async walk(body: JsonObject): Promise<void> {
-    const system = body.system;
-    if (typeof system === 'string') this.addString(body, 'system', system);
-    else if (Array.isArray(system)) await this.walkBlocks(system);
+    await this.walkField(body, 'system');
     const messages = body.messages;
-    if (!Array.isArray(messages)) return;
+    if (messages === undefined || messages === null) return;
+    if (!Array.isArray(messages)) throw rejectUnknown('messages_not_list');
     for (const message of messages) {
-      if (!isObject(message)) continue;
-      const content = message.content;
-      if (typeof content === 'string') this.addString(message, 'content', content);
-      else if (Array.isArray(content)) await this.walkBlocks(content);
+      if (!isObject(message)) throw rejectUnknown('message_not_object');
+      await this.walkField(message, 'content');
     }
+  }
+
+  /**
+   * Поле с текстом: строка или список блоков. Иная форма (объект, число) отклоняется: раньше
+   * она молча пропускалась, и ПДн в ней уходили модели без маскирования и без второй линии.
+   */
+  private async walkField(holder: JsonObject, key: string): Promise<void> {
+    const value = holder[key];
+    if (value === undefined || value === null) return;
+    if (typeof value === 'string') this.addString(holder, key, value);
+    else if (Array.isArray(value)) await this.walkBlocks(value);
+    else throw rejectUnknown(`${key}_shape`);
   }
 
   private addString(holder: JsonObject, key: string, text: string): void {
@@ -89,13 +98,15 @@ export class RequestWalker {
     let i = 0;
     while (i < blocks.length) {
       const block = blocks[i];
-      i += isObject(block) ? await this.walkBlock(blocks, i, block) : 1;
+      // Не-объект в списке блоков (строка, число) раньше пропускался вместе с его текстом
+      if (!isObject(block)) throw rejectUnknown('block_not_object');
+      i += await this.walkBlock(blocks, i, block);
     }
   }
 
   private async walkBlock(parent: unknown[], index: number, block: JsonObject): Promise<Consumed> {
     const type = block.type;
-    if (typeof type !== 'string') throw rejectUnknown('без типа');
+    if (typeof type !== 'string') throw rejectUnknown('no_type');
     if (PASSTHROUGH_BLOCKS.has(type)) return 1;
     if (type === 'text') {
       if (typeof block.text === 'string') this.addString(block, 'text', block.text);
@@ -118,9 +129,7 @@ export class RequestWalker {
 
   /** content блока: строка или список блоков. */
   private async walkContent(block: JsonObject): Promise<void> {
-    const content = block.content;
-    if (typeof content === 'string') this.addString(block, 'content', content);
-    else if (Array.isArray(content)) await this.walkBlocks(content);
+    await this.walkField(block, 'content');
   }
 
   private async walkDocument(

@@ -6,8 +6,9 @@
 (тег или коммит), а не из рабочей папки, поэтому незакоммиченные правки не попадут.
 
 Части (--parts, через запятую):
-  guard    режим «только проверка»: labops_pii/{__init__,errors,pii_patterns}.py и guard/
-           (без natasha и pymorphy: образ шлюза остаётся лёгким);
+  guard    режим «только проверка»: labops_pii/{__init__,errors,pii_patterns,allowlist}.py и
+           guard/ (без natasha и pymorphy: образ шлюза остаётся лёгким);
+К каждой части добавляются все модули пакета, которые она импортирует (транзитивно).
   service  ядро и HTTP-сервис псевдонимизации (всё, кроме guard/ и media/);
   media    labops_pii/media/ (extras: Pillow, OpenCV, pypdfium2);
   ts       TS-пакет @labops/pii: ts/src, ts/package.json, ts/bun.lock, ts/LICENSE
@@ -21,8 +22,10 @@
 from __future__ import annotations
 
 import argparse
+import ast
 import hashlib
 import io
+import logging
 import shutil
 import subprocess
 import sys
@@ -47,6 +50,8 @@ TS_SRC_PREFIX = "ts/src/"
 GUARD_TOP_FILES = frozenset({"__init__.py", "errors.py", "pii_patterns.py"})
 EXTRA_FILES = ("LICENSE",)
 HASH_ALGORITHM = "sha256"
+PACKAGE_NAME = "labops_pii"
+logger = logging.getLogger("vendor")
 HEADER = (
     "# labops-pii: вендоренная копия. Не править руками — тест проекта сверяет хеши.\n"
     "# Обновление: tools/vendor.py из репозитория labops-pii (новый тег -> PR в проекте).\n"
@@ -95,11 +100,81 @@ def collect_ts(ref: str) -> dict[str, bytes]:
     return files
 
 
+def imported_modules(source: bytes, module: str) -> set[str]:
+    """Модули пакета labops_pii, которые импортирует файл (абсолютные и относительные импорты).
+
+    Args:
+        source: Текст файла.
+        module: Полное имя модуля файла (для `__init__.py` - `<пакет>.__init__`), нужно для
+            относительных импортов.
+    """
+    found: set[str] = set()
+    package = module.rsplit(".", 1)[0]
+    for node in ast.walk(ast.parse(source)):
+        if isinstance(node, ast.Import):
+            found.update(a.name for a in node.names)
+        elif isinstance(node, ast.ImportFrom):
+            if node.level:
+                base = package.split(".")
+                base = base[: len(base) - node.level + 1]
+                name = ".".join([*base, node.module] if node.module else base)
+            else:
+                name = node.module or ""
+            found.add(name)
+            # `from labops_pii import allowlist` импортирует подмодуль
+            found.update(f"{name}.{a.name}" for a in node.names)
+    return {m for m in found if m == PACKAGE_NAME or m.startswith(f"{PACKAGE_NAME}.")}
+
+
+def module_files(module: str) -> tuple[str, str]:
+    """Возможные файлы модуля внутри vendor: `a/b.py` и `a/b/__init__.py`."""
+    path = module.replace(".", "/")
+    return f"{path}.py", f"{path}/__init__.py"
+
+
+def file_module(name: str) -> str:
+    """Имя модуля по пути файла в vendor (`labops_pii/guard/__init__.py` -> `labops_pii.guard`)."""
+    stem = name[: -len(".py")]
+    if stem.endswith("/__init__"):
+        stem = stem[: -len("/__init__")]
+    return stem.replace("/", ".")
+
+
+def add_import_closure(files: dict[str, bytes], available: dict[str, bytes]) -> list[str]:
+    """Дополняет выбранные файлы всеми модулями пакета, которые они импортируют (транзитивно).
+
+    Без этого часть guard ссылалась на allowlist.py, а media - на config/detector, которых в
+    этих частях не было, и вендоренный код падал на импорте (в dev-venv ошибку прятала
+    editable-установка библиотеки). Добавляются и `__init__.py` родительских пакетов.
+
+    Returns:
+        Добавленные пути (для журнала).
+    """
+    added: list[str] = []
+    queue = [n for n in files if n.endswith(".py")]
+    while queue:
+        name = queue.pop()
+        module = file_module(name)
+        # Для пакета относительные импорты считаются от него самого, для модуля - от родителя
+        context = f"{module}.__init__" if name.endswith("/__init__.py") else module
+        wanted_modules = imported_modules(files[name], context)
+        parents = module.split(".")
+        wanted_modules.update(".".join(parents[:i]) for i in range(1, len(parents)))
+        for dep in wanted_modules:
+            for candidate in module_files(dep):
+                if candidate in available and candidate not in files:
+                    files[candidate] = available[candidate]
+                    added.append(candidate)
+                    queue.append(candidate)
+    return sorted(added)
+
+
 def collect(ref: str, parts: set[str]) -> dict[str, bytes]:
     """Файлы выбранных частей из git по ссылке: путь внутри vendor/labops-pii -> байты."""
     files: dict[str, bytes] = collect_ts(ref) if "ts" in parts else {}
     if not parts - {"ts"}:
         return files
+    available: dict[str, bytes] = {}
     archive = run_git("archive", "--format=tar", ref, PACKAGE_DIR, *EXTRA_FILES)
     with tarfile.open(fileobj=io.BytesIO(archive)) as tar:
         for member in tar.getmembers():
@@ -114,8 +189,13 @@ def collect(ref: str, parts: set[str]) -> dict[str, bytes]:
                 files[member.name] = data
                 continue
             relative = path.relative_to(PACKAGE_DIR)
+            if "__pycache__" in relative.parts or relative.suffix == ".pyc":
+                continue
+            available[f"labops_pii/{relative}"] = data
             if wanted(relative, parts):
                 files[f"labops_pii/{relative}"] = data
+    for name in add_import_closure(files, available):
+        logger.info("добавлено по импорту: %s", name)
     return files
 
 
@@ -146,6 +226,7 @@ def render_version(ref: str, commit: str, parts: set[str], files: dict[str, byte
 
 def main() -> int:
     """Точка входа."""
+    logging.basicConfig(level=logging.INFO, format="%(message)s")
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--dest", type=Path, required=True, help="корень проекта-потребителя")
     # Базовая ветка репозитория - prod (main нет): по умолчанию вендорится она
@@ -155,17 +236,17 @@ def main() -> int:
     parts = {p.strip() for p in args.parts.split(",") if p.strip()}
     unknown = parts - set(ALL_PARTS)
     if unknown:
-        print(f"неизвестные части: {sorted(unknown)}", file=sys.stderr)
+        logger.error("неизвестные части: %s", sorted(unknown))
         return 2
     if not args.dest.is_dir():
-        print(f"нет каталога проекта: {args.dest}", file=sys.stderr)
+        logger.error("нет каталога проекта: %s", args.dest)
         return 2
     # ^{commit}: у аннотированного тега rev-parse без суффикса даёт хеш объекта тега, а в
     # VERSION нужен коммит (до 0.8.0 туда попадал хеш тега, и сверка с git log не сходилась)
     commit = run_git("rev-parse", f"{args.ref}^{{commit}}").decode().strip()
     files = collect(args.ref, parts)
     if not files:
-        print("нечего вендорить: проверьте --ref и --parts", file=sys.stderr)
+        logger.error("нечего вендорить: проверьте --ref и --parts")
         return 1
     target = args.dest / VENDOR_SUBDIR
     if target.exists():
@@ -177,7 +258,7 @@ def main() -> int:
     (target / VERSION_FILE).write_text(
         render_version(args.ref, commit, parts, files), encoding="utf-8"
     )
-    print(f"{len(files)} файлов -> {target} (коммит {commit[:8]})")
+    logger.info("%d файлов -> %s (коммит %s)", len(files), target, commit[:8])
     return 0
 
 

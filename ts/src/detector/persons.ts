@@ -222,8 +222,10 @@ class PersonScanner {
       return { count: 2 };
     }
     // Фамилия Имя / Имя Фамилия
-    const surnName = pairOk(t0.surn, t1.name) && !(t0.surn === STRENGTH_HEURISTIC && t1.name < STRENGTH_STRONG);
-    const nameSurn = pairOk(t1.surn, t0.name) && !(t1.surn === STRENGTH_HEURISTIC && t0.name < STRENGTH_STRONG);
+    const surnName = pairOk(t0.surn, t1.name) &&
+      !(t0.surn === STRENGTH_HEURISTIC && t1.name < STRENGTH_STRONG);
+    const nameSurn = pairOk(t1.surn, t0.name) &&
+      !(t1.surn === STRENGTH_HEURISTIC && t0.name < STRENGTH_STRONG);
     if (surnName || nameSurn) {
       this.add(i, 2);
       return { count: 2 };

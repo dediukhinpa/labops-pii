@@ -44,7 +44,9 @@ const DESIG_FULL: readonly string[] = [
   'проезде', 'проезду', 'тупик', 'тупика', 'тупике', 'тупику', 'аллея', 'аллеи', 'аллее',
   'аллею',
 ];
-const DESIG_ABBR_OPTIONAL_DOT: readonly string[] = ['ул', 'пр-кт', 'пр-т', 'пер', 'б-р', 'бул', 'пр-д'];
+const DESIG_ABBR_OPTIONAL_DOT: readonly string[] = [
+  'ул', 'пр-кт', 'пр-т', 'пер', 'б-р', 'бул', 'пр-д',
+];
 const DESIG_ABBR_REQUIRED_DOT: readonly string[] = ['наб', 'пл', 'ш', 'пр', 'просп'];
 const ADDR_DESIG =
   `(?:${ciAny(DESIG_FULL)}|${ciAny(DESIG_ABBR_OPTIONAL_DOT)}\\.?|` +

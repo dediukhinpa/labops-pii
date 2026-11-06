@@ -100,7 +100,8 @@ function partRoles(low: string): PartRoles {
   if (hit?.surname === true) surn = hit.weak ? STRENGTH_WEAK : STRENGTH_STRONG;
   else if (hit === null && !COMMON_LOOKALIKES.has(low)) {
     const looksLikeSurname =
-      low.length >= MIN_SURNAME_STEM + 2 && (SURNAME_SUFFIX_RE.test(low) || SURNAME_ADJ_RE.test(low));
+      low.length >= MIN_SURNAME_STEM + 2 &&
+      (SURNAME_SUFFIX_RE.test(low) || SURNAME_ADJ_RE.test(low));
     if (looksLikeSurname) surn = STRENGTH_HEURISTIC;
   }
   let name = STRENGTH_NONE;

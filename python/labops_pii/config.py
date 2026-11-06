@@ -155,10 +155,12 @@ class Settings:
     retention_hours: int = field(default_factory=lambda: _retention_hours(os.environ))
     db_path: Path = DEFAULT_DB
     mask_legal_entity_requisites: bool = field(
-        default_factory=lambda: _bool_env(os.environ, ENV_MASK_LEGAL, default=True)
+        default_factory=lambda: _strict_bool_env(os.environ, ENV_MASK_LEGAL, default=True)
     )
     mask_addresses: bool = field(
-        default_factory=lambda: _strict_bool_env(os.environ, ENV_ADDRESS_MASK, default=DEFAULT_ADDRESS_MASK)
+        default_factory=lambda: _strict_bool_env(
+            os.environ, ENV_ADDRESS_MASK, default=DEFAULT_ADDRESS_MASK
+        )
     )
     contacts: tuple[str, ...] = ()
     host: str = DEFAULT_HOST
@@ -220,12 +222,6 @@ def _int_env(env: Mapping[str, str], name: str, default: int, *, allow_zero: boo
     return value
 
 
-def _bool_env(env: Mapping[str, str], name: str, *, default: bool) -> bool:
-    """Читает флаг из окружения; пусто — значение по умолчанию."""
-    raw = env.get(name, "").strip().lower()
-    return default if not raw else raw in TRUE_VALUES
-
-
 def _strict_bool_env(env: Mapping[str, str], name: str, *, default: bool) -> bool:
     """Читает флаг on/off строго: неизвестное значение - ошибка, а не молчаливый откат.
 
@@ -262,7 +258,8 @@ def env_mask_addresses(env: Mapping[str, str] | None = None) -> bool:
     Raises:
         ConfigError: Значение не on/off.
     """
-    return _strict_bool_env(os.environ if env is None else env, ENV_ADDRESS_MASK, default=DEFAULT_ADDRESS_MASK)
+    source = os.environ if env is None else env
+    return _strict_bool_env(source, ENV_ADDRESS_MASK, default=DEFAULT_ADDRESS_MASK)
 
 
 def _env_store(env: Mapping[str, str]) -> str:
@@ -329,7 +326,8 @@ def load_settings(
         api_token=api_token,
         retention_hours=_retention_hours(env),
         db_path=Path(env.get(ENV_DB, str(DEFAULT_DB))),
-        mask_legal_entity_requisites=_bool_env(env, ENV_MASK_LEGAL, default=True),
+        # Строго, как остальные флаги: опечатка (onn) раньше молча выключала маскирование названий
+        mask_legal_entity_requisites=_strict_bool_env(env, ENV_MASK_LEGAL, default=True),
         mask_addresses=_strict_bool_env(env, ENV_ADDRESS_MASK, default=DEFAULT_ADDRESS_MASK),
         contacts=load_contacts(Path(contacts_file)) if contacts_file else (),
         host=env.get(ENV_HOST, DEFAULT_HOST),

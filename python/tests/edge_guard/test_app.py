@@ -453,3 +453,37 @@ async def test_chunks_not_alive_while_waiting_upstream() -> None:
         )
     assert r.status_code == 200
     assert alive == [0]
+
+
+NAME_ONLY_TEXT = "Передай Иванову Петру Сергеевичу, что заказ готов"
+
+
+@pytest.mark.parametrize(("mode", "expected"), [("log_only", 200), ("enforce", 422)])
+async def test_names_mode_decides_on_edge(
+    monkeypatch: pytest.MonkeyPatch, mode: str, expected: int
+) -> None:
+    # Раньше edge блокировал любую находку: log_only для ФИО работал как enforce
+    monkeypatch.setenv("PII_GUARD_NAMES_MODE", mode)
+    seen: list[httpx.Request] = []
+    async with _client(_ok_transport(seen)) as c:
+        body = {"messages": [{"role": "user", "content": NAME_ONLY_TEXT}]}
+        r = await c.post(MESSAGES, json=body, headers={"x-api-key": "k"})
+    assert r.status_code == expected
+    assert len(seen) == (1 if expected == 200 else 0)
+
+
+async def test_log_only_name_does_not_hide_phone(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("PII_GUARD_NAMES_MODE", "log_only")
+    seen: list[httpx.Request] = []
+    async with _client(_ok_transport(seen)) as c:
+        body = {"messages": [{"role": "user", "content": f"{NAME_ONLY_TEXT}, +7 916 123-45-67"}]}
+        r = await c.post(MESSAGES, json=body, headers={"x-api-key": "k"})
+    assert r.status_code == 422
+    assert r.json()["pii_types"] == ["phone"]
+
+
+@pytest.mark.parametrize("env", ["PII_GUARD_NAMES_MODE", "PII_GUARD_ADDRESS_MODE"])
+def test_unknown_mode_refuses_to_start(monkeypatch: pytest.MonkeyPatch, env: str) -> None:
+    monkeypatch.setenv(env, "enforse")
+    with pytest.raises(ValueError):
+        create_app(UPSTREAMS)
