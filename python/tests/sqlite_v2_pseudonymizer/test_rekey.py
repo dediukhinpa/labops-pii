@@ -256,3 +256,14 @@ def test_rekey_cli_dry_run_leaves_file_byte_identical(
     monkeypatch.setenv(ENV_KEY, fernet_key)
     assert rekey.main(["--db", str(db), "--dry-run"]) == rekey.EXIT_OK
     assert db.read_bytes() == before
+
+
+@pytest.mark.parametrize("args", [["--dry-run"], ["--no-backup"]])
+def test_rekey_cli_on_file_without_tables(
+    tmp_path: Path, fernet_key: str, monkeypatch: pytest.MonkeyPatch, args: list[str]
+) -> None:
+    # Пустой файл SQLite (без таблиц): перешифровывать нечего, это не ошибка
+    db = tmp_path / "empty.sqlite3"
+    sqlite3.connect(db).close()
+    monkeypatch.setenv(ENV_KEY, fernet_key)
+    assert rekey.main(["--db", str(db), *args]) == rekey.EXIT_OK

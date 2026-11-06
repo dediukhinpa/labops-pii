@@ -271,7 +271,13 @@ class SqliteReplacementStore:
         # Версия файла нужна, чтобы увидеть запись другим соединением/процессом.
         self._counts: OrderedDict[tuple[str, str], int] = OrderedDict()
         self._counts_version: int | None = None
+        # Файл без таблицы замен (новый или пустой) открытый только на чтение: читать нечего,
+        # а запросы к таблице падали бы с «no such table» (rekey --dry-run на пустой базе)
+        self._has_table = True
         if read_only:
+            self._has_table = self._conn.execute(
+                "SELECT 1 FROM sqlite_master WHERE type='table' AND name='replacements'"
+            ).fetchone() is not None
             return
         self._conn.execute(SCHEMA)
         self._conn.execute(ACTIVITY_SCHEMA)
@@ -628,6 +634,8 @@ class SqliteReplacementStore:
 
     def legacy_row_count(self) -> int:
         """Сколько строк ещё в схеме v1 (индекс без метки v2 или шифртекст без метки v2)."""
+        if not self._has_table:
+            return 0
         with self._lock:
             row = self._conn.execute(
                 "SELECT COUNT(*) FROM replacements WHERE "
@@ -655,6 +663,8 @@ class SqliteReplacementStore:
             cryptography.fernet.InvalidToken: Неверный ключ или повреждённая строка
                 (база не изменена).
         """
+        if not self._has_table:
+            return RekeyReport(0, 0, 0, dry_run)
         with self._lock:
             rows = self._conn.execute(
                 "SELECT thread_id, token, key_hash, key_enc, value_enc FROM replacements"
