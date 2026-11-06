@@ -51,6 +51,14 @@ def test_delete_with_prefixed_thread_id(client: TestClient) -> None:
     assert restored.json()["text"] == "[PHONE_1]"
 
 
+@pytest.mark.parametrize("thread_id", ["agent/sess", "a/b/c"])
+def test_delete_with_slash_in_thread_id(client: TestClient, thread_id: str) -> None:
+    client.post("/pseudonymize", json={"thread_id": thread_id, "text": TEXT})
+    assert client.delete(f"/threads/{thread_id}").status_code == NO_CONTENT
+    restored = client.post("/restore", json={"thread_id": thread_id, "text": "[PHONE_1]"})
+    assert restored.json()["text"] == "[PHONE_1]"
+
+
 def test_threads_are_isolated(client: TestClient) -> None:
     masked = client.post("/pseudonymize", json={"thread_id": "A", "text": TEXT}).json()["text"]
     in_b = client.post("/restore", json={"thread_id": "B", "text": masked}).json()["text"]

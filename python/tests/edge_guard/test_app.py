@@ -106,7 +106,7 @@ async def test_scan_failure_fail_closed(monkeypatch: pytest.MonkeyPatch) -> None
     def boom(_: bytes, max_bytes: int) -> set[str]:
         raise RuntimeError("boom")
 
-    monkeypatch.setattr("labops_pii.guard.edge.app.scan_body", boom)
+    monkeypatch.setattr("labops_pii.guard.proxy.scan_body", boom)
     async with _client(_ok_transport(seen)) as c:
         r = await c.post(MESSAGES, json={"x": "ok"})
     assert r.status_code == 503
@@ -152,7 +152,7 @@ async def test_scan_uses_configured_body_limit(monkeypatch: pytest.MonkeyPatch) 
         limits.append(max_bytes)
         return set()
 
-    monkeypatch.setattr("labops_pii.guard.edge.app.scan_body", spy)
+    monkeypatch.setattr("labops_pii.guard.proxy.scan_body", spy)
     async with _client(_ok_transport([])) as c:
         await c.post(MESSAGES, json={"a": "x"})
     assert limits == [4096]
@@ -165,7 +165,7 @@ async def test_detector_limit_error_is_413(monkeypatch: pytest.MonkeyPatch) -> N
     def too_large(body: bytes, max_bytes: int, *_: object) -> set[str]:
         raise BodyTooLargeError("body exceeds scan limit")
 
-    monkeypatch.setattr("labops_pii.guard.edge.app.scan_body", too_large)
+    monkeypatch.setattr("labops_pii.guard.proxy.scan_body", too_large)
     seen: list[httpx.Request] = []
     async with _client(_ok_transport(seen)) as c:
         r = await c.post(MESSAGES, json={"a": "x" * 200})
@@ -183,7 +183,7 @@ def test_invalid_body_limit_refuses_to_start(monkeypatch: pytest.MonkeyPatch, va
 
 async def test_client_disconnect_cancels_upstream(monkeypatch: pytest.MonkeyPatch) -> None:
     """Клиент ушёл, пока апстрим думает: запрос к апстриму отменяется (R3-NET-9)."""
-    monkeypatch.setattr("labops_pii.guard.edge.app.DISCONNECT_POLL_SECONDS", 0.05)
+    monkeypatch.setattr("labops_pii.guard.proxy.DISCONNECT_POLL_SECONDS", 0.05)
     state = {"started": False, "cancelled": False}
 
     async def handler(req: httpx.Request) -> httpx.Response:
@@ -389,7 +389,7 @@ async def test_failure_frees_slot(scenario: str, monkeypatch: pytest.MonkeyPatch
         def boom(*_: object, **__: object) -> set[str]:
             raise RuntimeError("boom")
 
-        monkeypatch.setattr("labops_pii.guard.edge.app.scan_body", boom)
+        monkeypatch.setattr("labops_pii.guard.proxy.scan_body", boom)
     if scenario == "too_large":
         monkeypatch.setenv("MAX_BODY_BYTES", "100")
     app = create_app(

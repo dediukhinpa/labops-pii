@@ -18,11 +18,14 @@ import asyncio
 import importlib
 import importlib.util
 import json
+import logging
 import os
 import sys
 from collections.abc import AsyncIterator
 from pathlib import Path
 from typing import Any
+
+logger = logging.getLogger("reference_snapshot")
 
 ROOT = Path(__file__).resolve().parents[1]
 CORPUS = ROOT / "python" / "tests" / "fixtures" / "common_corpus.json"
@@ -261,6 +264,7 @@ def load_env_sets() -> Any:
 
 def main() -> None:
     """Точка входа."""
+    logging.basicConfig(level=logging.INFO, format="%(message)s")
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--kind", required=True,
                         choices=("pseudonymizer", "guard-litellm", "guard-edge", "config"))
@@ -296,7 +300,7 @@ def main() -> None:
     args.out.write_text(
         json.dumps(result, ensure_ascii=False, indent=1, sort_keys=True) + "\n", encoding="utf-8"
     )
-    print(f"снимок: {args.out}")
+    logger.info("снимок: %s", args.out)
 
 
 if __name__ == "__main__":

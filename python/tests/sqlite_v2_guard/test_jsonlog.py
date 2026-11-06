@@ -180,7 +180,7 @@ async def test_scan_failure_logged_as_failed(
     def boom(*_: object) -> set[str]:
         raise RuntimeError(f"секрет {PHONE}")
 
-    monkeypatch.setattr("labops_pii.guard.litellm.app.scan_body", boom)
+    monkeypatch.setattr("labops_pii.guard.proxy.scan_body", boom)
     async with _client(_ok_transport()) as c:
         r = await c.post("/v1/messages", json={"x": "ok"})
     assert r.status_code == 503

@@ -354,6 +354,10 @@ def looks_like_price_row(text: str, start: int, end: int, sep: str) -> bool:
     if sep != " " or _card_context_near(text, start, end):
         return False
     left, right = _price_neighbors(text, start, end, sep)
+    # Ряд упёрся в предел соседей: дальше могли быть числа, ломающие плавный шаг, а без
+    # предела они бы его сломали. Не видим ряд целиком - считаем картой (fail closed)
+    if PRICE_NEIGHBORS_MAX in (len(left), len(right)):
+        return False
     neighbors = len(left) + len(right)
     if neighbors < 1:
         return False

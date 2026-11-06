@@ -504,16 +504,30 @@ def expand_unicode_escapes(text: str) -> str:
 # пробелов, и в «почту» можно было вписать телефон, ИНН и карту через запятую (обход guard)
 ACCOUNT_EMAIL_RE = re.compile(
     r"(The user's email address is )"
-    r"[A-Za-z0-9._%+-]{1,64}@[A-Za-z0-9-]{1,63}(?:\.[A-Za-z0-9-]{1,63}){0,8}\.[A-Za-z]{2,63}"
+    r"([A-Za-z0-9._%+-]{1,64})@[A-Za-z0-9-]{1,63}(?:\.[A-Za-z0-9-]{1,63}){0,8}\.[A-Za-z]{2,63}"
     r"(\. Use it only to identify the user)"
 )
+# Разделители имени ящика: внутри него ищутся другие ПДн (карта, телефон, ИНН в «адресе»)
+LOCAL_PART_SEPARATORS_RE = re.compile(r"[._%+-]")
 
 
 def strip_account_email(text: str) -> str:
     """Убирает почту аккаунта из шаблона CLI «# userEmail» (остальной текст не меняется)."""
     if "The user's email address is " not in text:
         return text
-    return ACCOUNT_EMAIL_RE.sub(r"\1 \2", text)
+    return ACCOUNT_EMAIL_RE.sub(_strip_clean_account_email, text)
+
+
+def _strip_clean_account_email(match: re.Match[str]) -> str:
+    """Вырезает адрес, только если в имени ящика нет других ПДн.
+
+    Имя ящика из цифр («4276160012345675@mail.ru», «79161234567@…») иначе проносило карту или
+    телефон мимо guard: адрес целиком вырезался до проверки.
+    """
+    local = LOCAL_PART_SEPARATORS_RE.sub(" ", match.group(2))
+    if find_pii_types(local):
+        return match.group(0)
+    return f"{match.group(1)} {match.group(3)}"
 
 
 def scan_body(

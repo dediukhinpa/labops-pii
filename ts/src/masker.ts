@@ -25,7 +25,7 @@ import { chunkBatches, mapLimited, splitText } from './text-split';
  */
 export const THREAD_IDLE_RESET_MS = 30 * 60 * 1000;
 /** Предел числа тредов, для которых помнится поколение кэша (старые вытесняются). */
-const THREAD_EPOCHS_MAX = 100_000;
+export const THREAD_EPOCHS_MAX = 100_000;
 
 /** Настройки кэша по тредам. */
 export interface MaskerOptions {
@@ -82,6 +82,8 @@ export class RequestMasker {
   private readonly cleanCache = new BoundedCache(CLEAN_CACHE_MAX_ENTRIES * CLEAN_COST, () => 0);
   private readonly boot: BootTracker;
   private readonly epochs = new Map<string, ThreadEpoch>();
+  /** Следующий номер поколения; только растёт, поэтому поколения не повторяются. */
+  private nextEpoch = 0;
   private readonly idleResetMs: number;
   private readonly now: () => number;
 
@@ -125,23 +127,29 @@ export class RequestMasker {
    * начнётся заново, и прежние маски этого треда больше не годятся.
    */
   forgetThread(threadId: string): void {
-    const entry = this.epochs.get(threadId);
     this.epochs.delete(threadId);
-    this.epochs.set(threadId, { epoch: (entry?.epoch ?? 0) + 1, lastUsed: this.now() });
+    this.epochs.set(threadId, { epoch: this.nextEpoch++, lastUsed: this.now() });
     this.trimEpochs();
   }
 
-  /** Ключ треда для кэша с поколением; долгий простой открывает новое поколение. */
+  /**
+   * Ключ треда для кэша с поколением; долгий простой открывает новое поколение.
+   * Номер поколения берётся из общего возрастающего счётчика: если запись треда вытеснена
+   * (больше THREAD_EPOCHS_MAX тредов), новое поколение не совпадёт ни с одним прежним, и
+   * маски до forgetThread не станут снова доступны. Цена - промах кэша, он безопасен.
+   */
   private threadScope(threadId: string): string {
     const now = this.now();
-    const entry = this.epochs.get(threadId) ?? { epoch: 0, lastUsed: now };
-    if (now - entry.lastUsed > this.idleResetMs) entry.epoch += 1;
+    let entry = this.epochs.get(threadId);
+    if (entry === undefined || now - entry.lastUsed > this.idleResetMs) {
+      entry = { epoch: this.nextEpoch++, lastUsed: now };
+    }
     entry.lastUsed = now;
     // Переставляем в конец: вытесняются давно не использованные треды
     this.epochs.delete(threadId);
     this.epochs.set(threadId, entry);
     this.trimEpochs();
-    return entry.epoch === 0 ? threadId : `${threadId}\u0000epoch${entry.epoch}`;
+    return `${threadId}\u0000epoch${entry.epoch}`;
   }
 
   private trimEpochs(): void {

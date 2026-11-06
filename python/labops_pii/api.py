@@ -391,7 +391,9 @@ def create_app(
     if settings.enable_delete_threads:
 
         @app.delete(
-            "/threads/{thread_id}",
+            # :path - идентификатор треда может содержать «/» (например, «agent/sess»), без
+            # него такой DELETE давал 404 и замены треда не удалялись
+            "/threads/{thread_id:path}",
             dependencies=[Depends(require_token)],
             status_code=HTTP_NO_CONTENT,
             response_class=Response,

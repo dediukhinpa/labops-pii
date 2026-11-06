@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { RequestMasker, THREAD_IDLE_RESET_MS } from '../src/masker';
+import { RequestMasker, THREAD_EPOCHS_MAX, THREAD_IDLE_RESET_MS } from '../src/masker';
 import type { CheckResult, Pseudonymizer } from '../src/pseudonymizer-client';
 
 /** Сервис с таблицей по треду: нумерация с 1, тред можно удалить (как ретенция сервера). */
@@ -80,5 +80,19 @@ describe('кэш маскирования после удаления треда
     clock += THREAD_IDLE_RESET_MS - 1;
     await masked(masker, 'Иванов');
     expect(service.calls).toBe(before);
+  });
+});
+
+describe('поколения кэша при вытеснении записи треда', () => {
+  test('после forgetThread и вытеснения старые маски треда недоступны', async () => {
+    const service = new FakeService();
+    const masker = new RequestMasker(service, 'strip');
+    await masked(masker, 'Иванов');
+    await service.deleteThread('t1');
+    masker.forgetThread('t1');
+    // Вытесняем запись t1 из таблицы поколений
+    for (let i = 0; i <= THREAD_EPOCHS_MAX; i++) masker.forgetThread(`other-${i}`);
+    const [ivanov, petrov] = await masked(masker, 'Иванов', 'Петров');
+    expect(ivanov).not.toEqual(petrov);
   });
 });

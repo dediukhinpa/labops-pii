@@ -18,7 +18,7 @@ from pydantic import BaseModel
 
 from labops_pii.body_guard import BodyGuardMiddleware
 from labops_pii.detector import PiiDetector
-from labops_pii.media.mask.config import MAX_BODY_BYTES, MAX_FILE_BYTES, Settings
+from labops_pii.media.mask.config import MAX_BODY_BYTES, MAX_FILE_BYTES, ConfigError, Settings
 from labops_pii.media.mask.faces import FaceBlurrer
 from labops_pii.media.mask.codes import CodeFinder
 from labops_pii.media.mask.imaging import ImageMasker, MaskStats, MediaRefusedError, Recognized
@@ -39,6 +39,12 @@ GUARDED_PATHS = ("/mask_image", "/extract_document")
 HTTP_TOO_LARGE = 413
 HTTP_UNPROCESSABLE = 422
 HTTP_INTERNAL = 500
+HTTP_BUSY = 503
+# Сколько запрос ждёт слот обработки до ответа 503: ожидающий держит в памяти раскодированный
+# файл и тело (до ~75 МБ), без предела очередь росла до OOM
+SLOT_WAIT_SECONDS = 30.0
+# Ожидающих не больше, чем столько слотов на каждый рабочий; лишние сразу получают 503
+WAITERS_PER_SLOT = 2
 
 
 class MediaRequest(BaseModel):
@@ -165,9 +171,13 @@ def create_app(settings: Settings) -> FastAPI:
     """Собирает приложение: грузит детектор, проверяет Tesseract и каскады лиц.
 
     Raises:
+        ConfigError: Пустой токен API.
         OcrError: Tesseract недоступен или нет языка (сервис не стартует).
         FaceError: Каскады лиц не загрузились.
     """
+    if not settings.api_token.strip():
+        # Пустой токен совпал бы с заголовком «Bearer » (авторизация fail open)
+        raise ConfigError("пустой api_token: сервис не стартует без токена")
     ocr = TesseractOcr(
         settings.tesseract_cmd, settings.langs, settings.ocr_timeout_s, settings.tessdata
     )
@@ -180,7 +190,27 @@ def create_app(settings: Settings) -> FastAPI:
     )
     pdf = PdfProcessor(masker, settings.max_pdf_pages)
     slots = asyncio.Semaphore(settings.max_concurrency)
+    max_waiting = settings.max_concurrency * WAITERS_PER_SLOT
+    waiting = 0
     expected = settings.api_token.encode()
+
+    @asynccontextmanager
+    async def slot() -> AsyncIterator[None]:
+        """Слот обработки с ограниченным ожиданием; очередь и ожидание ограничены (503)."""
+        nonlocal waiting
+        if slots.locked() and waiting >= max_waiting:
+            raise MediaRefusedError(HTTP_BUSY, "busy")
+        waiting += 1
+        try:
+            await asyncio.wait_for(slots.acquire(), SLOT_WAIT_SECONDS)
+        except TimeoutError as exc:
+            raise MediaRefusedError(HTTP_BUSY, "busy") from exc
+        finally:
+            waiting -= 1
+        try:
+            yield
+        finally:
+            slots.release()
 
     def token_valid(authorization: str) -> bool:
         scheme, _, supplied = authorization.partition(" ")
@@ -219,7 +249,7 @@ def create_app(settings: Settings) -> FastAPI:
             if not req.media_type.startswith("image/"):
                 raise MediaRefusedError(HTTP_UNPROCESSABLE, "unsupported_media_type")
             raw = _decode_base64(req.data)
-            async with slots:
+            async with slot():
                 result = await run_in_threadpool(masker.mask_bytes, raw)
         except MediaRefusedError as exc:
             return refused("/mask_image", exc)
@@ -242,7 +272,7 @@ def create_app(settings: Settings) -> FastAPI:
             if req.media_type != "application/pdf":
                 raise MediaRefusedError(HTTP_UNPROCESSABLE, "unsupported_media_type")
             raw = _decode_base64(req.data)
-            async with slots:
+            async with slot():
                 result = await run_in_threadpool(pdf.process, raw)
         except MediaRefusedError as exc:
             return refused("/extract_document", exc)
