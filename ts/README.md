@@ -10,20 +10,21 @@
 3. Обход тела запроса к модели: листья, `tool_use`, служебные блоки; пачки по формуле
    `batch_cost_chars`.
 4. Кэш масок и память восстановлений.
-5. Детектор ФИО и адресов на TS (по запросу Прагматики: `web-page-sanitize.ts` не ловит
+5. Детектор ФИО и адресов на TS (по запросу потребителя: `web-page-sanitize.ts` не ловит
    «Иванов Иван»); шаблоны берутся из `python/labops_pii/pii_patterns.py`, паритет проверяется
    общим корпусом `python/tests/fixtures/common_corpus.json`.
 
-Из этого собираются pii-proxy (labops), `PseudonymizingModelGateway` (Прагматика), turn-pii (v2).
+Из этого собираются pii-proxy (labops), `PseudonymizingModelGateway` (шлюз модели потребителя), turn-pii (v2).
 
 ## Детектор ФИО и адресов (`src/detector/`)
 
 ```ts
 import { detectNamesAndAddresses, replaceSpans } from '@labops/pii';
 
-const spans = detectNamesAndAddresses(text, { maskAddresses: true, allowedWords: ['прагматик'] });
+const spans = detectNamesAndAddresses(text, { allowedWords: ['вектрик'] });
 const clean = replaceSpans(text, spans, (s) => (s.kind === 'person' ? '[ФИО]' : '[адрес]'));
 ```
 
+Адреса ищутся по умолчанию (с 1.0.0); выключаются явно `{ maskAddresses: false }`.
 Синхронно, без сети. Словарь имён генерируется `tools/gen_ts_name_dictionary.py`, эталон для
 паритета — `tools/build_ts_detector_fixture.py` (оба запускаются в `.venv` репозитория).

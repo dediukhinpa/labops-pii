@@ -1,7 +1,7 @@
 # labops-pii
 
 Общая библиотека маскирования персональных данных (ПДн) для labops-ai-assistant,
-web-app-v2 и pragmatica-ai. Один код вместо трёх расходящихся копий; различия проектов
+web-app-v2 и других проектов. Один код вместо трёх расходящихся копий; различия проектов
 задаются переменными окружения (профилей нет с 1.0.0), а не форками. Версии: semver-теги и [CHANGELOG](CHANGELOG.md).
 
 ## Состав (фаза 1, Python)
@@ -9,9 +9,9 @@ web-app-v2 и pragmatica-ai. Один код вместо трёх расход�
 | Часть | Что внутри |
 |---|---|
 | `labops_pii` (ядро) | шаблоны ПДн (`pii_patterns`, единственный канон), детектор всех типов включая `ADDRESS`, морфология и склонение (`morph`, `inflect`), падежные метки, экранирование меток, `tech_tokens`, `checksums` |
-| хранилища | `memory`, `sqlite` с HKDF v3 (labops), `sqlite` + Fernet v2 (Прагматика); схема записи и срок хранения — настройками |
+| хранилища | `memory`, `sqlite` с HKDF v3 (labops), `sqlite` + Fernet v2 (прежний формат, набор `sqlite_v2`); схема записи и срок хранения — настройками |
 | сервис | FastAPI: `/pseudonymize`, `/pseudonymize_batch`, `/restore`, `/check`, `DELETE /threads/{id}`, `/inflect_signatory`, `/health` |
-| `labops_pii.guard` | режим «только проверка»: ФИО, адреса, телефоны и др.; `off / log_only / enforce`; метрики с закрытым списком меток. Две поверхности: `guard.litellm` (бывший gateway/pii-guard Прагматики) и `guard.edge` (бывший services/pii-guard web-app-v2) |
+| `labops_pii.guard` | режим «только проверка»: ФИО, адреса, телефоны и др.; `off / log_only / enforce`; метрики с закрытым списком меток. Две поверхности: `guard.litellm` (бывший gateway/pii-guard перед LiteLLM) и `guard.edge` (бывший services/pii-guard web-app-v2) |
 | `labops_pii.media` | `mask` (закраска ПДн на фото и PDF) и `gate` (есть ли текст на картинке). Чистый Python API без FastAPI; HTTP-обёртки отдельно. Extras `media` |
 | `ts/` | фаза 2 (клиент, SSE, обход тела запроса к модели) — см. `ts/README.md` |
 
@@ -20,7 +20,7 @@ web-app-v2 и pragmatica-ai. Один код вместо трёх расход�
 С 1.0.0 профилей нет: каждое различие между проектами — переменная окружения с нейтральным
 значением по умолчанию. Если задана прежняя `LABOPS_PII_PROFILE`, сервисы не стартуют и
 указывают на [docs/MIGRATION.md](docs/MIGRATION.md) (там же таблица «бывший профиль → набор
-переменных» и готовые блоки env для labops, web-app v2 и Прагматики).
+переменных» и готовые блоки env для labops, web-app v2 и набора `sqlite_v2`).
 
 | Переменная | По умолчанию | Что задаёт |
 |---|---|---|
@@ -29,13 +29,14 @@ web-app-v2 и pragmatica-ai. Один код вместо трёх расход�
 | `PSEUDONYMIZER_KEY` | нет | ключ Fernet (нужен только для `sqlite`) |
 | `PSEUDONYMIZER_RETENTION_HOURS` | `24` | срок хранения замен треда без обращений, часов (0 — не удалять) |
 | `PSEUDONYMIZER_MASK_LEGAL_ENTITY` | `on` | маскировать названия организаций (реквизиты — всегда) |
-| `PSEUDONYMIZER_ADDRESS_MASK` | `off` | маскировать адреса (город остаётся) |
+| `PSEUDONYMIZER_ADDRESS_MASK` | `on` | маскировать адреса (город остаётся); выключается явно `off` |
 | `PSEUDONYMIZER_ENABLE_INFLECT_SIGNATORY` | `off` | маршрут `POST /inflect_signatory` |
 | `PSEUDONYMIZER_ENABLE_DELETE_THREADS` | `off` | маршрут `DELETE /threads/{id}` |
 | `PSEUDONYMIZER_ENABLE_EXPOSE_BOOT_ID` | `off` | `boot_id` в `/health` |
 | `PSEUDONYMIZER_ENABLE_CASE_LABELS` | `off` | флаг `case_labels` в `/pseudonymize` |
 | `PII_GUARD_NAMES_MODE`, `PII_GUARD_ADDRESS_MODE` | `off` | режим guard для ФИО и адресов: `off`, `log_only`, `enforce` |
 | `PII_ALLOWED_WORDS` | пусто | основы слов-исключений через запятую |
+| `SEARCH_ROUTE_ENABLED`, `SEARCH_ALLOWED_MODELS` | `0`, нет | маршрут поиска guard.litellm; при `1` список моделей **обязателен**, без него guard не стартует |
 | `PSEUDONYMIZER_CONTACTS_FILE` | нет | словарь контактов сервиса |
 
 Флаги и режимы строгие: опечатка — ошибка старта, а не молчаливое значение по умолчанию.
@@ -44,10 +45,10 @@ TS-детектор окружения не читает: `maskAddresses` и `al
 ФИО guard ищет только эвристикой (`guard/names.py`); морфология из guard удалена в 0.7.0
 (на реальных названиях давала лишь ложные), `PII_GUARD_NAMES_MORPH` ничего не включает.
 ИНН любой длины (организации и физлица) — ПДн при любых настройках: guard блокирует, сервис
-маскирует. Белый список слов (`labops_pii/allowlist.py`) по умолчанию пуст: название проекта
+маскирует. Белый список слов (`labops_pii/allowlist.py`) по умолчанию пуст: название продукта
 (все падежи, с кавычками и без) не маскируется как ФИО или организация ни в сервисе, ни в
-guard только если его основа задана в `PII_ALLOWED_WORDS` (например `прагматик`). Имена
-агентов (Tony, Carmella) в список не входят.
+guard, только если его основа задана в `PII_ALLOWED_WORDS` (например `вектрик`). Имена людей
+и агентов в список не входят.
 
 ## Установка и запуск
 
@@ -56,7 +57,7 @@ python3.12 -m venv .venv && . .venv/bin/activate
 pip install -e "python[dev]"            # ядро и сервис
 pip install -e "python[dev,guard,media]"  # + guard и медиа
 PSEUDONYMIZER_API_TOKEN=... python -m labops_pii   # память; sqlite — см. настройку выше
-uvicorn labops_pii.guard.litellm.app:app   # guard Прагматики
+uvicorn labops_pii.guard.litellm.app:app   # guard перед LiteLLM
 uvicorn labops_pii.guard.edge.app:build_app --factory   # guard web-app-v2
 python -m labops_pii.media.mask          # маска фото и PDF
 ```
@@ -89,7 +90,8 @@ python -m labops_pii.media.mask          # маска фото и PDF
   `MEDIA_MASKER_HIDE_UNREADABLE`, по умолчанию `true`); если кандидаты занимают более 20 %
   площади, это фото или текстура, и ничего не закрашивается.
 - Новые коды отказа (500): `code_detection_failed`, `unreadable_scan_failed`.
-- Прагматика использует только `gate`; её поведение и эталонные снимки не менялись.
+- Потребитель набора `sqlite_v2` использует только `gate`; его поведение и эталонные снимки
+  не менялись.
 
 Остаточные риски:
 
