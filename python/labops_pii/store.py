@@ -25,7 +25,7 @@ from labops_pii.errors import ConfigError
 
 ENV_KEY_SCHEME = "PSEUDONYMIZER_KEY_SCHEME"
 # Схема шифрования строк SQLite при записи. v2: ключи не зависят от префикса треда, файл
-# читается и прежним кодом Прагматики. v3: ключи выводятся по префиксу треда (labops).
+# читается и прежним кодом исходных копий. v3: ключи выводятся по префиксу треда (labops).
 KEY_SCHEME_V2 = "v2"
 KEY_SCHEME_V3 = "v3"
 KEY_SCHEMES = (KEY_SCHEME_V2, KEY_SCHEME_V3)
@@ -214,7 +214,7 @@ class SqliteReplacementStore:
             clock: Источник времени в секундах (подменяется в тестах).
             key_cache_entries: Размер кэша расшифрованных ключей list_keys.
             key_scheme: Схема ключей при ЗАПИСИ: "v3" (ключи по префиксу треда, labops) или
-                "v2" (общий ключ, формат Прагматики: файл читается и прежним кодом).
+                "v2" (общий ключ, прежний формат: файл читается и прежним кодом).
                 По умолчанию из PSEUDONYMIZER_KEY_SCHEME (нет переменной - ConfigError).
                 Читаются всегда все схемы (v3, v2, v1).
 

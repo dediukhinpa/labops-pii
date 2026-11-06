@@ -354,7 +354,7 @@ class PiiDetector:
         found += self._detect_tech_names(text, tech, known_lemmas)
         if self._mask_legal:
             found += self._detect_orgs(text)
-        # Слова белого списка («Прагматика») не ПДн: ни ФИО, ни организация
+        # Слова белого списка (PII_ALLOWED_WORDS) не ПДн: ни ФИО, ни организация
         found = [
             d for d in found
             if not (

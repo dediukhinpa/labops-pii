@@ -187,7 +187,7 @@ class Settings:
 
     @property
     def retention_days(self) -> int:
-        """Срок хранения в целых сутках (для настроек, заданных в днях, как в Прагматике)."""
+        """Срок хранения в целых сутках (для настроек, заданных в днях)."""
         return self.retention_hours // HOURS_PER_DAY
 
 
