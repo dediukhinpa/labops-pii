@@ -62,6 +62,9 @@ TRACEPARENT_HEADER = b"traceparent"
 TRACEPARENT_RE = re.compile(r"[0-9a-f]{2}-([0-9a-f]{32})-[0-9a-f]{16}-[0-9a-f]{2}(?:-.*)?")
 TRACE_ID_ZERO = "0" * 32
 TRACEPARENT_BAD_VERSION = "ff"
+# Конвертер параметра в шаблоне маршрута («{thread_id:path}»): в журнал идёт шаблон без него,
+# чтобы метка маршрута не зависела от того, как параметр разбирается
+ROUTE_CONVERTER_RE = re.compile(r"\{(\w+):\w+\}")
 
 LEVEL_NAMES: dict[int, str] = {
     logging.DEBUG: "info",
@@ -248,7 +251,10 @@ class JsonLogMiddleware:
         """Пишет итоговое событие запроса."""
         route_obj = scope.get("route")
         route = getattr(route_obj, "path", None)
-        route = route if isinstance(route, str) else UNMATCHED_ROUTE
+        if isinstance(route, str):
+            route = ROUTE_CONVERTER_RE.sub(r"{\1}", route)
+        else:
+            route = UNMATCHED_ROUTE
         fields: dict[str, Any] = {
             "trace_id": trace_id, "route": route, "status": status, "duration_ms": duration,
         }
