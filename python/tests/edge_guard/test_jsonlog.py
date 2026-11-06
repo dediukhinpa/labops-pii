@@ -18,8 +18,8 @@ from fastapi.testclient import TestClient
 from labops_pii.guard.edge import jsonlog
 from labops_pii.guard.edge.app import create_app
 from labops_pii.guard.edge.jsonlog import EVENT_SEVERITY, JsonFormatter, JsonLogMiddleware
-from tests.webapp_v2_guard.helpers import MESSAGES, UPSTREAMS
-from tests.webapp_v2_guard.pii_corpus import INN12
+from tests.edge_guard.helpers import MESSAGES, UPSTREAMS
+from tests.edge_guard.pii_corpus import INN12
 
 ALLOWED_KEYS = {
     "ts", "level", "severity", "event", "request_id", "code", "route", "upstream", "status",

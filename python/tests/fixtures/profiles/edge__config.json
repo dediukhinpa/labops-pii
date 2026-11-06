@@ -18,7 +18,7 @@
   "key_scheme": "v3",
   "mask_addresses": false,
   "mask_legal_entity_requisites": true,
-  "name": "webapp_v2",
+  "name": "edge",
   "retention_hours": 24,
   "store_backend": "memory"
  },
@@ -34,7 +34,7 @@
   "max_restore_tokens": 5000,
   "max_text_chars": 70000,
   "port": 8300,
-  "profile": "webapp_v2",
+  "profile": "edge",
   "retention_hours": 24,
   "store_backend": "memory"
  }

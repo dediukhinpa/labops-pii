@@ -80,7 +80,7 @@ TOKEN_RE = re.compile(
     rf"\[(?:{'|'.join(TOKEN_TYPES)})_\d{{1,{TOKEN_NUMBER_MAX_DIGITS}}}"
     rf"(?:\|(?:{'|'.join(TOKEN_CASE_CODES)}))?\]"
 )
-# Старый формат токенов web-app v2 (apps/worker/src/privacy/pseudonymize.ts) - на переходный
+# Старый формат токенов прежнего edge-guard (восемь hex-знаков) - на переходный
 # период. Восемь hex-знаков не вмещают ни телефон, ни ИНН, поэтому вырезание этих оболочек
 # ПДн не прячет.
 LEGACY_TOKEN_KINDS = ("PERSON", "PHONE", "EMAIL", "INN")

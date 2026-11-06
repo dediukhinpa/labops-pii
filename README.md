@@ -1,7 +1,7 @@
 # labops-pii
 
-Общая библиотека маскирования персональных данных (ПДн) для labops-ai-assistant,
-web-app-v2 и других проектов. Один код вместо трёх расходящихся копий; различия проектов
+Общая библиотека маскирования персональных данных (ПДн) для нескольких
+проектов. Один код вместо трёх расходящихся копий; различия проектов
 задаются переменными окружения (профилей нет с 1.0.0), а не форками. Версии: semver-теги и [CHANGELOG](CHANGELOG.md).
 
 ## Состав (фаза 1, Python)
@@ -11,7 +11,7 @@ web-app-v2 и других проектов. Один код вместо трё
 | `labops_pii` (ядро) | шаблоны ПДн (`pii_patterns`, единственный канон), детектор всех типов включая `ADDRESS`, морфология и склонение (`morph`, `inflect`), падежные метки, экранирование меток, `tech_tokens`, `checksums` |
 | хранилища | `memory`, `sqlite` с HKDF v3 (labops), `sqlite` + Fernet v2 (прежний формат, набор `sqlite_v2`); схема записи и срок хранения — настройками |
 | сервис | FastAPI: `/pseudonymize`, `/pseudonymize_batch`, `/restore`, `/check`, `DELETE /threads/{id}`, `/inflect_signatory`, `/health` |
-| `labops_pii.guard` | режим «только проверка»: ФИО, адреса, телефоны и др.; `off / log_only / enforce`; метрики с закрытым списком меток. Две поверхности: `guard.litellm` (бывший gateway/pii-guard перед LiteLLM) и `guard.edge` (бывший services/pii-guard web-app-v2) |
+| `labops_pii.guard` | режим «только проверка»: ФИО, адреса, телефоны и др.; `off / log_only / enforce`; метрики с закрытым списком меток. Две поверхности: `guard.litellm` (бывший gateway/pii-guard перед LiteLLM) и `guard.edge` (бывший отдельный services/pii-guard на edge-узле) |
 | `labops_pii.media` | `mask` (закраска ПДн на фото и PDF) и `gate` (есть ли текст на картинке). Чистый Python API без FastAPI; HTTP-обёртки отдельно. Extras `media` |
 | `ts/` | фаза 2 (клиент, SSE, обход тела запроса к модели) — см. `ts/README.md` |
 
@@ -20,7 +20,7 @@ web-app-v2 и других проектов. Один код вместо трё
 С 1.0.0 профилей нет: каждое различие между проектами — переменная окружения с нейтральным
 значением по умолчанию. Если задана прежняя `LABOPS_PII_PROFILE`, сервисы не стартуют и
 указывают на [docs/MIGRATION.md](docs/MIGRATION.md) (там же таблица «бывший профиль → набор
-переменных» и готовые блоки env для labops, web-app v2 и набора `sqlite_v2`).
+переменных» и готовые блоки env для наборов `labops`, `edge` и `sqlite_v2`).
 
 | Переменная | По умолчанию | Что задаёт |
 |---|---|---|
@@ -58,7 +58,7 @@ pip install -e "python[dev]"            # ядро и сервис
 pip install -e "python[dev,guard,media]"  # + guard и медиа
 PSEUDONYMIZER_API_TOKEN=... python -m labops_pii   # память; sqlite — см. настройку выше
 uvicorn labops_pii.guard.litellm.app:app   # guard перед LiteLLM
-uvicorn labops_pii.guard.edge.app:build_app --factory   # guard web-app-v2
+uvicorn labops_pii.guard.edge.app:build_app --factory   # guard на edge-узле
 python -m labops_pii.media.mask          # маска фото и PDF
 ```
 
@@ -74,7 +74,7 @@ python -m labops_pii.media.mask          # маска фото и PDF
 `tests/test_profile_snapshots.py` сверяет побайтно те же наборы переменных со снимками,
 снятыми с профилей перед их удалением (`python/tests/fixtures/profiles/`).
 
-## Медиа: распознанный текст, QR и рукопись (0.2.0, не выпущено)
+## Медиа: распознанный текст, QR и рукопись
 
 `labops_pii.media.mask` кроме закраски отдаёт распознанное, одинаково при любых настройках:
 
@@ -106,7 +106,7 @@ python -m labops_pii.media.mask          # маска фото и PDF
 ## Вендоринг в проекты
 
 ```bash
-tools/vendor.sh /путь/к/проекту v1.0.0 guard        # тег или коммит; части: guard, service, media, ts
+tools/vendor.sh /путь/к/проекту v1.0.1 guard        # тег или коммит; части: guard, service, media, ts
 ```
 
 Файлы попадают в `vendor/labops-pii/` вместе с `VERSION` (тег, коммит, sha256 каждого файла).

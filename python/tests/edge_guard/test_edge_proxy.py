@@ -8,7 +8,7 @@ import pytest
 from labops_pii.guard.edge.app import PII_REJECTED_CODE, create_app
 from labops_pii.guard.edge.config import GuardMode, parse_mode, parse_upstreams, split_upstream_path
 from labops_pii.guard.detector import find_pii_types, scan_body
-from tests.webapp_v2_guard.helpers import UPSTREAMS
+from tests.edge_guard.helpers import UPSTREAMS
 
 PHONE = "+7 902 123-45-67"
 

@@ -8,7 +8,7 @@ import httpx
 import pytest
 
 from labops_pii.guard.edge.app import create_app
-from tests.webapp_v2_guard.helpers import MESSAGES, UPSTREAMS
+from tests.edge_guard.helpers import MESSAGES, UPSTREAMS
 
 PHONE = "+7 916 123 45 67"
 

@@ -24,7 +24,7 @@
 
 ## От профилей к переменным окружения (1.0.0)
 
-**Ломающее изменение.** Профили (`LABOPS_PII_PROFILE=labops|webapp_v2|<третий профиль>`,
+**Ломающее изменение.** Профили (`LABOPS_PII_PROFILE=labops|edge|<третий профиль>`,
 `labops_pii/profiles.py`, `ts/src/detector/profiles.ts`) удалены. Вся настройка — переменные
 окружения с нейтральными значениями по умолчанию. Если задана `LABOPS_PII_PROFILE`, сервисы
 (псевдонимизатор, оба guard, media) не стартуют и ссылаются на этот файл: молча игнорировать
@@ -33,7 +33,7 @@
 
 ### Таблица: бывший профиль → переменные
 
-| Поле профиля | Переменная | По умолчанию (нейтрально) | labops | webapp_v2 | sqlite_v2 (третий профиль) |
+| Поле профиля | Переменная | По умолчанию (нейтрально) | labops | edge | sqlite_v2 (третий профиль) |
 |---|---|---|---|---|---|
 | хранилище | `PSEUDONYMIZER_STORE` | `memory` | `memory` | `memory` | `sqlite` |
 | схема ключей SQLite при записи | `PSEUDONYMIZER_KEY_SCHEME` | **нет, обязательна при sqlite** | `v3` | `v3` | `v2` |
@@ -52,7 +52,7 @@
 Что изменилось по умолчанию относительно прежнего профиля `labops` (он был умолчанием):
 четыре флага маршрутов теперь выключены (раньше `DELETE /threads`, `boot_id` и `case_labels`
 были включены), список слов-исключений пуст (раньше название продукта было зашито в код),
-адреса маскируются (раньше не маскировались: labops и web-app v2 задают `off` явно, если
+адреса маскируются (раньше не маскировались: наборы labops и edge задают `off` явно, если
 хотят прежнее поведение). Значения
 `on|true|yes|1` и `off|false|no|0` равнозначны; флаги и `PSEUDONYMIZER_ADDRESS_MASK` строгие:
 опечатка (`enabled`, `of`) — ошибка старта, а не молчаливое значение по умолчанию.
@@ -68,7 +68,7 @@ TS-детектор (`@labops/pii`) не читает окружение: реж
 
 | Бывший `{ profile }` | Теперь |
 |---|---|
-| `labops`, `webapp_v2` | `{ maskAddresses: false, allowedWords: ['<основа названия>'] }` |
+| `labops`, `edge` | `{ maskAddresses: false, allowedWords: ['<основа названия>'] }` |
 | третий профиль | `{ allowedWords: ['<основа названия>'] }` (адреса ищутся по умолчанию) |
 
 ### Готовые блоки env для потребителей
@@ -76,7 +76,7 @@ TS-детектор (`@labops/pii`) не читает окружение: реж
 Токены и ключи ниже — заглушки; настоящие остаются в секретах потребителя и в этот файл
 не попадают.
 
-**labops (labops-ai-assistant, pii-proxy):**
+**labops (сервис с хранилищем в памяти и TS-прокси):**
 
 ```env
 PSEUDONYMIZER_API_TOKEN=<секрет>
@@ -95,7 +95,7 @@ PII_ALLOWED_WORDS=<основа названия продукта>
 # PSEUDONYMIZER_KEY_SCHEME=v3 (схема обязательна)
 ```
 
-**web-app v2 (общий сервис labops + guard edge):**
+**edge (тот же сервис + guard на edge-узле):**
 
 ```env
 PSEUDONYMIZER_API_TOKEN=<секрет>
@@ -160,7 +160,7 @@ SEARCH_ALLOWED_MODELS=<модели через запятую>
 |---|---|
 | `pseudonymizer.*` | `labops_pii.*` |
 | `pii_guard.*` (gateway перед LiteLLM) | `labops_pii.guard.*`, маршруты — `labops_pii.guard.litellm.*` |
-| `pii_guard.*` (web-app-v2) | `labops_pii.guard.*`, прокси и конфиг — `labops_pii.guard.edge.*` |
+| `pii_guard.*` (edge-guard) | `labops_pii.guard.*`, прокси и конфиг — `labops_pii.guard.edge.*` |
 | `shared/pii_patterns.py`, копии, `sync-shared.sh` | `labops_pii/pii_patterns.py` (копий нет) |
 | `media_masker.*` | `labops_pii.media.mask.*` |
 | `documents.ocr_detect`, `documents.image_normalize` | `labops_pii.media.gate.*` |

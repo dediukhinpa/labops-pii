@@ -162,7 +162,7 @@
    ]
   }
  },
- "webapp_v2_guard": {
+ "edge_guard": {
   "reason": "Фикс карты из исходной копии с хранилищем sqlite v2: ряд цен по тиражам не карта; карта с соседним числом (CVV, срок) находится.",
   "divergences": {
    "/modes/default/bodies": [
