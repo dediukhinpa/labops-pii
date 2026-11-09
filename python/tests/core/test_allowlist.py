@@ -83,3 +83,62 @@ def test_guard_does_not_flag_project_name(name: str, monkeypatch: pytest.MonkeyP
 
     for text in [*FORMS, *SENTENCES]:
         assert "name" not in detector.find_pii_types(text), text
+
+
+# --- Память strip_allowed_words на вырожденном тексте ---
+DEGENERATE_REPEATS = 2_000_000
+# Потолок пика сверх входа: ~8 байт на символ (список символов) тест гарантированно нарушает
+PEAK_BYTES_PER_CHAR = 4
+EQUIVALENCE_SAMPLES = [
+    "", "Иванов из Вектрики", "С.Вектрика и Вектрика-Плюс, «Вектрикой» ВЕКТРИКА",
+    "Пектин С.Вектрика", "А.Вектрика", "ХВектрика Вектрик Вектриками Вектрикаааа",
+    "a-a-a Альфой, Омегу; Бета", "вектрика", "Ё.Вектрика ёё Омег-Альф", "x С.Альф y",
+]
+
+
+def _old_strip(text: str) -> str:
+    """Прежняя реализация через список символов (эталон для сравнения результатов)."""
+    from labops_pii.allowlist import (
+        ALLOWED_WORDS_ENV, GLUED_INITIAL_LEN, GLUED_INITIAL_RE, WORD_RE, is_allowed_word,
+    )
+
+    stems = allowed_stems()
+    if not stems:
+        return text
+    chars = list(text)
+    for match in WORD_RE.finditer(text):
+        if not is_allowed_word(match.group(), stems):
+            continue
+        start = match.start()
+        glued = text[max(start - GLUED_INITIAL_LEN, 0):start]
+        if GLUED_INITIAL_RE.fullmatch(glued) and (
+            start == GLUED_INITIAL_LEN or not text[start - GLUED_INITIAL_LEN - 1].isalpha()
+        ):
+            start -= GLUED_INITIAL_LEN
+        chars[start:match.end()] = " " * (match.end() - start)
+    return "".join(chars)
+
+
+def test_strip_matches_reference_on_ordinary_strings(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("PII_ALLOWED_WORDS", "Вектрик, Альф, Омег")
+    for text in EQUIVALENCE_SAMPLES:
+        assert strip_allowed_words(text) == _old_strip(text), text
+    use_env_set(monkeypatch, "labops")
+    for text in [*FORMS, *SENTENCES, *EQUIVALENCE_SAMPLES]:
+        assert strip_allowed_words(text) == _old_strip(text), text
+
+
+def test_strip_peak_memory_is_linear_on_degenerate_text(monkeypatch: pytest.MonkeyPatch) -> None:
+    """2 млн повторов «a-» не должны раздувать память сверх малой константы от длины."""
+    import tracemalloc
+
+    monkeypatch.setenv("PII_ALLOWED_WORDS", "Вектрик")
+    text = "a-" * DEGENERATE_REPEATS + "a"
+    tracemalloc.start()
+    try:
+        result = strip_allowed_words(text)
+        _, peak = tracemalloc.get_traced_memory()
+    finally:
+        tracemalloc.stop()
+    assert result == text
+    assert peak <= PEAK_BYTES_PER_CHAR * len(text), peak
