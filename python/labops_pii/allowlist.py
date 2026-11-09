@@ -19,7 +19,9 @@ ALLOWED_WORDS_ENV = "PII_ALLOWED_WORDS"
 ALLOWED_WORDS_DEFAULT: tuple[str, ...] = ()
 # Падежное окончание после основы: «вектрик» + «а/у/е/ой/ами/...»
 ALLOWED_ENDING_MAX = 3
-WORD_RE = re.compile(r"[А-Яа-яЁёA-Za-z]+(?:-[А-Яа-яЁёA-Za-z]+)*")
+# Притяжательные квантификаторы (++, *+): после слова ничего не следует, откат не нужен, а обычный
+# (?:...)* копит в памяти стек отката на каждый дефис («a-a-a-…» из миллионов слов: сотни МиБ)
+WORD_RE = re.compile(r"[А-Яа-яЁёA-Za-z]++(?:-[А-Яа-яЁёA-Za-z]++)*+")
 # Инициал вплотную перед словом: заглавная буква и точка («С.»)
 GLUED_INITIAL_RE = re.compile(r"[А-ЯЁA-Z]\.")
 GLUED_INITIAL_LEN = 2
@@ -51,15 +53,25 @@ def is_allowed_fragment(fragment: str) -> bool:
 
 
 def strip_allowed_words(text: str) -> str:
-    """Заменяет разрешённые слова пробелами той же длины (позиции остальных не сдвигаются)."""
+    """Заменяет разрешённые слова пробелами той же длины (позиции остальных не сдвигаются).
+
+    Проход потоковый: результат собирается из срезов исходной строки между найденными словами,
+    список символов не создаётся, пик памяти линеен от длины текста с малой константой.
+    """
     stems = allowed_stems()
     if not stems:
         return text
-    chars = list(text)
+    # Длиннее основы + окончания слово разрешённым быть не может: копию слова не делаем
+    max_word_len = max(len(s) for s in stems) + ALLOWED_ENDING_MAX
+    parts: list[str] = []
+    pos = 0  # всё левее pos уже перенесено в parts
     for match in WORD_RE.finditer(text):
+        word_start, word_end = match.span()
+        if word_end - word_start > max_word_len:
+            continue
         if not is_allowed_word(match.group(), stems):
             continue
-        start = match.start()
+        start = word_start
         # Инициал, приклеенный к разрешённому слову без пробела (марка «С.ОРЛОВЪ»), - часть марки:
         # иначе после затирания слова оставалось «Пектин С.», и guard видел «Фамилия И.»
         glued = text[max(start - GLUED_INITIAL_LEN, 0):start]
@@ -67,5 +79,11 @@ def strip_allowed_words(text: str) -> str:
             start == GLUED_INITIAL_LEN or not text[start - GLUED_INITIAL_LEN - 1].isalpha()
         ):
             start -= GLUED_INITIAL_LEN
-        chars[start:match.end()] = " " * (match.end() - start)
-    return "".join(chars)
+        start = max(start, pos)  # затёртые ранее позиции не трогаем повторно
+        parts.append(text[pos:start])
+        parts.append(" " * (word_end - start))
+        pos = word_end
+    if not parts:
+        return text
+    parts.append(text[pos:])
+    return "".join(parts)
