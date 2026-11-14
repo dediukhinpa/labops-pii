@@ -10,7 +10,7 @@
 |---|---|
 | `labops_pii` (ядро) | шаблоны ПДн (`pii_patterns`, единственный канон), детектор всех типов включая `ADDRESS`, морфология и склонение (`morph`, `inflect`), падежные метки, экранирование меток, `tech_tokens`, `checksums` |
 | хранилища | `memory`, `sqlite` с HKDF v3 (labops), `sqlite` + Fernet v2 (прежний формат, набор `sqlite_v2`); схема записи и срок хранения — настройками |
-| сервис | FastAPI: `/pseudonymize`, `/pseudonymize_batch`, `/restore`, `/check`, `DELETE /threads/{id}`, `/inflect_signatory`, `/health` |
+| сервис | FastAPI: `/pseudonymize`, `/pseudonymize_batch`, `/remask_batch`, `/restore`, `/check`, `DELETE /threads/{id}`, `/inflect_signatory`, `/health` |
 | `labops_pii.guard` | режим «только проверка»: ФИО, адреса, телефоны и др.; `off / log_only / enforce`; метрики с закрытым списком меток. Две поверхности: `guard.litellm` (бывший gateway/pii-guard перед LiteLLM) и `guard.edge` (бывший отдельный services/pii-guard на edge-узле) |
 | `labops_pii.media` | `mask` (закраска ПДн на фото и PDF) и `gate` (есть ли текст на картинке). Чистый Python API без FastAPI; HTTP-обёртки отдельно. Extras `media` |
 | `ts/` | фаза 2 (клиент, SSE, обход тела запроса к модели) — см. `ts/README.md` |
@@ -49,6 +49,17 @@ TS-детектор окружения не читает: `maskAddresses` и `al
 (все падежи, с кавычками и без) не маскируется как ФИО или организация ни в сервисе, ни в
 guard, только если его основа задана в `PII_ALLOWED_WORDS` (например `вектрик`). Имена людей
 и агентов в список не входят.
+
+## Остаток ПДн после маски (с 1.1.0)
+
+TS-прокси проверяет каждый замаскированный лист вторым вызовом `/check`. Раньше находка
+означала `422 pii_after_mask` на весь запрос, и лист с остатком в истории повторял отказ на
+каждом следующем запросе сессии. Теперь лист дозамаскируется (`POST /remask_batch`, та же
+нумерация токенов и таблица), результат снова проверяется; если остаток не ушёл за два прохода,
+лист заменяется заглушкой «[скрыто: ПДн — содержимое не передано модели]». Модель не получает
+немаскированный остаток ни при каком исходе, запрос не отклоняется; итог запоминается в кэше
+маски. Отказ (fail closed) остаётся для сбоев сервиса. Откат к прежнему поведению:
+`new RequestMasker(..., { onResidualPii: 'reject' })`.
 
 ## Установка и запуск
 
@@ -106,7 +117,7 @@ python -m labops_pii.media.mask          # маска фото и PDF
 ## Вендоринг в проекты
 
 ```bash
-tools/vendor.sh /путь/к/проекту v1.0.3 guard        # тег или коммит; части: guard, service, media, ts
+tools/vendor.sh /путь/к/проекту v1.1.0 guard        # тег или коммит; части: guard, service, media, ts
 ```
 
 Файлы попадают в `vendor/labops-pii/` вместе с `VERSION` (тег, коммит, sha256 каждого файла).
@@ -116,7 +127,10 @@ tools/vendor.sh /путь/к/проекту v1.0.3 guard        # тег или 
 
 ## English summary
 
-Shared PII-masking library for three LabOps projects. `labops_pii` provides the detector
+Shared PII-masking library for three LabOps projects. Since 1.1.0 the TS proxy no longer
+rejects a request with 422 when the second-line `/check` finds residual PII: the leaf is re-masked
+via `POST /remask_batch` (same token numbering), re-checked, and replaced by a placeholder if
+anything remains (`onResidualPii: 'reject'` restores the old behaviour). `labops_pii` provides the detector
 (single pattern canon, morphology, address detection), replacement stores (memory, SQLite
 with HKDF v3 or Fernet v2, configurable retention), the FastAPI pseudonymization service,
 a check-only guard (off / log_only / enforce) with two HTTP surfaces, and the `media`
