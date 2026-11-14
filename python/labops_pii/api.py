@@ -53,7 +53,7 @@ HTTP_UNPROCESSABLE = 422
 HTTP_BUSY = 503
 BEARER_SCHEME = "bearer"
 # Пути с телом JSON: токен и размер тела проверяются в BodyGuardMiddleware до его чтения
-GUARDED_PATHS = ("/pseudonymize", "/pseudonymize_batch", "/restore", "/check")
+GUARDED_PATHS = ("/pseudonymize", "/pseudonymize_batch", "/remask_batch", "/restore", "/check")
 # Подписант (ENABLE_INFLECT_SIGNATORY): должность и ФИО в родительном падеже без участия модели
 SIGNATORY_ROUTE = "/inflect_signatory"
 # Должность и ФИО - короткие строки; длиннее - явно не подписант
@@ -359,6 +359,29 @@ def create_app(
         ensure_batch_size(req.texts)
         retention.run_if_due()
         results = service.pseudonymize_batch(
+            req.thread_id, req.texts, req.case_labels and settings.enable_case_labels
+        )
+        return PseudonymizeBatchResponse(
+            items=[
+                PseudonymizeResponse(
+                    text=text, entities=[EntityOut(type=e.type, token=e.token) for e in entities]
+                )
+                for text, entities in results
+            ]
+        )
+
+    @app.post(
+        "/remask_batch",
+        dependencies=guarded,
+        response_model=PseudonymizeBatchResponse,
+    )
+    def remask_batch(req: PseudonymizeBatchRequest) -> PseudonymizeBatchResponse:
+        # Второй проход после /check: тексты уже замаскированы, а вторая линия нашла в них
+        # остаток ПДн. Те же пределы пачки, что у /pseudonymize_batch; метки и токены
+        # входа не экранируются (см. Pseudonymizer.remask).
+        ensure_batch_size(req.texts)
+        retention.run_if_due()
+        results = service.remask_batch(
             req.thread_id, req.texts, req.case_labels and settings.enable_case_labels
         )
         return PseudonymizeBatchResponse(
