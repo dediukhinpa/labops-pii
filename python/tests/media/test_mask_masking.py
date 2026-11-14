@@ -93,10 +93,12 @@ def test_rotated_text_is_still_masked(
         assert fragment not in text
 
 
-def test_low_confidence_words_are_painted(masker: ImageMasker, ocr: TesseractOcr) -> None:
-    # Сильно размытый текст читается плохо: его нельзя проверить, значит закрашиваем
+def test_low_confidence_words_are_painted_when_enabled(
+    paint_masker: ImageMasker, ocr: TesseractOcr
+) -> None:
+    # Включена закраска слабых слов (paint_low_conf): сильно размытый текст не проверить
     blurred = make_text_image((INN_LINE, PHONE_LINE)).filter(ImageFilter.GaussianBlur(3))
-    result = masker.mask_bytes(to_bytes(blurred))
+    result = paint_masker.mask_bytes(to_bytes(blurred))
     out = Image.open(io.BytesIO(result.data))
     assert "500100732259" not in ocr_text(ocr, out)
 

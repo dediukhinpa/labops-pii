@@ -24,6 +24,7 @@ ENV_OCR_TIMEOUT = "MEDIA_MASKER_OCR_TIMEOUT_S"
 ENV_MASK_LEGAL = "MEDIA_MASKER_MASK_LEGAL_ENTITY"
 ENV_CONTACTS = "MEDIA_MASKER_CONTACTS_FILE"
 ENV_HIDE_UNREADABLE = "MEDIA_MASKER_HIDE_UNREADABLE"
+ENV_PAINT_LOW_CONF = "MEDIA_MASKER_PAINT_LOW_CONF"
 # Адреса на картинках: свой флаг, иначе флаг сервиса псевдонимизации, иначе выкл.
 # Без этого при PSEUDONYMIZER_ADDRESS_MASK=on адрес становился токеном в тексте, но
 # оставался видимым на самой картинке (найдено при переходе labops на библиотеку).
@@ -74,7 +75,10 @@ class Settings:
         mask_legal_entity: Закрашивать ли названия организаций (как в pseudonymizer).
         contacts: Словарь контактов для детектора.
         hide_unreadable: Закрашивать ли области с признаками письма, которые OCR не
-            распознал (рукопись, подпись).
+            распознал (рукопись, подпись). По умолчанию выкл. (с 1.1.3): закрашиваются только
+            находки детектора ПДн, лица и QR-коды.
+        paint_low_conf: Закрашивать ли слова с низкой уверенностью OCR, даже если детектор в
+            них ничего не нашёл. По умолчанию выкл. (с 1.1.3), как и hide_unreadable.
         mask_addresses: Закрашивать ли адреса; None - из PSEUDONYMIZER_ADDRESS_MASK
             (по умолчанию выкл.).
     """
@@ -90,7 +94,8 @@ class Settings:
     ocr_timeout_s: float = DEFAULT_OCR_TIMEOUT_S
     mask_legal_entity: bool = True
     contacts: tuple[str, ...] = ()
-    hide_unreadable: bool = True
+    hide_unreadable: bool = False
+    paint_low_conf: bool = False
     mask_addresses: bool | None = None
 
 
@@ -167,7 +172,9 @@ def load_settings(env: Mapping[str, str] | None = None) -> Settings:
     # Строго, как у сервиса: «off» раньше не выключал (не входил в список), а опечатка молча
     # оставляла значение по умолчанию
     mask_legal = _media_flag(source, ENV_MASK_LEGAL, default=True)
-    hide_unreadable = _media_flag(source, ENV_HIDE_UNREADABLE, default=True)
+    # С 1.1.3 нечитаемое и слабо распознанное не закрашивается: только находки детектора ПДн
+    hide_unreadable = _media_flag(source, ENV_HIDE_UNREADABLE, default=False)
+    paint_low_conf = _media_flag(source, ENV_PAINT_LOW_CONF, default=False)
     mask_addresses = _address_flag(source)
     return Settings(
         mask_addresses=mask_addresses,
@@ -183,4 +190,5 @@ def load_settings(env: Mapping[str, str] | None = None) -> Settings:
         mask_legal_entity=mask_legal,
         contacts=contacts,
         hide_unreadable=hide_unreadable,
+        paint_low_conf=paint_low_conf,
     )
