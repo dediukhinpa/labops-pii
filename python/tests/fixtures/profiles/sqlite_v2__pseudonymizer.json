@@ -2093,11 +2093,11 @@
    {
     "entities": [
      {
-      "token": "[PERSON_59]",
+      "token": "[PERSON_25]",
       "type": "PERSON"
      }
     ],
-    "text": "[PERSON_59]"
+    "text": "[PERSON_25]"
    },
    {
     "entities": [
@@ -2111,11 +2111,20 @@
    {
     "entities": [
      {
+      "token": "[PERSON_59]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "[PERSON_59]"
+   },
+   {
+    "entities": [
+     {
       "token": "[PERSON_60]",
       "type": "PERSON"
      }
     ],
-    "text": "[PERSON_60]"
+    "text": "Толстая Любовь [PERSON_60]"
    },
    {
     "entities": [
@@ -2124,7 +2133,7 @@
       "type": "PERSON"
      }
     ],
-    "text": "Толстая Любовь [PERSON_61]"
+    "text": "[PERSON_61]"
    },
    {
     "entities": [
@@ -2156,6 +2165,51 @@
    {
     "entities": [
      {
+      "token": "[PERSON_25]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "[PERSON_25]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_25]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "[PERSON_25]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_25]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "[PERSON_25]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_25]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "[PERSON_25]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_25]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "[PERSON_25]"
+   },
+   {
+    "entities": [
+     {
       "token": "[PERSON_65]",
       "type": "PERSON"
      }
@@ -2165,65 +2219,11 @@
    {
     "entities": [
      {
-      "token": "[PERSON_25]",
-      "type": "PERSON"
-     }
-    ],
-    "text": "[PERSON_25]"
-   },
-   {
-    "entities": [
-     {
-      "token": "[PERSON_25]",
-      "type": "PERSON"
-     }
-    ],
-    "text": "[PERSON_25]"
-   },
-   {
-    "entities": [
-     {
-      "token": "[PERSON_25]",
-      "type": "PERSON"
-     }
-    ],
-    "text": "[PERSON_25]"
-   },
-   {
-    "entities": [
-     {
-      "token": "[PERSON_25]",
-      "type": "PERSON"
-     }
-    ],
-    "text": "[PERSON_25]"
-   },
-   {
-    "entities": [
-     {
-      "token": "[PERSON_25]",
-      "type": "PERSON"
-     }
-    ],
-    "text": "[PERSON_25]"
-   },
-   {
-    "entities": [
-     {
       "token": "[PERSON_66]",
       "type": "PERSON"
      }
     ],
-    "text": "[PERSON_66]"
-   },
-   {
-    "entities": [
-     {
-      "token": "[PERSON_19]",
-      "type": "PERSON"
-     }
-    ],
-    "text": "Заказ у [PERSON_19] оформлен"
+    "text": "Заказ у [PERSON_66] оформлен"
    },
    {
     "entities": [
@@ -2255,29 +2255,29 @@
    {
     "entities": [
      {
-      "token": "[PERSON_19]",
-      "type": "PERSON"
-     }
-    ],
-    "text": "Поставщик [PERSON_19]"
-   },
-   {
-    "entities": [
-     {
-      "token": "[PERSON_19]",
-      "type": "PERSON"
-     }
-    ],
-    "text": "[PERSON_19]"
-   },
-   {
-    "entities": [
-     {
       "token": "[PERSON_67]",
       "type": "PERSON"
      }
     ],
-    "text": "Генеральный директор [PERSON_67]"
+    "text": "Поставщик [PERSON_67]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_68]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "[PERSON_68]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_69]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "Генеральный директор [PERSON_69]"
    },
    {
     "entities": [
@@ -2309,11 +2309,11 @@
    {
     "entities": [
      {
-      "token": "[PERSON_68]",
+      "token": "[PERSON_70]",
       "type": "PERSON"
      }
     ],
-    "text": "[PERSON_68]"
+    "text": "[PERSON_70]"
    },
    {
     "entities": [
@@ -2327,11 +2327,11 @@
    {
     "entities": [
      {
-      "token": "[PERSON_69]",
+      "token": "[PERSON_71]",
       "type": "PERSON"
      }
     ],
-    "text": "[PERSON_69]"
+    "text": "[PERSON_71]"
    },
    {
     "entities": [],
@@ -2399,15 +2399,15 @@
    {
     "entities": [
      {
-      "token": "[PERSON_68]",
+      "token": "[PERSON_70]",
       "type": "PERSON"
      },
      {
-      "token": "[PERSON_60]",
+      "token": "[PERSON_59]",
       "type": "PERSON"
      }
     ],
-    "text": "школа имени [PERSON_68] [PERSON_60]"
+    "text": "школа имени [PERSON_70] [PERSON_59]"
    },
    {
     "entities": [],
@@ -2440,50 +2440,15 @@
    {
     "entities": [
      {
-      "token": "[PERSON_70]",
+      "token": "[PERSON_72]",
       "type": "PERSON"
      }
     ],
-    "text": "[PERSON_70]"
+    "text": "[PERSON_72]"
    },
    {
     "entities": [],
     "text": "Это практична и логична"
-   },
-   {
-    "entities": [
-     {
-      "token": "[PERSON_69]",
-      "type": "PERSON"
-     }
-    ],
-    "text": "[PERSON_69]"
-   },
-   {
-    "entities": [
-     {
-      "token": "[PERSON_68]",
-      "type": "PERSON"
-     },
-     {
-      "token": "[PERSON_40]",
-      "type": "PERSON"
-     }
-    ],
-    "text": "Позвони [PERSON_68]. [PERSON_40] придёт позже"
-   },
-   {
-    "entities": [
-     {
-      "token": "[PERSON_69]",
-      "type": "PERSON"
-     },
-     {
-      "token": "[PERSON_28]",
-      "type": "PERSON"
-     }
-    ],
-    "text": "[PERSON_69]. [PERSON_28] пришёл"
    },
    {
     "entities": [
@@ -2493,6 +2458,41 @@
      }
     ],
     "text": "[PERSON_71]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_70]",
+      "type": "PERSON"
+     },
+     {
+      "token": "[PERSON_40]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "Позвони [PERSON_70]. [PERSON_40] придёт позже"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_73]",
+      "type": "PERSON"
+     },
+     {
+      "token": "[PERSON_28]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "[PERSON_73]. [PERSON_28] пришёл"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_74]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "[PERSON_74]"
    },
    {
     "entities": [

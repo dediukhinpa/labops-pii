@@ -20,7 +20,7 @@ from labops_pii.morph import (
     person_key,
     split_key,
 )
-from labops_pii.store import ReplacementStore
+from labops_pii.store import ReplacementConflictError, ReplacementStore
 
 logger = logging.getLogger(__name__)
 
@@ -104,6 +104,16 @@ class _PersonIndex:
         for word in words:
             self._by_word.setdefault(word, []).append((key, token))
 
+    def replace(self, old_key: str, new_key: str, token: str) -> None:
+        """Заменяет ключ токена: старый ключ из поиска уходит, чтобы он не совпадал с другим ФИО."""
+        for key in (old_key,):
+            words = _full_words(key)
+            for bucket in [self._by_word_set.get(words, [])] + [
+                self._by_word.get(word, []) for word in words
+            ]:
+                bucket[:] = [(k, t) for k, t in bucket if not (k == key and t == token)]
+        self.add(new_key, token)
+
     def _candidates(self, words: frozenset[str]) -> Iterator[tuple[str, str]]:
         """Ключи, которые могут быть совместимы с набором слов (с повторами)."""
         if len(words) > SUBSET_SEARCH_MAX_WORDS:  # необычно длинный ключ: перебор по словам
@@ -117,22 +127,26 @@ class _PersonIndex:
         # ключи, в которые входит искомый: все они содержат его самое редкое слово
         yield from min((self._by_word.get(word, []) for word in ordered), key=len)
 
-    def compatible_tokens(self, key: str) -> list[str]:
-        """Токены совместимых ключей: не больше AMBIGUITY_THRESHOLD штук.
+    def compatible_entries(self, key: str) -> list[tuple[str, str]]:
+        """Пары (ключ, токен) совместимых ключей: не больше AMBIGUITY_THRESHOLD токенов.
 
         Вызывающему важно только, один кандидат или нет, поэтому поиск останавливается,
         как только неоднозначность установлена.
         """
         words = _full_words(key)
-        found: dict[str, None] = {}
+        found: dict[str, str] = {}
         if not words:
             return []
         for other, token in self._candidates(words):
             if token not in found and keys_compatible(other, key):
-                found[token] = None
+                found[token] = other
                 if len(found) >= AMBIGUITY_THRESHOLD:
                     break
-        return list(found)
+        return [(other, token) for token, other in found.items()]
+
+    def compatible_tokens(self, key: str) -> list[str]:
+        """Токены совместимых ключей (см. `compatible_entries`)."""
+        return [token for _, token in self.compatible_entries(key)]
 
 
 class _LazyPersonIndex:
@@ -163,14 +177,28 @@ class _LazyPersonIndex:
 
     def compatible_tokens(self, key: str) -> list[str]:
         """Токены совместимых ключей (см. `_PersonIndex.compatible_tokens`)."""
+        return [token for _, token in self.compatible_entries(key)]
+
+    def compatible_entries(self, key: str) -> list[tuple[str, str]]:
+        """Пары (ключ, токен) совместимых ключей (см. `_PersonIndex.compatible_entries`)."""
         if self._index is None:
             self._index = _PersonIndex(self._load())
-        return self._index.compatible_tokens(key)
+        return self._index.compatible_entries(key)
+
+    def replace(self, old_key: str, new_key: str, token: str) -> None:
+        """Заменяет ключ токена в построенном индексе (непостроенный прочтёт уже новый)."""
+        if self._index is not None:
+            self._index.replace(old_key, new_key, token)
 
 
 def _full_words(key: str) -> frozenset[str]:
     """Полные слова ключа ФИО (инициалы и пометка рода отбрасываются)."""
     return frozenset(word for word in split_key(key)[0] if len(word) > 1)
+
+
+def _adds_words(new_key: str, old_key: str) -> bool:
+    """Новый ключ ФИО содержит все полные слова старого и ещё хотя бы одно."""
+    return _full_words(old_key) < _full_words(new_key)
 
 
 def _escape_literal_tokens(text: str, foreign: set[str]) -> str:
@@ -497,15 +525,44 @@ class Pseudonymizer:
                 resolved = self._store.get_original(thread_id, aliased)
                 if resolved is not None:
                     return resolved
-            candidates = persons.compatible_tokens(det.key)
+            candidates = persons.compatible_entries(det.key)
             if len(candidates) == 1:  # неоднозначность -> новый токен, безопаснее
-                self._remember_alias(thread_id, alias_type, det.key, candidates[0])
-                return candidates[0]
+                other_key, token = candidates[0]
+                if _adds_words(det.key, other_key):
+                    # Новое упоминание полнее прежнего («Игорь» -> «Игорь Валентинович
+                    # Крутоголов»). Оставить токен с прежним оригиналом нельзя: /restore вернул
+                    # бы только «Игорь», отчество и фамилия пропали бы из ответа. Токен остаётся
+                    # (это тот же человек), а оригинал и ключ расширяются до полных.
+                    if self._widen(thread_id, pii_type, token, det, original):
+                        persons.replace(other_key, det.key, token)
+                        return token
+                else:
+                    self._remember_alias(thread_id, alias_type, det.key, token)
+                    return token
         token = f"[{pii_type}_{self._store.count(thread_id, pii_type) + 1}]"
         self._store.add(thread_id, token, pii_type, det.key, original)
         if det.pii_type in FUZZY_TYPES:
             persons.add(det.key, token)
         return token
+
+    def _widen(
+        self, thread_id: str, pii_type: str, token: str, det: Detection, original: str
+    ) -> bool:
+        """Расширяет оригинал и ключ токена до более полного ФИО; False - не вышло.
+
+        Оригинал в косвенном падеже приводится к именительному, пока падеж определён
+        однозначно (по метке): иначе голый токен без метки восстанавливался бы в «Игорю
+        Валентиновичу Крутоголову» там, где раньше был «Игорь». Если ключ занят другим токеном
+        (в норме не бывает: такой ключ нашёл бы `find_token`), выдаётся новый токен.
+        """
+        stored = original
+        if person_case(original) is not None:
+            stored = inflect_person(original, "nomn")
+        try:
+            self._store.widen(thread_id, token, pii_type, det.key, stored)
+        except (ReplacementConflictError, KeyError):
+            return False
+        return True
 
     def _remember_alias(self, thread_id: str, alias_type: str, key: str, token: str) -> None:
         """Запоминает, что ключ ФИО разрешился в token (запись-псевдоним, см. ALIAS_TYPE_SUFFIX)."""

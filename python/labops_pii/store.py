@@ -175,6 +175,18 @@ class ReplacementStore(Protocol):
         """Сохраняет замену."""
         ...
 
+    def widen(self, thread_id: str, token: str, pii_type: str, key: str, original: str) -> None:
+        """Заменяет у существующего токена ключ и оригинал на более полные (то же ФИО).
+
+        Токен, число токенов типа и записи-псевдонимы не меняются. Внутри `batch()` замена
+        откатывается вместе с остальными записями пачки.
+
+        Raises:
+            ReplacementConflictError: Такой ключ типа в треде уже занят другим токеном.
+            KeyError: Токена типа в треде нет.
+        """
+        ...
+
     def get_original(self, thread_id: str, token: str) -> str | None:
         """Оригинал по токену треда или None."""
         ...
@@ -501,6 +513,32 @@ class SqliteReplacementStore:
             if cached_count is not None:
                 self._counts[count_key] = cached_count + 1
 
+    def widen(self, thread_id: str, token: str, pii_type: str, key: str, original: str) -> None:
+        with self._lock:
+            try:
+                cursor = self._conn.execute(
+                    "UPDATE replacements SET key_hash=?, key_enc=?, value_enc=? "
+                    "WHERE thread_id=? AND token=? AND pii_type=?",
+                    (
+                        self._hash(thread_id, key),
+                        self._encrypt(thread_id, key),
+                        self._encrypt(thread_id, original),
+                        thread_id,
+                        token,
+                        pii_type,
+                    ),
+                )
+            except sqlite3.IntegrityError as exc:  # UNIQUE (тред, тип, ключ)
+                raise ReplacementConflictError("ключ уже занят другим токеном") from exc
+            if cursor.rowcount != 1:
+                raise KeyError(token)
+            self._touch_locked(thread_id)
+            cached = self._key_cache.get((thread_id, pii_type))
+            if cached is not None:
+                cached[:] = [(key, t) if t == token else (k, t) for k, t in cached]
+            if not self._in_batch:
+                self._conn.commit()
+
     @contextlib.contextmanager
     def batch(self) -> Iterator[None]:
         """Откладывает фиксацию записей до выхода из блока.
@@ -748,6 +786,8 @@ class MemoryReplacementStore:
         self._threads: dict[str, _MemoryThread] = {}
         # Журнал пачки: (тред, токен) в порядке добавления; None — пачки нет
         self._journal: list[tuple[str, str]] | None = None
+        # Расширения пачки: (тред, тип, токен, прежний ключ, прежний оригинал) для отката
+        self._widened: list[tuple[str, str, str, str, str]] = []
 
     def _touch_locked(self, thread: _MemoryThread) -> None:
         """Отмечает обращение к треду; под self._lock."""
@@ -795,6 +835,32 @@ class MemoryReplacementStore:
             if self._journal is not None:
                 self._journal.append((thread_id, token))
 
+    def widen(self, thread_id: str, token: str, pii_type: str, key: str, original: str) -> None:
+        """Заменяет ключ и оригинал токена; в пачке запоминает прежние для отката.
+
+        Raises:
+            ReplacementConflictError: Ключ типа уже занят другим токеном.
+            KeyError: Токена типа в треде нет.
+        """
+        with self._lock:
+            thread = self._threads.get(thread_id)
+            pairs = thread.keys.get(pii_type, []) if thread else []
+            index = next((i for i, (_, t) in enumerate(pairs) if t == token), None)
+            if thread is None or index is None:
+                raise KeyError(token)
+            old_key = pairs[index][0]
+            if key != old_key and (pii_type, key) in thread.by_key:
+                raise ReplacementConflictError("ключ уже занят другим токеном")
+            if self._journal is not None:
+                self._widened.append(
+                    (thread_id, pii_type, token, old_key, thread.originals[token])
+                )
+            del thread.by_key[(pii_type, old_key)]
+            thread.by_key[(pii_type, key)] = token
+            pairs[index] = (key, token)
+            thread.originals[token] = original
+            self._touch_locked(thread)
+
     def get_original(self, thread_id: str, token: str) -> str | None:
         with self._lock:
             thread = self._threads.get(thread_id)
@@ -821,6 +887,7 @@ class MemoryReplacementStore:
         """
         with self._lock:
             self._journal = []
+            self._widened = []
         try:
             yield
         except BaseException:
@@ -829,9 +896,21 @@ class MemoryReplacementStore:
             raise
         with self._lock:
             self._journal = None
+            self._widened = []
 
     def _rollback_locked(self) -> None:
         """Убирает записи, добавленные в пачке (с конца); под self._lock."""
+        for thread_id, pii_type, token, old_key, old_original in reversed(self._widened):
+            thread = self._threads.get(thread_id)
+            pairs = thread.keys.get(pii_type, []) if thread else []
+            index = next((i for i, (_, t) in enumerate(pairs) if t == token), None)
+            if thread is None or index is None:
+                continue
+            del thread.by_key[(pii_type, pairs[index][0])]
+            thread.by_key[(pii_type, old_key)] = token
+            pairs[index] = (old_key, token)
+            thread.originals[token] = old_original
+        self._widened = []
         for thread_id, token in reversed(self._journal or []):
             thread = self._threads.get(thread_id)
             if thread is None or token not in thread.originals:
