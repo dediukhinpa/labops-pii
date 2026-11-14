@@ -2417,8 +2417,13 @@
     "text": "[PERSON_70]. [PERSON_28] пришёл"
    },
    {
-    "entities": [],
-    "text": "John Smith"
+    "entities": [
+     {
+      "token": "[PERSON_72]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "[PERSON_72]"
    },
    {
     "entities": [
@@ -4847,8 +4852,13 @@
    "text": "[PERSON_1]. [PERSON_2] пришёл"
   },
   {
-   "entities": [],
-   "text": "John Smith"
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1]"
   },
   {
    "entities": [
@@ -6667,8 +6677,10 @@
    ]
   },
   {
-   "has_pii": false,
-   "types": []
+   "has_pii": true,
+   "types": [
+    "PERSON"
+   ]
   },
   {
    "has_pii": true,
@@ -10143,8 +10155,13 @@
    "text": "[PERSON_1]. [PERSON_2] пришёл"
   },
   {
-   "entities": [],
-   "text": "John Smith"
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "[PERSON_1]"
   },
   {
    "entities": [
