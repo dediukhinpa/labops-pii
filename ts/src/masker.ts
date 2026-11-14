@@ -8,9 +8,13 @@ import {
   STATUS_PII_FOUND,
   SERVICE_CONCURRENCY,
   SYSTEM_INSERT_TEXT,
+  PII_HIDDEN_TEXT,
+  REMASK_MAX_PASSES,
+  UNSUPPORTED_ROUTE_CODES,
 } from './constants';
 import { PseudonymizerError, RequestRejectedError } from './errors';
 import { isObject, setLeaf, type JsonObject } from './json-leaves';
+import { nullLogger, type Logger } from './log';
 import { BoundedCache, BootTracker, maskCacheKey, textKey } from './mask-cache';
 import type { MediaProcessor } from './media';
 import type { Pseudonymizer } from './pseudonymizer-client';
@@ -33,6 +37,14 @@ export interface MaskerOptions {
   readonly threadIdleResetMs?: number | undefined;
   /** Часы в миллисекундах (для тестов). */
   readonly now?: (() => number) | undefined;
+  /**
+   * Что делать, если после маски /check нашёл в листе ПДн: `remask` (по умолчанию) -
+   * дозамаскировать, а если не вышло, скрыть лист заглушкой; запрос не отклоняется.
+   * `reject` - прежнее поведение до 1.1.0 (отказ 422 `pii_after_mask`), на случай отката.
+   */
+  readonly onResidualPii?: 'remask' | 'reject' | undefined;
+  /** Журнал событий дозамаскирования и скрытия листьев (только счётчики и виды, без текстов). */
+  readonly logger?: Logger | undefined;
 }
 
 /** Поколение кэша треда: новое поколение делает старые записи недостижимыми. */
@@ -60,6 +72,16 @@ export interface MaskStats {
   readonly bootId: string;
   /** Листьев памяти, забытых из-за находки /check и замаскированных сервисом заново. */
   readonly forgottenLeaves: number;
+  /** Листьев, в которых /check нашёл остаток ПДн и второй проход его закрыл. */
+  readonly remaskedLeaves: number;
+  /** Листьев, скрытых заглушкой: остаток ПДн не ушёл и после второго прохода. */
+  readonly hiddenLeaves: number;
+}
+
+/** Итог дозамаскирования одного текста: новый текст и признак «скрыт заглушкой». */
+interface Fixed {
+  readonly text: string;
+  readonly hidden: boolean;
 }
 
 /** Лист, взятый из памяти восстановлений: ключ записи и отданный текст. */
@@ -86,6 +108,8 @@ export class RequestMasker {
   private nextEpoch = 0;
   private readonly idleResetMs: number;
   private readonly now: () => number;
+  private readonly rejectOnResidual: boolean;
+  private readonly logger: Logger;
 
   constructor(
     private readonly service: Pseudonymizer,
@@ -96,6 +120,10 @@ export class RequestMasker {
   ) {
     this.idleResetMs = options.threadIdleResetMs ?? THREAD_IDLE_RESET_MS;
     this.now = options.now ?? (() => Date.now());
+    this.rejectOnResidual = options.onResidualPii === 'reject';
+    this.logger = options.logger ?? nullLogger;
+    // Заглушка чиста по построению: второй линии её проверять незачем
+    this.cleanCache.set(textKey(PII_HIDDEN_TEXT), '1');
     // Таблица замен сервиса потеряна: память восстановлений теряет смысл так же, как кэш.
     this.boot = new BootTracker(service, () => {
       this.maskCache.clear();
@@ -161,8 +189,9 @@ export class RequestMasker {
 
   /**
    * Замаскировать тело на месте: листья, вложения, вставка в system.
-   * @throws PseudonymizerError / MediaMaskerError при сбое сервисов,
-   *   RequestRejectedError при ПДн после маски.
+   * @throws PseudonymizerError / MediaMaskerError при сбое сервисов; RequestRejectedError при
+   *   ПДн после маски только с `onResidualPii: 'reject'` (по умолчанию остаток дозамаскируется
+   *   или лист скрывается заглушкой, запрос не отклоняется).
    */
   async mask(body: JsonObject, threadId: string): Promise<MaskStats> {
     const scope = this.threadScope(threadId);
@@ -179,7 +208,7 @@ export class RequestMasker {
       // Свой текст модели идёт мимо сервиса, и /check может найти в нём «ФИО», которое
       // модель написала сама (название проекта и т.п.). Без отката такой лист даёт 422 на
       // каждом следующем запросе сессии: история та же. Поэтому лист забываем и маскируем
-      // сервисом; если и после этого /check находит ПДн - отказ, как для любого листа.
+      // сервисом; если и после этого /check находит ПДн - дальше как с любым листом (см. ниже).
       const stale = pass.remembered.filter((r) => found.dirty.has(r.text));
       if (stale.length > 0) {
         stale.forEach((r) => this.rememberCache.delete(r.key));
@@ -187,9 +216,33 @@ export class RequestMasker {
         if ((await this.boot.current(true)) !== bootId) continue;
         found = await this.findPii(pass.maskedTexts);
       }
-      rejectIfFound(found.types);
+      let remasked = 0;
+      let hidden = 0;
+      if (found.dirty.size > 0) {
+        if (this.rejectOnResidual) rejectIfFound(found.types);
+        // Остаток ПДн не повод отказывать запросу: лист дозамаскируется вторым проходом, а если
+        // остаток не ушёл - заменится заглушкой. Итог запоминается в кэше маски под исходным
+        // листом: старый лист истории приходит в каждом следующем запросе, и без этого второй
+        // проход (и /check) повторялся бы на каждом из них.
+        const fixed = await this.fixDirty(threadId, found.dirty);
+        if ((await this.boot.current(true)) !== bootId) continue;
+        walker.leaves.forEach((leaf, i) => {
+          const fix = fixed.get(pass.maskedTexts[i] as string);
+          if (fix === undefined) return;
+          setLeaf(leaf, fix.text);
+          this.maskCache.set(pass.keys[i] as string, fix.text);
+          if (fix.hidden) hidden++;
+          else remasked++;
+        });
+        this.logger.log('pii_after_mask_fixed', {
+          remasked_leaves: remasked,
+          hidden_leaves: hidden,
+          pii_types: [...found.types].sort(),
+        });
+      }
       insertSystemNote(body);
-      return { ...pass.stats, forgottenLeaves: stale.length };
+      return { ...pass.stats, forgottenLeaves: stale.length, remaskedLeaves: remasked,
+        hiddenLeaves: hidden };
     }
     throw new PseudonymizerError('boot_changed');
   }
@@ -201,8 +254,9 @@ export class RequestMasker {
     scope: string,
     bootId: string,
   ): Promise<{
-    stats: Omit<MaskStats, 'forgottenLeaves'>;
+    stats: Omit<MaskStats, 'forgottenLeaves' | 'remaskedLeaves' | 'hiddenLeaves'>;
     maskedTexts: string[];
+    keys: string[];
     remembered: RememberedLeaf[];
   }> {
     const keys = walker.leaves.map(
@@ -255,6 +309,7 @@ export class RequestMasker {
         blockedReasons: walker.blockedReasons,
       },
       maskedTexts,
+      keys,
       remembered: rememberedList,
     };
   }
@@ -264,23 +319,85 @@ export class RequestMasker {
     threadId: string,
     missing: readonly { key: string; text: string }[],
   ): Promise<Map<string, string>> {
+    const joined = await this.applyByPieces(
+      missing.map((m) => m.text),
+      (chunk) => this.service.pseudonymizeBatch(threadId, chunk),
+    );
+    return new Map(missing.map((m, i) => [m.key, joined[i] as string]));
+  }
+
+  /**
+   * Прогоняет тексты через пакетный вызов сервиса: длинные режутся на части, части идут
+   * пачками по пределам сервиса, результат склеивается обратно по текстам (порядок сохранён).
+   */
+  private async applyByPieces(
+    texts: readonly string[],
+    call: (chunk: readonly string[]) => Promise<string[]>,
+  ): Promise<string[]> {
     const pieces: string[] = [];
     const owners: number[] = [];
-    missing.forEach((m, i) => {
-      for (const piece of splitText(m.text)) {
+    texts.forEach((text, i) => {
+      for (const piece of splitText(text)) {
         pieces.push(piece);
         owners.push(i);
       }
     });
     const maskedPieces: string[] = [];
     for (const chunk of chunkBatches(pieces)) {
-      maskedPieces.push(...(await this.service.pseudonymizeBatch(threadId, chunk)));
+      maskedPieces.push(...(await call(chunk)));
     }
-    const joined = missing.map(() => '');
+    const joined = texts.map(() => '');
     maskedPieces.forEach((piece, i) => {
       joined[owners[i] as number] += piece;
     });
-    return new Map(missing.map((m, i) => [m.key, joined[i] as string]));
+    return joined;
+  }
+
+  /**
+   * Закрывает остаток ПДн в замаскированных листьях: второй проход сервиса (/remask_batch) и
+   * повторный /check; кто остался грязным после REMASK_MAX_PASSES проходов (или сервис не умеет
+   * дозамаскировывать, старая версия) - заменяется заглушкой. Сбой сервиса (сеть, таймаут,
+   * 5xx) пробрасывается: fail closed, как у любого вызова сервиса.
+   */
+  private async fixDirty(
+    threadId: string,
+    dirty: ReadonlySet<string>,
+  ): Promise<Map<string, Fixed>> {
+    const fixed = new Map<string, Fixed>();
+    // исходный замаскированный текст -> его текущая версия после проходов
+    let pending = new Map<string, string>([...dirty].map((t) => [t, t]));
+    for (let pass = 0; pass < REMASK_MAX_PASSES && pending.size > 0; pass++) {
+      const originals = [...pending.keys()];
+      const next = await this.remaskTexts(threadId, originals.map((o) => pending.get(o) as string));
+      if (next === undefined) break;
+      const check = await this.findPii(next);
+      const still = new Map<string, string>();
+      originals.forEach((orig, i) => {
+        const text = next[i] as string;
+        if (check.dirty.has(text)) still.set(orig, text);
+        else fixed.set(orig, { text, hidden: false });
+      });
+      pending = still;
+    }
+    for (const orig of pending.keys()) fixed.set(orig, { text: PII_HIDDEN_TEXT, hidden: true });
+    return fixed;
+  }
+
+  /** Второй проход сервиса; undefined, если у сервиса нет такого маршрута (старая версия). */
+  private async remaskTexts(
+    threadId: string,
+    texts: readonly string[],
+  ): Promise<string[] | undefined> {
+    const remask = this.service.remaskBatch?.bind(this.service);
+    if (remask === undefined) return undefined;
+    try {
+      return await this.applyByPieces(texts, (chunk) => remask(threadId, chunk));
+    } catch (e) {
+      if (e instanceof PseudonymizerError && UNSUPPORTED_ROUTE_CODES.includes(e.code)) {
+        return undefined;
+      }
+      throw e;
+    }
   }
 
   /** Вторая линия: /check каждого замаскированного листа без thread_id. */

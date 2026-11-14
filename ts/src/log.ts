@@ -12,6 +12,10 @@ export interface LogFields {
   readonly cache_hits?: number;
   readonly remembered_leaves?: number;
   readonly forgotten_leaves?: number;
+  /** Листьев, дозамаскированных вторым проходом после находки /check. */
+  readonly remasked_leaves?: number;
+  /** Листьев, скрытых заглушкой: ПДн остались и после второго прохода. */
+  readonly hidden_leaves?: number;
   readonly masked_attachments?: number;
   /** Скрытые пометкой вложения: причина (закрытый список) -> число. Без значений ПДн. */
   readonly blocked_attachments?: Readonly<Record<string, number>>;

@@ -16,6 +16,15 @@
 
 Из этого проекты собирают свои прокси и шлюзы модели.
 
+## Остаток ПДн после маски (с 1.1.0)
+
+`RequestMasker.mask` при находке `/check` в замаскированном листе вызывает
+`Pseudonymizer.remaskBatch` (`POST /remask_batch`), проверяет результат снова и после
+`REMASK_MAX_PASSES` проходов заменяет лист на `PII_HIDDEN_TEXT`; запрос не отклоняется.
+`MaskStats.remaskedLeaves` / `hiddenLeaves` и событие журнала `pii_after_mask_fixed` дают
+счётчики без текстов. Подмена `Pseudonymizer` без `remaskBatch` (и старый сервис с 404) даёт
+заглушку. `onResidualPii: 'reject'` возвращает отказ `422 pii_after_mask` (откат).
+
 ## Детектор ФИО и адресов (`src/detector/`)
 
 ```ts

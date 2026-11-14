@@ -7,13 +7,19 @@ import logging
 import re
 import threading
 from collections.abc import Callable, Iterator, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 from labops_pii.config import DEFAULT_MAX_RESTORE_TOKENS
 from labops_pii.detector import Detection, PiiDetector, PiiType, follows_preposition
 from labops_pii.inflect import address_street_word_nominative
 from labops_pii.jsonlog import log_info_formatted, thread_hash
-from labops_pii.morph import inflect_person, keys_compatible, person_case, split_key
+from labops_pii.morph import (
+    inflect_person,
+    keys_compatible,
+    person_case,
+    person_key,
+    split_key,
+)
 from labops_pii.store import ReplacementStore
 
 logger = logging.getLogger(__name__)
@@ -43,6 +49,9 @@ EXACT_SEP = "\x00"
 AMBIGUITY_THRESHOLD = 2
 # До скольких полных слов в ключе ФИО кандидаты ищутся перебором подмножеств (до 31 набора).
 SUBSET_SEARCH_MAX_WORDS = 5
+# Сколько раз `remask` повторяет проход по тексту, пока детектор находит новое (каждая замена
+# меняет контекст NER для следующей находки).
+REMASK_INNER_PASSES = 4
 
 
 @dataclass(frozen=True, slots=True)
@@ -271,6 +280,103 @@ class Pseudonymizer:
             Для каждого текста пара (текст с токенами, его уникальные сущности).
         """
         return [self.pseudonymize(thread_id, text, case_labels) for text in texts]
+
+    def remask(
+        self, thread_id: str, text: str, case_labels: bool = False
+    ) -> tuple[str, list[EntityRef]]:
+        """Дозамаскировывает уже замаскированный текст: закрывает остаток ПДн после /check.
+
+        Второй проход после `pseudonymize` в том же треде: детектор идёт по тексту с токенами
+        (контекст NER у такого текста другой, и он находит то, что первый проход пропустил),
+        найденное получает токены с той же нумерацией и из той же таблицы. Токены и падежные
+        метки, уже стоящие в тексте, не экранируются и не трогаются (в отличие от
+        `pseudonymize`, где метка во входе всегда буквальна), чтобы повторная маска была
+        идемпотентной. Если находка захватила токен («[PERSON_1] Иван»), в таблицу пишется
+        восстановленный оригинал, а не текст с токеном: иначе /restore вернул бы метку в
+        аргументы инструмента.
+
+        На длинном тексте каждая замена меняет контекст NER, и следом открывается новая находка
+        (замер на карточках: остаток уходил за 2-4 прохода), поэтому проход повторяется до
+        тишины, но не больше REMASK_INNER_PASSES раз.
+
+        Args:
+            thread_id: Идентификатор треда.
+            text: Уже замаскированный текст.
+            case_labels: Падежные метки у новых токенов ФИО (как в `pseudonymize`).
+
+        Returns:
+            Пара (текст с новыми токенами, уникальные сущности второго прохода).
+        """
+        entities: list[EntityRef] = []
+        seen: set[str] = set()
+        for _ in range(REMASK_INNER_PASSES):
+            text, found = self._remask_once(thread_id, text, case_labels)
+            for entity in found:
+                if entity.token not in seen:
+                    seen.add(entity.token)
+                    entities.append(entity)
+            if not found:
+                break
+        return text, entities
+
+    def _remask_once(
+        self, thread_id: str, text: str, case_labels: bool
+    ) -> tuple[str, list[EntityRef]]:
+        """Один проход `remask`: все находки детектора по тексту заменяются токенами."""
+        with self._lock:
+            self._store.touch(thread_id)
+            known = self._known_lemmas(thread_id)
+        detections = self._detector.detect(text, known)
+        parts: list[str] = []
+        entities: list[EntityRef] = []
+        seen: set[str] = set()
+        cursor = 0
+        with self._lock, self._store.batch():
+            persons = _LazyPersonIndex(
+                lambda: self._store.list_keys(thread_id, PiiType.PERSON.value)
+            )
+            for found in detections:
+                det, original = self._expand_tokens(thread_id, found, text[found.start:found.end])
+                token = self._token_for(thread_id, det, original, persons)
+                parts.append(text[cursor:det.start])
+                parts.append(self._labelled(token, det, original, case_labels))
+                cursor = det.end
+                if token not in seen:
+                    seen.add(token)
+                    entities.append(EntityRef(det.pii_type.value, token))
+        parts.append(text[cursor:])
+        log_info_formatted(
+            logger, "remask: thread=%s найдено=%d", thread_hash(thread_id), len(detections)
+        )
+        return "".join(parts), entities
+
+    def _expand_tokens(
+        self, thread_id: str, det: Detection, fragment: str
+    ) -> tuple[Detection, str]:
+        """Подставляет оригиналы вместо токенов внутри находки второго прохода.
+
+        Находка без токенов возвращается как есть. Ключ ФИО пересчитывается по восстановленному
+        тексту: иначе токен «Иван Петров» не сопоставился бы с тем же человеком в треде.
+        """
+        simple = {f"[{m.group(1)}_{m.group(2)}]" for m in LABEL_RE.finditer(fragment)}
+        if not simple:
+            return det, fragment
+        originals = self._store.get_originals(thread_id, simple)
+
+        def substitute(match: re.Match[str]) -> str:
+            """Токен треда -> оригинал; чужая метка остаётся как есть."""
+            return originals.get(f"[{match.group(1)}_{match.group(2)}]", match.group(0))
+
+        original = LABEL_RE.sub(substitute, fragment)
+        if det.pii_type is PiiType.PERSON and not det.exact:
+            det = replace(det, key=person_key(original))
+        return det, original
+
+    def remask_batch(
+        self, thread_id: str, texts: Sequence[str], case_labels: bool = False
+    ) -> list[tuple[str, list[EntityRef]]]:
+        """Дозамаскировывает список текстов одного треда: ровно как вызовы `remask` подряд."""
+        return [self.remask(thread_id, text, case_labels) for text in texts]
 
     def _foreign_literals(self, thread_id: str, text: str) -> set[str]:
         """Буквальные метки входа, которых сервис в этом треде не выдавал.

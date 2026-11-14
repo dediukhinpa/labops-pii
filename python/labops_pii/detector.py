@@ -27,6 +27,12 @@ from labops_pii.morph import (
     request_cache,
     with_preposition_gender,
 )
+from labops_pii.name_hints import (
+    NOT_A_NAME_WORDS,
+    find_json_field_names,
+    find_latin_name_spans,
+    find_table_cell_names,
+)
 from labops_pii.pii_patterns import (
     ACCOUNT_RE,
     BARE_PHONE_RE,
@@ -55,6 +61,9 @@ HEAD_WINDOW = 64  # окно слева от ФИО для поиска иниц
 # перед ним должность («директор Дудорова Марина Евгеньевна» - «Дудорова» читается как
 # родительный падеж «директора Дудорова»), и фамилия уходила наружу открытым текстом.
 SURNAME_BEFORE_RE = re.compile(r"([А-ЯЁ][а-яё]+(?:-[А-ЯЁ][а-яё]+)?)[ \t]+$")
+# Самое короткое слово в смешанной по регистру группе ФИО: короче («Ян», «Ли») слишком часто
+# совпадает с обычными словами
+MIN_MIXED_NAME_LEN = 4
 KEYWORD_WINDOW = 16  # сколько символов слева от числа смотрим на ключевое слово
 PHONE_DIGITS_WITH_PREFIX = 11
 DIGITS_RE = re.compile(r"\D")
@@ -347,11 +356,17 @@ class PiiDetector:
         # раньше пересчитывали её каждый сам (~130 мс на тексте в 70 тыс. символов).
         tech = find_tech_spans(text)
         found += self._detect_persons(text, tech)
-        found += self._detect_latin_names(text)
+        found += self._detect_latin_names(text, tech)
+        found += self._detect_field_names(text)
+        found += self._detect_mixed_case_persons(text, tech)
         found += self._detect_case_shifted_persons(text, tech)
         found += self._detect_initialed_surnames(text, tech)
         found += self._detect_known_names(text, known_lemmas, tech)
         found += self._detect_tech_names(text, tech, known_lemmas)
+        # Слова ФИО, найденные в этом же тексте, ловятся и в других местах: подвал карточки
+        # «Фамилия Имя • Резюме обновлено» после поля "name" иначе оставался открытым (NER не
+        # видит фамилию без контекста, а леммы треда пополняются только после ответа)
+        found += self._detect_repeated_names(text, found, known_lemmas, tech)
         if self._mask_legal:
             found += self._detect_orgs(text)
         # Слова белого списка (PII_ALLOWED_WORDS) не ПДн: ни ФИО, ни организация
@@ -409,12 +424,13 @@ class PiiDetector:
             result.append(Detection(m.start(1), m.end(1), PiiType.PHONE, number, PRIO_PHONE))
         return result
 
-    def _detect_latin_names(self, text: str) -> list[Detection]:
-        """Латинские ФИО после метки контакта («Contact: Li Wei») и их повторы в тексте.
+    def _detect_latin_names(self, text: str, tech: list[tuple[int, int]]) -> list[Detection]:
+        """Латинские ФИО: после метки контакта («Contact: Li Wei») и по словарю имён.
 
-        Найденное после метки имя ищется по всему тексту: целиком (в той же записи слов) и
-        каждое слово отдельно (фамилия «Smith»), с точным совпадением регистра и границами
-        слова. Без метки и без находки рядом одиночное латинское слово не маскируется.
+        Найденное после метки или по словарю имя ищется по всему тексту: целиком (в той же
+        записи слов) и каждое слово отдельно (фамилия «Smith»), с точным совпадением регистра
+        и границами слова. Без метки и без пары «имя из словаря + слово» одиночное латинское
+        слово не маскируется (правила словаря - в `name_hints.find_latin_name_spans`).
         """
         result: list[Detection] = []
         names: list[list[str]] = []
@@ -423,7 +439,8 @@ class PiiDetector:
             end = start
             words: list[str] = []
             for word in LATIN_NAME_WORD_RE.finditer(m.group("name")):
-                if word.group().lower() in LATIN_NOT_NAME_WORDS:
+                low = word.group().lower()
+                if low in LATIN_NOT_NAME_WORDS or low in NOT_A_NAME_WORDS:
                     break
                 end = start + word.end()
                 words.append(word.group())
@@ -432,9 +449,30 @@ class PiiDetector:
                     start, end, PiiType.PERSON, person_key(text[start:end]), PRIO_PERSON
                 ))
                 names.append(words)
+        for start, end in find_latin_name_spans(text):
+            if _overlaps(tech, start, end):
+                continue  # имя внутри пути или адреса
+            result.append(Detection(
+                start, end, PiiType.PERSON, person_key(text[start:end]), PRIO_PERSON
+            ))
+            names.append(text[start:end].split())
         if names:
             result += self._latin_name_repeats(text, names)
         return result
+
+    def _detect_field_names(self, text: str) -> list[Detection]:
+        """Значения полей `"full_name": "..."` и ячейки таблиц `| Иванов Иван |` как ФИО.
+
+        NER в JSON и в строках таблиц теряет имя без контекста (в карточках закрывалась лишь
+        пятая часть имён, в ячейках - треть): здесь контекстом служит ключ поля или сама
+        ячейка. Правила - в `name_hints.find_json_field_names` и `find_table_cell_names`.
+        """
+        spans = [(f.start, f.end) for f in find_json_field_names(text)]
+        spans += find_table_cell_names(text)
+        return [
+            Detection(start, end, PiiType.PERSON, person_key(text[start:end]), PRIO_PERSON)
+            for start, end in spans
+        ]
 
     @staticmethod
     def _latin_name_repeats(text: str, names: list[list[str]]) -> list[Detection]:
@@ -548,10 +586,76 @@ class PiiDetector:
             word = m.group()
             if _glued_to_word(text, m.start(), m.end()) or _overlaps(tech, m.start(), m.end()):
                 continue
-            if len(word) > 1 and word[0].isupper() and lemma(word) in known_lemmas:
+            if len(word) > 1 and lemma(word) in known_lemmas and _known_name_shape(word):
                 result.append(
                     Detection(m.start(), m.end(), PiiType.PERSON, person_key(word), PRIO_PERSON)
                 )
+        return result
+
+    def _detect_repeated_names(
+        self,
+        text: str,
+        found: list[Detection],
+        known_lemmas: Collection[str],
+        tech: list[tuple[int, int]],
+    ) -> list[Detection]:
+        """Повторы слов ФИО, уже найденных в этом тексте (по лемме, как слова известные в треде)."""
+        lemmas = {
+            lemma(word)
+            for det in found
+            if det.pii_type is PiiType.PERSON and not det.exact
+            for word in WORD_RE.findall(text[det.start:det.end])
+            if _name_like_word(word)
+        } - set(known_lemmas)
+        return self._detect_known_names(text, lemmas, tech) if lemmas else []
+
+    def _detect_mixed_case_persons(
+        self, text: str, tech: list[tuple[int, int]]
+    ) -> list[Detection]:
+        """ФИО, где часть слов с заглавной, а часть строчными («петров Пётр», «Иван иванов»).
+
+        Группа подряд идущих (через пробелы) кириллических слов, у каждого из которых главный
+        разбор pymorphy - одушевлённая фамилия/имя/отчество, и где есть и заглавное, и
+        строчное слово. Полнота та же, что у ФИО одного регистра: «фамилия + имя/отчество»
+        или «имя + отчество». Группы одного регистра ловит `_detect_case_shifted_persons`
+        (все строчные) и NER (все с заглавной), здесь только смесь.
+        """
+        result: list[Detection] = []
+        group: list[tuple[int, int, str]] = []  # (начало, конец, грамема)
+
+        def flush() -> None:
+            """Группа со смесью регистров и полным набором частей ФИО становится находкой."""
+            if len(group) > 1:
+                words = [text[a:b] for a, b, _ in group]
+                grams = {g for _, _, g in group}
+                mixed = any(w[0].isupper() for w in words) and any(w[0].islower() for w in words)
+                full = ("Surn" in grams and grams & {"Name", "Patr"}) or (
+                    "Name" in grams and "Patr" in grams
+                )
+                if mixed and full and all(w.isalpha() or "-" in w for w in words):
+                    start, end = group[0][0], group[-1][1]
+                    result.append(
+                        Detection(start, end, PiiType.PERSON, person_key(text[start:end]),
+                                  PRIO_PERSON)
+                    )
+            group.clear()
+
+        for m in CYRILLIC_WORD_RE.finditer(text):
+            word = m.group()
+            grams = name_gramme(word) if len(word) >= MIN_MIXED_NAME_LEN else None
+            extends = bool(group) and CAPS_GAP_RE.fullmatch(text[group[-1][1]:m.start()])
+            if not extends:
+                flush()
+            if (
+                grams is None
+                or _case_kind(word) == "upper"
+                or _glued_to_word(text, m.start(), m.end())
+                or _overlaps(tech, m.start(), m.end())
+            ):
+                flush()
+                continue
+            group.append((m.start(), m.end(), grams))
+        flush()
         return result
 
     def _detect_tech_names(
@@ -719,6 +823,38 @@ class PiiDetector:
             # «Подписант» за имя, и вторая проверка отклоняла сообщение (28.10.2026).
             return None
         return Detection(start, end, PiiType.PERSON, person_key(chunk), PRIO_PERSON)
+
+
+def _name_like_word(word: str) -> bool:
+    """Слово из находки ФИО, чьи повторы в тексте тоже ФИО: с заглавной, не капсом, имя/фамилия.
+
+    «ИП», «ИНН», должности и слова-шум, захваченные в находку вместе с ФИО, сюда не попадают:
+    иначе их повторы по тексту стали бы «ФИО». Слово с дефисом («Петрова-Водкина») годится,
+    если так же устроена каждая часть: «Fullstack-разработчик» и «инженер-программист»
+    не словарные, и без этой проверки профессия, принятая NER за ФИО, закрывалась бы везде.
+    """
+    return (
+        len(word) >= MIN_MIXED_NAME_LEN - 1
+        and word[0].isupper()
+        and not word.isupper()
+        and all(
+            CYRILLIC_WORD_RE.fullmatch(part)
+            and (name_gramme(part) is not None or is_surname_candidate(part))
+            for part in word.split("-")
+        )
+    )
+
+
+def _known_name_shape(word: str) -> bool:
+    """Годится ли слово, чья лемма уже известна в треде, для маски по лемме.
+
+    С заглавной буквы - любое слово. Строчное («найди сидоров») - только если главный разбор
+    pymorphy одушевлённая фамилия/имя/отчество: «надежда», «вера», «любовь», как и любое
+    словарное слово, остаются текстом, даже когда в треде есть человек с таким именем.
+    """
+    if word[0].isupper():
+        return True
+    return word.isalpha() and word.isascii() is False and is_person_word(word)
 
 
 def _with_surname_before(text: str, start: int, end: int) -> int:

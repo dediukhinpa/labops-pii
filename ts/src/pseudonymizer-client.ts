@@ -18,6 +18,12 @@ export interface Pseudonymizer {
   pseudonymizeBatch(threadId: string, texts: readonly string[]): Promise<string[]>;
   restore(threadId: string, text: string): Promise<string>;
   check(text: string, threadId?: string): Promise<CheckResult>;
+  /**
+   * Второй проход по уже замаскированным текстам (маршрут /remask_batch, с 1.1.0): новые токены
+   * той же нумерации и из той же таблицы треда. Необязателен: сервис или подмена без него
+   * дают скрытие листа целиком (см. RequestMasker).
+   */
+  remaskBatch?(threadId: string, texts: readonly string[]): Promise<string[]>;
   deleteThread(threadId: string): Promise<void>;
 }
 
@@ -46,6 +52,15 @@ export class HttpPseudonymizer implements Pseudonymizer {
       : { thread_id: threadId, texts };
     const data = await this.call('POST', '/pseudonymize_batch', body);
     const items = parseWith(batchSchema, data).items;
+    if (items.length !== texts.length) throw new PseudonymizerError('batch_size_mismatch');
+    return items.map((i) => i.text);
+  }
+
+  async remaskBatch(threadId: string, texts: readonly string[]): Promise<string[]> {
+    const body = this.options.caseLabels === true
+      ? { thread_id: threadId, texts, case_labels: true }
+      : { thread_id: threadId, texts };
+    const items = parseWith(batchSchema, await this.call('POST', '/remask_batch', body)).items;
     if (items.length !== texts.length) throw new PseudonymizerError('batch_size_mismatch');
     return items.map((i) => i.text);
   }
