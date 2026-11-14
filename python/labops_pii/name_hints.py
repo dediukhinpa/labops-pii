@@ -15,7 +15,7 @@ import re
 from collections.abc import Iterator
 from dataclasses import dataclass
 
-from labops_pii.morph import name_gramme
+from labops_pii.morph import is_surname_candidate, name_gramme
 
 # Сколько вариантов написания набирается на одно русское имя (транслит неоднозначен).
 MAX_TRANSLIT_VARIANTS = 48
@@ -417,3 +417,48 @@ def find_json_field_names(text: str) -> list[FieldName]:
             start = match.start("value")
             found.append(FieldName(start, match.end("value")))
     return found
+
+
+# --- ячейки таблиц `| Фамилия Имя Отчество | ... |` -----------------------------------------
+
+# Natasha в строке таблицы теряет имя без контекста: на реальных данных ФИО в ячейке между
+# «|» закрывалось у трети (34 из 100), тогда как то же имя отдельной строкой - у 84 из 100.
+# Здесь контекстом служит сама ячейка: 2-3 слова с заглавной, и все они - слова ФИО.
+_TABLE_WORD = r"[А-ЯЁ][а-яё]+(?:-[А-ЯЁ][а-яё]+)?"
+_TABLE_CELL_RE = re.compile(
+    rf"(?:^|\|)[ \t]*(?P<cell>{_TABLE_WORD}(?:[ \t]+{_TABLE_WORD}){{1,2}})[ \t]*(?=\|)",
+    re.MULTILINE,
+)
+_TABLE_EVIDENCE = frozenset({"Name", "Patr"})
+# Фамилии, которых нет в словаре pymorphy, узнаём по окончанию
+_SURNAME_ENDINGS = (
+    "ов", "ова", "ев", "ева", "ёв", "ёва", "ин", "ина", "ын", "ына", "ский", "ская", "цкий",
+    "цкая", "ой", "ых", "их", "ко", "ук", "юк", "ян", "дзе", "швили", "ич",
+)
+
+
+def _table_cell_is_name(cell: str) -> bool:
+    """Все слова ячейки - слова ФИО, и есть имя или отчество (не только «слово + слово»)."""
+    words = cell.split()
+    grams = [name_gramme(w.split("-")[0]) for w in words]
+    if any(w.lower() in NOT_A_NAME_WORDS for w in words):
+        return False
+    if not any(g in _TABLE_EVIDENCE for g in grams):
+        return False  # «Сергиев Посад»: без имени или отчества это не человек
+    has_patronymic = "Patr" in grams
+    return all(
+        gram is not None
+        or has_patronymic
+        or word.lower().endswith(_SURNAME_ENDINGS)
+        or is_surname_candidate(word)
+        for word, gram in zip(words, grams)
+    )
+
+
+def find_table_cell_names(text: str) -> list[tuple[int, int]]:
+    """Позиции ФИО в ячейках markdown-таблиц (ячейка целиком состоит из слов ФИО)."""
+    return [
+        m.span("cell")
+        for m in _TABLE_CELL_RE.finditer(text)
+        if _table_cell_is_name(m.group("cell"))
+    ]

@@ -31,6 +31,7 @@ from labops_pii.name_hints import (
     NOT_A_NAME_WORDS,
     find_json_field_names,
     find_latin_name_spans,
+    find_table_cell_names,
 )
 from labops_pii.pii_patterns import (
     ACCOUNT_RE,
@@ -460,15 +461,17 @@ class PiiDetector:
         return result
 
     def _detect_field_names(self, text: str) -> list[Detection]:
-        """Значения полей `"full_name": "..."`, `"name": "Иванов Иван"` и т.п. как ФИО.
+        """Значения полей `"full_name": "..."` и ячейки таблиц `| Иванов Иван |` как ФИО.
 
-        NER в JSON теряет имя без контекста (в карточках закрывалась лишь пятая часть имён):
-        здесь ключ поля сам является контекстом. Правила ключей и формы значения - в
-        `name_hints.find_json_field_names`.
+        NER в JSON и в строках таблиц теряет имя без контекста (в карточках закрывалась лишь
+        пятая часть имён, в ячейках - треть): здесь контекстом служит ключ поля или сама
+        ячейка. Правила - в `name_hints.find_json_field_names` и `find_table_cell_names`.
         """
+        spans = [(f.start, f.end) for f in find_json_field_names(text)]
+        spans += find_table_cell_names(text)
         return [
-            Detection(f.start, f.end, PiiType.PERSON, person_key(text[f.start:f.end]), PRIO_PERSON)
-            for f in find_json_field_names(text)
+            Detection(start, end, PiiType.PERSON, person_key(text[start:end]), PRIO_PERSON)
+            for start, end in spans
         ]
 
     @staticmethod
@@ -826,13 +829,19 @@ def _name_like_word(word: str) -> bool:
     """Слово из находки ФИО, чьи повторы в тексте тоже ФИО: с заглавной, не капсом, имя/фамилия.
 
     «ИП», «ИНН», должности и слова-шум, захваченные в находку вместе с ФИО, сюда не попадают:
-    иначе их повторы по тексту стали бы «ФИО».
+    иначе их повторы по тексту стали бы «ФИО». Слово с дефисом («Петрова-Водкина») годится,
+    если так же устроена каждая часть: «Fullstack-разработчик» и «инженер-программист»
+    не словарные, и без этой проверки профессия, принятая NER за ФИО, закрывалась бы везде.
     """
     return (
         len(word) >= MIN_MIXED_NAME_LEN - 1
         and word[0].isupper()
         and not word.isupper()
-        and (name_gramme(word) is not None or is_surname_candidate(word))
+        and all(
+            CYRILLIC_WORD_RE.fullmatch(part)
+            and (name_gramme(part) is not None or is_surname_candidate(part))
+            for part in word.split("-")
+        )
     )
 
 

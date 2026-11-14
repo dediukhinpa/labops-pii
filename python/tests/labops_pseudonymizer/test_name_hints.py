@@ -235,3 +235,63 @@ def test_detector_on_70k_hostile_text_is_fast(detector: PiiDetector) -> None:
 
 def test_found_helper_still_reports_types(detector: PiiDetector) -> None:
     assert ("PERSON", "Elena Sidorova") in found(detector, "Elena Sidorova, +7 902 123-45-67")
+
+
+# --- ячейки таблиц ----------------------------------------------------------------------
+
+@pytest.mark.parametrize(
+    ("text", "expected"),
+    [
+        ("| Кузнецов Андрей Петрович | Москва | Менеджер |", ["Кузнецов Андрей Петрович"]),
+        ("| Белова Мария | Омск | Аналитик |", ["Белова Мария"]),
+        ("| Андрей Кузнецов | Тверь | Инженер |", ["Андрей Кузнецов"]),
+        ("Белов Михаил Игоревич | Пермь | Директор", ["Белов Михаил Игоревич"]),
+        ("| 1 | Орлова Мария Сергеевна | Пермь |", ["Орлова Мария Сергеевна"]),
+    ],
+)
+def test_table_cell_names_found(detector: PiiDetector, text: str, expected: list[str]) -> None:
+    assert persons(detector, text) == expected
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "| Сергиев Посад | Нижний Новгород | Санкт Петербург |",
+        "| Дата рождения | Директор по продажам | Менеджер проекта |",
+        "| Проект Альфа | Отдел кадров | Москва |",
+        "| Руководитель Отдела | Старший Менеджер |",
+    ],
+)
+def test_table_cell_non_names_kept(detector: PiiDetector, text: str) -> None:
+    assert persons(detector, text) == []
+
+
+def test_table_cell_rule_needs_closing_pipe() -> None:
+    assert name_hints.find_table_cell_names("| Белова Мария") == []
+
+
+def test_table_cell_name_masked_and_clean_on_recheck(detector: PiiDetector) -> None:
+    service = Pseudonymizer(detector, MemoryReplacementStore())
+    row = "| Орлова Мария Сергеевна | Пермь | Аналитик |"
+    masked, _ = service.pseudonymize(THREAD, row, True)
+    assert "Орлова" not in masked and "Мария" not in masked and "Аналитик" in masked
+    assert not detector.detect(masked)
+
+
+def test_table_cell_search_is_linear() -> None:
+    row = "| " + " | ".join(["Иван Иванов"] * 2000) + " |\n"
+    started = time.perf_counter()
+    name_hints.find_table_cell_names(row * 20)
+    assert time.perf_counter() - started < 5
+
+
+# --- повторы слов ФИО по тексту ---------------------------------------------------------
+
+def test_repeat_skips_hyphenated_profession(detector: PiiDetector) -> None:
+    """Профессия через дефис, ошибочно принятая за ФИО, не закрывается по всему тексту."""
+    from labops_pii.detector import _name_like_word
+
+    assert not _name_like_word("Fullstack-разработчик")
+    assert not _name_like_word("Инженер-программист")
+    assert _name_like_word("Петрова-Водкина")
+    assert _name_like_word("Кузнецов")
