@@ -92,9 +92,11 @@ class PdfProcessor:
                 raise MediaRefusedError(413, "pdf_too_many_pages")
             pages: list[PageResult] = []
             total = MaskStats()
+            kinds: set[str] = set()
             for index in range(count):
                 result, stats = self._page(doc, index)
                 pages.append(result)
+                kinds |= set(stats.pii_kinds)
                 total = MaskStats(
                     total.words + stats.words,
                     total.masked_boxes + stats.masked_boxes,
@@ -102,6 +104,7 @@ class PdfProcessor:
                     total.low_conf_boxes + stats.low_conf_boxes,
                     total.codes + stats.codes,
                     total.unreadable_boxes + stats.unreadable_boxes,
+                    pii_kinds=tuple(sorted(kinds)),
                 )
             texts = sum(1 for p in pages if p.text is not None)
             kind = "text" if texts == count else "images" if texts == 0 else "mixed"

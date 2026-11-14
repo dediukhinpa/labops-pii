@@ -71,6 +71,8 @@ class MaskStats:
         faces: Размыто лиц.
         low_conf_boxes: Из закрашенных слов - по низкой уверенности OCR.
         original_kept: Картинка отдана без закраски (режим «оригинал, если чисто»).
+        pii_kinds: Типы ПДн, которые нашёл детектор за все проходы (без значений, по алфавиту).
+            Нужны прокси, чтобы предложить владельцу отправить оригинал.
     """
 
     words: int = 0
@@ -80,6 +82,7 @@ class MaskStats:
     codes: int = 0
     unreadable_boxes: int = 0
     original_kept: bool = False
+    pii_kinds: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True, slots=True)
@@ -154,6 +157,12 @@ def _is_low_conf(word: OcrWord) -> bool:
     return alnum >= LOW_CONF_MIN_ALNUM or any(ch.isdigit() for ch in word.text)
 
 
+def _kind_of(detection: object) -> str:
+    """Тип находки детектора строкой (PHONE, PERSON...); подставной детектор без типа - PII."""
+    kind = getattr(detection, "pii_type", None)
+    return str(kind) if kind is not None else "PII"
+
+
 @dataclass(frozen=True, slots=True)
 class _Scan:
     """Результат одного OCR-прохода.
@@ -165,6 +174,7 @@ class _Scan:
         pii_words: Сколько слов пересекают находки детектора ПДн (низкая уверенность сама по
             себе не считается: нечитаемый мусор - не доказательство ПДн).
         pii_rects: Прямоугольники только слов, пересекающих находки детектора.
+        pii_kinds: Типы находок детектора (без значений).
     """
 
     words: list[OcrWord]
@@ -172,6 +182,7 @@ class _Scan:
     low: int
     pii_words: int
     pii_rects: list[tuple[int, int, int, int]]
+    pii_kinds: frozenset[str] = frozenset()
 
 
 class ImageMasker:
@@ -245,9 +256,11 @@ class ImageMasker:
         if rotation:
             work = work.rotate(-rotation, expand=True)
         total_boxes = 0
+        kinds: set[str] = set()
         recognized = Recognized()
         for attempt in range(MAX_PASSES + 1):
             scan = self._scan(work)
+            kinds |= scan.pii_kinds
             if attempt == 0:
                 # Распознанное берётся до закраски: прокси сам заменит в тексте ПДн метками.
                 # Ничего нечитаемого не закрашивается, поэтому hidden_text всегда False.
@@ -256,7 +269,8 @@ class ImageMasker:
                 if rotation:
                     work = work.rotate(rotation, expand=True)
                 stats = MaskStats(
-                    len(scan.words), total_boxes, original_kept=total_boxes == 0
+                    len(scan.words), total_boxes, original_kept=total_boxes == 0,
+                    pii_kinds=tuple(sorted(kinds)),
                 )
                 return (image if total_boxes == 0 else work), stats, recognized
             if attempt == MAX_PASSES:
@@ -301,10 +315,12 @@ class ImageMasker:
             image = image.rotate(-rotation, expand=True)
         codes = self._hide_codes(image)
         total_boxes = total_low = unreadable = 0
+        kinds: set[str] = set()
         recognized = Recognized()
         # Проходов закраски MAX_PASSES плюс один проверочный (attempt == MAX_PASSES)
         for attempt in range(MAX_PASSES + 1):
             scan = self._scan(image)
+            kinds |= scan.pii_kinds
             words, rects, low = scan.words, scan.rects, scan.low
             if attempt == 0:
                 extra = self._unreadable_rects(image, words, codes)
@@ -328,7 +344,8 @@ class ImageMasker:
                 if rotation:
                     image = image.rotate(rotation, expand=True)
                 stats = MaskStats(
-                    len(words), total_boxes, len(boxes), total_low, len(codes), unreadable
+                    len(words), total_boxes, len(boxes), total_low, len(codes), unreadable,
+                    pii_kinds=tuple(sorted(kinds)),
                 )
                 return image, stats, recognized
             total_boxes += len(rects)
@@ -399,7 +416,7 @@ class ImageMasker:
             words = self._ocr.recognize(gray, scale)
         except OcrError as exc:
             raise MediaRefusedError(500, "ocr_failed") from exc
-        pii = self._pii_indices(words)
+        pii, pii_kinds = self._pii_indices(words)
         to_paint = set(pii)
         if self._paint_low_conf:
             to_paint |= {i for i, w in enumerate(words) if _is_low_conf(w)}
@@ -411,6 +428,7 @@ class ImageMasker:
             low,
             len(pii),
             self._merge_rects(words, pii, image.size),
+            pii_kinds,
         )
 
     @staticmethod
@@ -422,30 +440,38 @@ class ImageMasker:
             return OCR_MAX_SIDE / longest
         return 1.0
 
-    def _pii_indices(self, words: list[OcrWord]) -> list[int]:
-        """Индексы слов, пересекающих находки детектора ПДн (по возрастанию)."""
+    def _pii_indices(self, words: list[OcrWord]) -> tuple[list[int], frozenset[str]]:
+        """Индексы слов, пересекающих находки детектора ПДн, и типы находок.
+
+        Returns:
+            Индексы слов (по возрастанию) и множество типов находок (без значений).
+        """
         text, offsets = build_text(words)
         spans: list[tuple[int, int]] = []
+        kinds: set[str] = set()
         try:
             if len(text) <= MAX_WHOLE_TEXT_CHARS:
-                spans += [(d.start, d.end) for d in self._detector.detect(text)]
+                for d in self._detector.detect(text):
+                    spans.append((d.start, d.end))
+                    kinds.add(_kind_of(d))
             # Построчно: находки, зависящие от контекста страницы, и находки в одной строке
             # не должны зависеть друг от друга (NER на длинном тексте нестабилен)
             line_start = 0
             for line in text.split("\n"):
                 if line.strip():
-                    spans += [
-                        (d.start + line_start, d.end + line_start)
-                        for d in self._detector.detect(line)
-                    ]
+                    for d in self._detector.detect(line):
+                        spans.append((d.start + line_start, d.end + line_start))
+                        kinds.add(_kind_of(d))
                 line_start += len(line) + 1
         except Exception as exc:  # детектор упал: проверить нельзя - отказ
             logger.error("detector failed", extra={"exc_type": type(exc).__name__})
             raise MediaRefusedError(500, "detector_failed") from exc
-        return [
+        indices = [
             i for i, (start, end) in enumerate(offsets)
             if any(s < end and e > start for s, e in spans)
         ]
+        # Типы только тех находок, что легли на слова картинки: находка без слов не закрашена
+        return indices, frozenset(kinds) if indices else frozenset()
 
     @staticmethod
     def _merge_rects(
