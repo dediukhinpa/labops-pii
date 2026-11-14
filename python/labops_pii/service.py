@@ -49,6 +49,9 @@ EXACT_SEP = "\x00"
 AMBIGUITY_THRESHOLD = 2
 # До скольких полных слов в ключе ФИО кандидаты ищутся перебором подмножеств (до 31 набора).
 SUBSET_SEARCH_MAX_WORDS = 5
+# Сколько раз `remask` повторяет проход по тексту, пока детектор находит новое (каждая замена
+# меняет контекст NER для следующей находки).
+REMASK_INNER_PASSES = 4
 
 
 @dataclass(frozen=True, slots=True)
@@ -292,6 +295,10 @@ class Pseudonymizer:
         восстановленный оригинал, а не текст с токеном: иначе /restore вернул бы метку в
         аргументы инструмента.
 
+        На длинном тексте каждая замена меняет контекст NER, и следом открывается новая находка
+        (замер на карточках: остаток уходил за 2-4 прохода), поэтому проход повторяется до
+        тишины, но не больше REMASK_INNER_PASSES раз.
+
         Args:
             thread_id: Идентификатор треда.
             text: Уже замаскированный текст.
@@ -300,6 +307,22 @@ class Pseudonymizer:
         Returns:
             Пара (текст с новыми токенами, уникальные сущности второго прохода).
         """
+        entities: list[EntityRef] = []
+        seen: set[str] = set()
+        for _ in range(REMASK_INNER_PASSES):
+            text, found = self._remask_once(thread_id, text, case_labels)
+            for entity in found:
+                if entity.token not in seen:
+                    seen.add(entity.token)
+                    entities.append(entity)
+            if not found:
+                break
+        return text, entities
+
+    def _remask_once(
+        self, thread_id: str, text: str, case_labels: bool
+    ) -> tuple[str, list[EntityRef]]:
+        """Один проход `remask`: все находки детектора по тексту заменяются токенами."""
         with self._lock:
             self._store.touch(thread_id)
             known = self._known_lemmas(thread_id)

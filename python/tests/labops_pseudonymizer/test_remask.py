@@ -5,8 +5,9 @@ from __future__ import annotations
 from collections.abc import Collection
 
 from fastapi.testclient import TestClient
+
 from labops_pii.detector import Detection, PiiDetector, PiiType
-from labops_pii.service import Pseudonymizer
+from labops_pii.service import REMASK_INNER_PASSES, Pseudonymizer
 from labops_pii.store import MemoryReplacementStore
 
 THREAD = "remask-thread"
@@ -108,3 +109,33 @@ def test_http_remask_batch_limits(client: TestClient) -> None:
     too_long = "а" * 200_000
     resp = client.post("/remask_batch", json={"thread_id": THREAD, "texts": [too_long]})
     assert resp.status_code in (413, 422)
+
+
+class CascadeDetector:
+    """Детектор-заглушка: за один вызов находит только первое из ещё не замаскированных слов."""
+
+    def __init__(self, *words: str) -> None:
+        self._words = words
+
+    def detect(self, text: str, known_lemmas: Collection[str] = ()) -> list[Detection]:
+        for word in self._words:
+            start = text.find(word)
+            if start >= 0:
+                return [Detection(start, start + len(word), PiiType.CONTACT, word, 7)]
+        return []
+
+
+def test_remask_repeats_until_detector_is_quiet(store: MemoryReplacementStore) -> None:
+    """Каждая замена открывает следующую находку: проход повторяется внутри одного вызова."""
+    service = Pseudonymizer(CascadeDetector("Альфа", "Бета", "Гамма"), store)
+    out, entities = service.remask(THREAD, "Альфа Бета Гамма")
+    assert out == "[CONTACT_1] [CONTACT_2] [CONTACT_3]"
+    assert len(entities) == 3
+
+
+def test_remask_cascade_is_bounded(store: MemoryReplacementStore) -> None:
+    words = tuple(f"Слово{chr(0x430 + i)}" for i in range(REMASK_INNER_PASSES + 2))
+    service = Pseudonymizer(CascadeDetector(*words), store)
+    out, entities = service.remask(THREAD, " ".join(words))
+    assert len(entities) == REMASK_INNER_PASSES
+    assert out.count("[CONTACT_") == REMASK_INNER_PASSES
