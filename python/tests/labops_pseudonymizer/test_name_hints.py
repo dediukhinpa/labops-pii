@@ -178,6 +178,19 @@ def test_mixed_case_needs_full_name(detector: PiiDetector) -> None:
     assert persons(detector, "иван Анна") == ["Анна"]
 
 
+# --- повторы слов ФИО внутри одного текста -------------------------------------------------
+
+def test_name_repeated_in_footer_is_masked(detector: PiiDetector) -> None:
+    text = '{"fio": "Мельникова Анастасия", "footer": "Мельникова • Резюме обновлено 12 января"}'
+    assert persons(detector, text) == ["Мельникова Анастасия", "Мельникова"]
+
+
+def test_noise_words_from_person_span_are_not_propagated(detector: PiiDetector) -> None:
+    """«ИП» и «ИНН» входят в находку «ИП Петров Иван ИНН ...», но их повторы не ФИО."""
+    text = "Заказ ИП Петров Иван ИНН 7707083893 оплачен, ИНН подтверждён"
+    assert persons(detector, text) == ["ИП Петров Иван"]
+
+
 # --- производительность на враждебных телах -----------------------------------------------
 
 def _elapsed(func, text: str) -> float:  # type: ignore[no-untyped-def]

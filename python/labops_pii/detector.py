@@ -362,6 +362,10 @@ class PiiDetector:
         found += self._detect_initialed_surnames(text, tech)
         found += self._detect_known_names(text, known_lemmas, tech)
         found += self._detect_tech_names(text, tech, known_lemmas)
+        # Слова ФИО, найденные в этом же тексте, ловятся и в других местах: подвал карточки
+        # «Фамилия Имя • Резюме обновлено» после поля "name" иначе оставался открытым (NER не
+        # видит фамилию без контекста, а леммы треда пополняются только после ответа)
+        found += self._detect_repeated_names(text, found, known_lemmas, tech)
         if self._mask_legal:
             found += self._detect_orgs(text)
         # Слова белого списка (PII_ALLOWED_WORDS) не ПДн: ни ФИО, ни организация
@@ -585,6 +589,23 @@ class PiiDetector:
                 )
         return result
 
+    def _detect_repeated_names(
+        self,
+        text: str,
+        found: list[Detection],
+        known_lemmas: Collection[str],
+        tech: list[tuple[int, int]],
+    ) -> list[Detection]:
+        """Повторы слов ФИО, уже найденных в этом тексте (по лемме, как слова известные в треде)."""
+        lemmas = {
+            lemma(word)
+            for det in found
+            if det.pii_type is PiiType.PERSON and not det.exact
+            for word in WORD_RE.findall(text[det.start:det.end])
+            if _name_like_word(word)
+        } - set(known_lemmas)
+        return self._detect_known_names(text, lemmas, tech) if lemmas else []
+
     def _detect_mixed_case_persons(
         self, text: str, tech: list[tuple[int, int]]
     ) -> list[Detection]:
@@ -799,6 +820,20 @@ class PiiDetector:
             # «Подписант» за имя, и вторая проверка отклоняла сообщение (28.10.2026).
             return None
         return Detection(start, end, PiiType.PERSON, person_key(chunk), PRIO_PERSON)
+
+
+def _name_like_word(word: str) -> bool:
+    """Слово из находки ФИО, чьи повторы в тексте тоже ФИО: с заглавной, не капсом, имя/фамилия.
+
+    «ИП», «ИНН», должности и слова-шум, захваченные в находку вместе с ФИО, сюда не попадают:
+    иначе их повторы по тексту стали бы «ФИО».
+    """
+    return (
+        len(word) >= MIN_MIXED_NAME_LEN - 1
+        and word[0].isupper()
+        and not word.isupper()
+        and (name_gramme(word) is not None or is_surname_candidate(word))
+    )
 
 
 def _known_name_shape(word: str) -> bool:
