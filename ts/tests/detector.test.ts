@@ -16,6 +16,47 @@ function persons(text: string, options: DetectorOptions = SQLITE_V2): string[] {
   return detectPersons(text, options).map((span) => span.text);
 }
 
+describe('ФИО в кавычках без слов вокруг (дефект 1.1.1 был в Python-сервисе, TS ловил)', () => {
+  const FULL = 'Белоусова Анна Сергеевна';
+  const OTHER = 'Игорь Валентинович Крутоголов';
+  const pairs: [string, string][] = [
+    ['«', '»'],
+    ['„', '“'],
+    ['“', '”'],
+    ['"', '"'],
+    ['‹', '›'],
+  ];
+
+  test.each(pairs)('кавычки %s...%s: ФИО находится без префикса и с ним', (left, right) => {
+    for (const name of [FULL, OTHER]) {
+      expect(persons(`${left}${name}${right}`)).toEqual([name]);
+      expect(persons(`ФИО: ${left}${name}${right}`)).toEqual([name]);
+      expect(persons(`Кандидат ${left}${name}${right}`)).toEqual([name]);
+      expect(persons(`${left}${name}${right}\nОпыт: 5 лет`)).toEqual([name]);
+      expect(persons(`| 1 | ${left}${name}${right} | Москва |`)).toEqual([name]);
+    }
+  });
+
+  test('ФИО в строке JSON с экранированными кавычками', () => {
+    const body = JSON.stringify({ comment: `ФИО: "${FULL}" принят` });
+    expect(persons(body)).toEqual([FULL]);
+  });
+
+  test.each([
+    '«Ромашка»',
+    '«Яндекс»',
+    '«Сбер»',
+    'Войти в «Яндекс Маркет»',
+    'Приложение «Сбер Банк Онлайн»',
+    'ООО «Красная Роза Трейд»',
+    'ООО «Торговый Дом Ромашка»',
+    'Фильм «Вторая Мировая Война»',
+    'Газета «Белая Ночь»',
+  ])('название «%s» не ФИО', (text) => {
+    expect(persons(text)).toEqual([]);
+  });
+});
+
 describe('ФИО: явные случаи', () => {
   test.each([
     ['Иванов Иван', 'Иванов Иван'],

@@ -15,7 +15,12 @@ import re
 from collections.abc import Iterator
 from dataclasses import dataclass
 
-from labops_pii.morph import is_surname_candidate, name_gramme
+from labops_pii.morph import (
+    is_inanimate_common_noun,
+    is_non_name_word,
+    is_surname_candidate,
+    name_gramme,
+)
 
 # Сколько вариантов написания набирается на одно русское имя (транслит неоднозначен).
 MAX_TRANSLIT_VARIANTS = 48
@@ -461,4 +466,58 @@ def find_table_cell_names(text: str) -> list[tuple[int, int]]:
         m.span("cell")
         for m in _TABLE_CELL_RE.finditer(text)
         if _table_cell_is_name(m.group("cell"))
+    ]
+
+
+# --- ФИО в кавычках без слов вокруг: «Белоусова Анна Сергеевна» -----------------------------
+
+# Natasha не размечает ФИО, зажатое кавычками без слова-подсказки («Кандидат «...»» находит,
+# голое «...» и «ФИО: «...»» нет): в новостном корпусе имя в кавычках - название, а не
+# человек. Контекстом служит сама пара кавычек: внутри только 2-3 слова ФИО. Название
+# («Ромашка», «Сбер Банк Онлайн», «Красная Роза Трейд») такой проверки не проходит: у него
+# есть словарное существительное или слово, которое не бывает именем, фамилией и отчеством.
+# Открывающие и закрывающие кавычки заданы наборами: «‹ „ “ " и » › “ ” ". Перед прямой
+# кавычкой допустим «\»: так она выглядит в JSON внутри JSON-строки.
+_QUOTE_OPEN = r"(?:\\?\"|[«‹„“‟])"
+_QUOTE_CLOSE = r"(?:\\?\"|[»›“”])"
+_QUOTED_NAME_RE = re.compile(
+    rf"{_QUOTE_OPEN}[ \t]*(?P<cell>{_TABLE_WORD}(?:[ \t]+{_TABLE_WORD}){{1,2}})[ \t]*{_QUOTE_CLOSE}"
+)
+# Допустимые пары слов ФИО из двух слов: «фамилия + имя» или «имя + отчество» (по словарю)
+_QUOTED_PAIRS = frozenset({("Surn", "Name"), ("Name", "Surn"), ("Name", "Patr")})
+
+
+def _quoted_cell_is_name(cell: str) -> bool:
+    """Слова в кавычках - ФИО: полный набор частей, каждое слово - слово ФИО, нет названий.
+
+    Строже ячейки таблицы: название в кавычках встречается куда чаще, поэтому слова из
+    словаря не-имён и словарные существительные («Дом», «Банк», «Война») ФИО не пускают, а
+    из двух слов нужна пара «фамилия + имя» или «имя + отчество» по словарю целиком.
+    """
+    words = cell.split()
+    if not _table_cell_is_name(cell):
+        return False
+    parts = [word.split("-")[0] for word in words]
+    if any(is_inanimate_common_noun(part) or is_non_name_word(part) for part in parts):
+        return False
+    grams = [name_gramme(part) for part in parts]
+    if len(words) == 2:
+        return (grams[0], grams[1]) in _QUOTED_PAIRS
+    # Три слова: есть отчество (фамилия может быть незнакомой) либо все три слова - по словарю
+    return "Patr" in grams or all(gram is not None for gram in grams)
+
+
+def find_quoted_name_spans(text: str) -> list[tuple[int, int]]:
+    """Позиции ФИО из 2-3 слов, стоящих в кавычках без других слов внутри.
+
+    Args:
+        text: Исходный текст.
+
+    Returns:
+        Позиции слов ФИО без кавычек: токен заменяет само имя, кавычки остаются на месте.
+    """
+    return [
+        m.span("cell")
+        for m in _QUOTED_NAME_RE.finditer(text)
+        if _quoted_cell_is_name(m.group("cell"))
     ]
