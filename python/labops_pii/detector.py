@@ -31,6 +31,7 @@ from labops_pii.name_hints import (
     NOT_A_NAME_WORDS,
     find_json_field_names,
     find_latin_name_spans,
+    find_quoted_name_spans,
     find_table_cell_names,
 )
 from labops_pii.pii_patterns import (
@@ -55,7 +56,10 @@ ALLOWLIST_TYPES = frozenset({"PERSON", "ORG", "CONTACT"})
 
 INITIAL_TAIL_RE = re.compile(r"[ \t]*[А-ЯЁ]\.[ \t]?(?:[А-ЯЁ]\.)?")
 INITIAL_HEAD_RE = re.compile(r"[А-ЯЁ]\.[ \t]?(?:[А-ЯЁ]\.)?[ \t]*$")
-TRIM_CHARS = " \t\n\r,.;:!?()«»\"'"
+# Кавычки всех видов («ёлочки», „лапки“, “английские”, ‹одинарные›) обрезаются с краёв ФИО:
+# NER берёт закрывающую кавычку в находку, и она уходила под токен
+QUOTE_CHARS = "«»‹›„“”‟\"'"
+TRIM_CHARS = " \t\n\r,.;:!?()" + QUOTE_CHARS
 HEAD_WINDOW = 64  # окно слева от ФИО для поиска инициалов
 # Слово-фамилия вплотную слева от «Имя Отчество» (в той же строке): NER его теряет, когда
 # перед ним должность («директор Дудорова Марина Евгеньевна» - «Дудорова» читается как
@@ -461,7 +465,7 @@ class PiiDetector:
         return result
 
     def _detect_field_names(self, text: str) -> list[Detection]:
-        """Значения полей `"full_name": "..."` и ячейки таблиц `| Иванов Иван |` как ФИО.
+        """Значения полей `"full_name": "..."`, ячейки таблиц `| Иванов Иван |` и ФИО в кавычках.
 
         NER в JSON и в строках таблиц теряет имя без контекста (в карточках закрывалась лишь
         пятая часть имён, в ячейках - треть): здесь контекстом служит ключ поля или сама
@@ -469,6 +473,7 @@ class PiiDetector:
         """
         spans = [(f.start, f.end) for f in find_json_field_names(text)]
         spans += find_table_cell_names(text)
+        spans += find_quoted_name_spans(text)
         return [
             Detection(start, end, PiiType.PERSON, person_key(text[start:end]), PRIO_PERSON)
             for start, end in spans
@@ -806,9 +811,10 @@ class PiiDetector:
             start = window_start + head.start()
         while start < end and text[start] in TRIM_CHARS:
             start += 1
-        while end > start and text[end - 1] in " \t\n\r,;:!?()«»\"'":
+        while end > start and text[end - 1] in " \t\n\r,;:!?()" + QUOTE_CHARS:
             end -= 1
         start, end = _trim_non_name_words(text, start, end)
+        end = _cut_foreign_next_lines(text, start, end)
         start = _with_surname_before(text, start, end)
         chunk = text[start:end]
         if end <= start or not CYRILLIC_RE.search(chunk):
@@ -981,6 +987,27 @@ def _glued_to_word(text: str, start: int, end: int) -> bool:
     return (before.isalnum() or before == "_") and text[start].isalnum() or (
         (after.isalnum() or after == "_") and text[end - 1].isalnum()
     )
+
+
+def _cut_foreign_next_lines(text: str, start: int, end: int) -> int:
+    """Конец ФИО без строк, которые NER прихватил после перевода строки.
+
+    «Резюме: Игорь Валентинович Крутоголов\nОпыт: 5 лет»: NER берёт «Опыт» в находку, и слово
+    следующей строки уходило под токен ФИО. Строка после перевода остаётся в находке, только
+    если начинается словом ФИО (перенос внутри имени: «Иванов Иван\nИванович»).
+    """
+    cut = text.find("\n", start, end)
+    while 0 <= cut:
+        word = WORD_RE.search(text, cut, end)
+        if word is None or not (
+            name_gramme(word.group()) is not None or is_surname_candidate(word.group())
+        ):
+            end = cut
+            while end > start and text[end - 1] in TRIM_CHARS:
+                end -= 1
+            return end
+        cut = text.find("\n", cut + 1, end)
+    return end
 
 
 def _trim_non_name_words(text: str, start: int, end: int) -> tuple[int, int]:
