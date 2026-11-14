@@ -103,10 +103,10 @@ def test_barcode_decoded_and_painted(masker: ImageMasker, finder: CodeFinder) ->
     assert finder.find(out) == []
 
 
-def test_signature_hidden_and_flagged(masker: ImageMasker) -> None:
+def test_signature_hidden_and_flagged(paint_masker: ImageMasker) -> None:
     card = card_image()
     draw_signature(card)
-    out, stats, rec = masker.mask_image_ex(card)
+    out, stats, rec = paint_masker.mask_image_ex(card)
     assert stats.unreadable_boxes >= 1
     assert rec.hidden_text
     # Штрихи подписи (синеватые) в итоге не остались
@@ -125,8 +125,8 @@ def test_signature_ocr_does_not_read_it(ocr: TesseractOcr) -> None:
     assert words == []
 
 
-def test_unreadable_hiding_can_be_disabled(ocr: TesseractOcr) -> None:
-    masker = ImageMasker(ocr, PiiDetector(True), FaceBlurrer(), hide_unreadable=False)
+def test_unreadable_not_hidden_by_default(masker: ImageMasker) -> None:
+    """С 1.1.3 нераспознанный текст (подпись) по умолчанию не закрашивается."""
     img = Image.new("RGB", (1200, 600), "white")
     draw_signature(img)
     out, stats, rec = masker.mask_image_ex(img)
@@ -181,7 +181,19 @@ def test_describe_payload(payload: str, expected: list[str], forbidden: list[str
         assert part not in text
 
 
-def test_mask_image_endpoint_returns_recognized(client: TestClient, auth: dict[str, str]) -> None:
+def test_mask_image_endpoint_default_does_not_hide_signature(
+    client: TestClient, auth: dict[str, str]
+) -> None:
+    card = card_image()
+    draw_signature(card)
+    body = post(client, "/mask_image", auth, "image/png", to_bytes(card)).json()
+    assert body["stats"]["unreadable_boxes"] == 0 and body["recognized"]["hidden_text"] is False
+
+
+def test_mask_image_endpoint_returns_recognized(
+    paint_client: TestClient, auth: dict[str, str]
+) -> None:
+    client = paint_client
     card = card_image()
     draw_signature(card)
     body = post(client, "/mask_image", auth, "image/png", to_bytes(card)).json()
@@ -203,13 +215,22 @@ def test_scanned_pdf_pages_carry_recognized_text(
     assert "912" in page["recognized"]["text"]
 
 
-@pytest.mark.parametrize(("raw", "expected"), [("", True), ("true", True), ("false", False),
-                                               ("0", False), ("no", False)])
+@pytest.mark.parametrize(("raw", "expected"), [("", False), ("true", True), ("false", False),
+                                               ("0", False), ("no", False), ("on", True)])
 def test_hide_unreadable_setting(raw: str, expected: bool) -> None:
     env = {"MEDIA_MASKER_API_TOKEN": "t"}
     if raw:
         env["MEDIA_MASKER_HIDE_UNREADABLE"] = raw
     assert load_settings(env).hide_unreadable is expected
+
+
+@pytest.mark.parametrize(("raw", "expected"), [("", False), ("true", True), ("false", False),
+                                               ("off", False), ("on", True)])
+def test_paint_low_conf_setting(raw: str, expected: bool) -> None:
+    env = {"MEDIA_MASKER_API_TOKEN": "t"}
+    if raw:
+        env["MEDIA_MASKER_PAINT_LOW_CONF"] = raw
+    assert load_settings(env).paint_low_conf is expected
 
 
 @pytest.mark.parametrize(

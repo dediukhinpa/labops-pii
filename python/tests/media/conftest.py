@@ -77,6 +77,34 @@ def masker(ocr: TesseractOcr) -> ImageMasker:
 
 
 @pytest.fixture(scope="session")
+def paint_masker(ocr: TesseractOcr) -> ImageMasker:
+    """Маскер со старым поведением: закрашивает слабые слова и нераспознанный текст.
+
+    С 1.1.3 по умолчанию закрашиваются только находки детектора, лица и QR-коды.
+    """
+    from labops_pii.detector import PiiDetector
+
+    return ImageMasker(
+        ocr, PiiDetector(True), FaceBlurrer(), hide_unreadable=True, paint_low_conf=True
+    )
+
+
+@pytest.fixture(scope="session")
+def paint_client(ocr: TesseractOcr) -> Iterator[TestClient]:
+    """Сервис с включёнными закрасками слабых слов и нераспознанного текста."""
+    settings = Settings(
+        api_token=TOKEN,
+        tesseract_cmd=tesseract_cmd(),
+        tessdata=os.environ.get("TESSDATA_PREFIX"),
+        max_pdf_pages=4,
+        hide_unreadable=True,
+        paint_low_conf=True,
+    )
+    with TestClient(create_app(settings)) as test_client:
+        yield test_client
+
+
+@pytest.fixture(scope="session")
 def client(ocr: TesseractOcr) -> Iterator[TestClient]:
     settings = Settings(
         api_token=TOKEN,

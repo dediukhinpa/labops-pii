@@ -48,10 +48,20 @@ WAITERS_PER_SLOT = 2
 
 
 class MediaRequest(BaseModel):
-    """Файл в base64 (как source.data блока image/document в API модели)."""
+    """Файл в base64 (как source.data блока image/document в API модели).
+
+    Attributes:
+        media_type: MIME-тип.
+        data: Содержимое в base64.
+        original_if_clean: Режим «оригинал, если чисто» (только /mask_image): без лиц, QR и
+            закраски нечитаемого текста, закрашиваются лишь слова с находками детектора.
+            Задаёт прокси конкретного агента; по умолчанию выключено. Старый сервис поле
+            игнорирует, то есть маскирует строже.
+    """
 
     media_type: str
     data: str
+    original_if_clean: bool = False
 
 
 class ImageOut(BaseModel):
@@ -70,6 +80,7 @@ class StatsOut(BaseModel):
     low_conf_boxes: int
     codes: int = 0
     unreadable_boxes: int = 0
+    original_kept: bool = False
 
 
 class CodeOut(BaseModel):
@@ -124,6 +135,7 @@ def _stats_out(stats: MaskStats) -> StatsOut:
         low_conf_boxes=stats.low_conf_boxes,
         codes=stats.codes,
         unreadable_boxes=stats.unreadable_boxes,
+        original_kept=stats.original_kept,
     )
 
 
@@ -186,7 +198,8 @@ def create_app(settings: Settings) -> FastAPI:
         settings.mask_legal_entity, settings.contacts, mask_addresses=settings.mask_addresses
     )
     masker = ImageMasker(
-        ocr, detector, FaceBlurrer(), settings.hide_unreadable, CodeFinder()
+        ocr, detector, FaceBlurrer(), settings.hide_unreadable, CodeFinder(),
+        paint_low_conf=settings.paint_low_conf,
     )
     pdf = PdfProcessor(masker, settings.max_pdf_pages)
     slots = asyncio.Semaphore(settings.max_concurrency)
@@ -250,7 +263,13 @@ def create_app(settings: Settings) -> FastAPI:
                 raise MediaRefusedError(HTTP_UNPROCESSABLE, "unsupported_media_type")
             raw = _decode_base64(req.data)
             async with slot():
-                result = await run_in_threadpool(masker.mask_bytes, raw)
+                # Режим по умолчанию вызывается прежним способом (без нового аргумента)
+                if req.original_if_clean:
+                    result = await run_in_threadpool(
+                        masker.mask_bytes, raw, original_if_clean=True
+                    )
+                else:
+                    result = await run_in_threadpool(masker.mask_bytes, raw)
         except MediaRefusedError as exc:
             return refused("/mask_image", exc)
         s = result.stats
@@ -258,6 +277,7 @@ def create_app(settings: Settings) -> FastAPI:
             logger, EVENT_MASK_DONE, route="/mask_image",
             words=s.words, masked_boxes=s.masked_boxes, faces=s.faces,
             codes=s.codes, unreadable_boxes=s.unreadable_boxes,
+            original_kept=s.original_kept,
         )
         return MaskImageResponse(
             media_type=result.media_type,

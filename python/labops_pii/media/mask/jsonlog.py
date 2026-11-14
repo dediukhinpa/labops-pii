@@ -76,7 +76,7 @@ LEVEL_NAMES: dict[int, str] = {
 # Поля, которые форматтер берёт из `extra` записи (остальное в лог не попадает)
 EXTRA_FIELDS = (
     "trace_id", "route", "status", "duration_ms", "code", "exc_type",
-    "words", "masked_boxes", "faces", "pages",
+    "words", "masked_boxes", "faces", "pages", "original_kept",
 )
 
 Scope = MutableMapping[str, Any]

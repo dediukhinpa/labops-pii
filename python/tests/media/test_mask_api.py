@@ -81,6 +81,7 @@ def test_mask_image_endpoint(client: TestClient, auth: dict[str, str]) -> None:
     # Значения в ответе только в виде картинки: счётчики числовые
     assert set(body["stats"]) == {
         "words", "masked_boxes", "faces", "low_conf_boxes", "codes", "unreadable_boxes",
+        "original_kept",
     }
 
 

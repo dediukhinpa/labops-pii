@@ -82,6 +82,13 @@ export interface MediaClientOptions {
   readonly baseUrl: string;
   readonly token: string;
   readonly timeoutMs: number;
+  /**
+   * Режим «оригинал, если чисто» для картинок (по умолчанию выключен): media-masker не
+   * проверяет лица и QR-коды, не закрашивает нечитаемый текст, а при отсутствии находок
+   * детектора отдаёт исходную картинку. Только для /mask_image. Включается настройкой
+   * конкретного агента (общий media-masker один, режим задаёт запрос).
+   */
+  readonly originalIfClean?: boolean;
 }
 
 /**
@@ -92,7 +99,11 @@ export class HttpMediaMasker implements MediaMasker {
   constructor(private readonly options: MediaClientOptions) {}
 
   async maskImage(mediaType: string, data: string): Promise<MaskedImage> {
-    const raw = await this.post('/mask_image', { media_type: mediaType, data });
+    // Поле уходит только при включённом режиме: запрос выключенного режима не меняется
+    const body = this.options.originalIfClean === true
+      ? { media_type: mediaType, data, original_if_clean: true }
+      : { media_type: mediaType, data };
+    const raw = await this.post('/mask_image', body);
     const r = parseWith(maskImageSchema, raw);
     return { mediaType: r.media_type, data: r.data, recognized: toRecognized(r.recognized) };
   }

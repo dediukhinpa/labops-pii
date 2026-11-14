@@ -17,12 +17,16 @@ from labops_pii.media.mask.unreadable import find_unreadable
 
 logger = logging.getLogger(__name__)
 
-# Слово с уверенностью ниже порога читается ненадёжно: его нельзя проверить детектором,
-# поэтому оно закрашивается целиком (консервативно). Короткий мусор без цифр не трогаем.
+# Слово с уверенностью ниже порога читается ненадёжно. С 1.1.3 по умолчанию такие слова НЕ
+# закрашиваются (решение владельца: закрашиваются только находки детектора); включается
+# настройкой paint_low_conf (MEDIA_MASKER_PAINT_LOW_CONF). Слова ниже порога не идут в
+# распознанный текст. Короткий мусор без цифр не считается.
 LOW_CONF = 40.0
 LOW_CONF_MIN_ALNUM = 3
-# Сколько раз OCR-проверять результат: после заливки картинку читают заново; если и
-# в последний проход находится ПДн - отказ. Чистая картинка стоит одного OCR.
+# Сколько раз закрашивать и перечитывать картинку: после заливки её читают заново. Чистая
+# картинка стоит одного OCR. После MAX_PASSES проходов закраски идёт ещё один, проверочный
+# OCR-проход (он ничего не закрашивает по находкам): ПДн в нём - отказ, иначе остаток
+# неразборчивых слов закрашивается и картинка отдаётся.
 MAX_PASSES = 3
 # Для OCR мелкая картинка увеличивается до этой длинной стороны (но не более MAX_UPSCALE раз),
 # крупная уменьшается до OCR_MAX_SIDE: Tesseract лучше всего читает текст ~30 px высотой.
@@ -66,6 +70,7 @@ class MaskStats:
         masked_boxes: Закрашено прямоугольников (все проходы).
         faces: Размыто лиц.
         low_conf_boxes: Из закрашенных слов - по низкой уверенности OCR.
+        original_kept: Картинка отдана без закраски (режим «оригинал, если чисто»).
     """
 
     words: int = 0
@@ -74,6 +79,7 @@ class MaskStats:
     low_conf_boxes: int = 0
     codes: int = 0
     unreadable_boxes: int = 0
+    original_kept: bool = False
 
 
 @dataclass(frozen=True, slots=True)
@@ -148,6 +154,26 @@ def _is_low_conf(word: OcrWord) -> bool:
     return alnum >= LOW_CONF_MIN_ALNUM or any(ch.isdigit() for ch in word.text)
 
 
+@dataclass(frozen=True, slots=True)
+class _Scan:
+    """Результат одного OCR-прохода.
+
+    Attributes:
+        words: Распознанные слова.
+        rects: Прямоугольники заливки (находки детектора и слова с низкой уверенностью).
+        low: Сколько слов с низкой уверенностью помечено.
+        pii_words: Сколько слов пересекают находки детектора ПДн (низкая уверенность сама по
+            себе не считается: нечитаемый мусор - не доказательство ПДн).
+        pii_rects: Прямоугольники только слов, пересекающих находки детектора.
+    """
+
+    words: list[OcrWord]
+    rects: list[tuple[int, int, int, int]]
+    low: int
+    pii_words: int
+    pii_rects: list[tuple[int, int, int, int]]
+
+
 class ImageMasker:
     """Маскирует изображения.
 
@@ -155,6 +181,11 @@ class ImageMasker:
         ocr: Распознаватель текста.
         detector: Детектор ПДн из пакета labops_pii.
         faces: Размыватель лиц.
+        hide_unreadable: Закрашивать нераспознанный текст (рукопись, подпись). По умолчанию
+            нет: закрашиваются только находки детектора ПДн, лица и QR-коды.
+        codes: Поиск QR-кодов и штрихкодов.
+        paint_low_conf: Закрашивать слова с низкой уверенностью OCR без находки детектора.
+            По умолчанию нет.
     """
 
     def __init__(
@@ -162,25 +193,79 @@ class ImageMasker:
         ocr: TesseractOcr,
         detector: PiiDetector,
         faces: FaceBlurrer,
-        hide_unreadable: bool = True,
+        hide_unreadable: bool = False,
         codes: CodeFinder | None = None,
+        paint_low_conf: bool = False,
     ) -> None:
         self._ocr = ocr
         self._detector = detector
         self._faces = faces
         self._hide_unreadable = hide_unreadable
+        self._paint_low_conf = paint_low_conf
         self._codes = codes if codes is not None else CodeFinder()
 
-    def mask_bytes(self, data: bytes) -> MaskedImage:
+    def mask_bytes(self, data: bytes, original_if_clean: bool = False) -> MaskedImage:
         """Декодирует, маскирует и перекодирует изображение.
+
+        Args:
+            data: Байты картинки.
+            original_if_clean: Режим «оригинал, если чисто» (см. `mask_original_if_clean`). Выключен
+                по умолчанию: включает его только явная настройка агента.
 
         Raises:
             MediaRefusedError: Не декодируется, слишком большое или сбой любого шага.
         """
         image, source_format = self._decode(data)
+        if original_if_clean:
+            kept, stats, recognized = self.mask_original_if_clean(image)
+            out_type, out = self.encode(kept, source_format)
+            return MaskedImage(out_type, out, stats, recognized)
         masked, stats, recognized = self.mask_image_ex(image)
         out_type, out = self.encode(masked, source_format)
         return MaskedImage(out_type, out, stats, recognized)
+
+    def mask_original_if_clean(
+        self, image: Image.Image
+    ) -> tuple[Image.Image, MaskStats, Recognized]:
+        """Режим «оригинал, если чисто»: без лиц, QR-кодов и закраски нечитаемого текста.
+
+        Нужен для картинок, где ПДн по смыслу нет (реклама, схемы): полная маскировка портит
+        их, а OCR-шум каждый раз находит «новый» фрагмент. Один OCR-проход: если детектор по
+        распознанному тексту ничего не нашёл (слова с низкой уверенностью сами по себе не ПДн),
+        картинка возвращается как есть (метаданные снимает перекодирование). Если нашёл -
+        закрашиваются ТОЛЬКО слова, пересекающиеся с находками, затем проверочный OCR; новые
+        находки закрашиваются дальше, до MAX_PASSES проходов закраски. Лица и QR-коды в этом
+        режиме НЕ проверяются - решение владельца, режим включается только явной настройкой.
+
+        Raises:
+            MediaRefusedError: Сбой OCR/детектора или ПДн остались после MAX_PASSES закрасок.
+        """
+        work = image.copy()
+        rotation = self._rotation(work)
+        if rotation:
+            work = work.rotate(-rotation, expand=True)
+        total_boxes = 0
+        recognized = Recognized()
+        for attempt in range(MAX_PASSES + 1):
+            scan = self._scan(work)
+            if attempt == 0:
+                # Распознанное берётся до закраски: прокси сам заменит в тексте ПДн метками.
+                # Ничего нечитаемого не закрашивается, поэтому hidden_text всегда False.
+                recognized = self._recognized(scan.words, [], False)
+            if not scan.pii_words:
+                if rotation:
+                    work = work.rotate(rotation, expand=True)
+                stats = MaskStats(
+                    len(scan.words), total_boxes, original_kept=total_boxes == 0
+                )
+                return (image if total_boxes == 0 else work), stats, recognized
+            if attempt == MAX_PASSES:
+                break
+            total_boxes += len(scan.pii_rects)
+            draw = ImageDraw.Draw(work)
+            for rect in scan.pii_rects:
+                draw.rectangle(rect, fill=FILL_COLOR)
+        raise MediaRefusedError(422, "pii_remains_after_masking")
 
     def mask_image(self, image: Image.Image) -> tuple[Image.Image, MaskStats]:
         """Маскирует RGB-изображение (возвращает новое), без распознанного содержимого.
@@ -217,15 +302,29 @@ class ImageMasker:
         codes = self._hide_codes(image)
         total_boxes = total_low = unreadable = 0
         recognized = Recognized()
-        for attempt in range(MAX_PASSES):
-            words, rects, low = self._find_rects(image)
+        # Проходов закраски MAX_PASSES плюс один проверочный (attempt == MAX_PASSES)
+        for attempt in range(MAX_PASSES + 1):
+            scan = self._scan(image)
+            words, rects, low = scan.words, scan.rects, scan.low
             if attempt == 0:
                 extra = self._unreadable_rects(image, words, codes)
                 unreadable = len(extra)
                 rects = rects + extra
                 recognized = self._recognized(words, codes, low > 0 or bool(extra))
-            if not rects:
-                # Чистый проход: words - всё, что осталось читаемым после заливки
+            verifying = attempt == MAX_PASSES
+            if verifying and scan.pii_words:
+                # Даже после закраски детектор находит ПДн: защита не ослабляется
+                raise MediaRefusedError(422, "pii_remains_after_masking")
+            if not rects or verifying:
+                # Чистый проход, либо проверочный без находок детектора. Если включена
+                # закраска слабых слов (paint_low_conf), в rects остались только они: закраска
+                # лишь убирает информацию, поэтому красим без нового OCR и отдаём картинку.
+                if rects:
+                    total_boxes += len(rects)
+                    total_low += low
+                    draw = ImageDraw.Draw(image)
+                    for rect in rects:
+                        draw.rectangle(rect, fill=FILL_COLOR)
                 if rotation:
                     image = image.rotate(rotation, expand=True)
                 stats = MaskStats(
@@ -237,7 +336,7 @@ class ImageMasker:
             draw = ImageDraw.Draw(image)
             for rect in rects:
                 draw.rectangle(rect, fill=FILL_COLOR)
-        raise MediaRefusedError(422, "pii_remains_after_masking")
+        raise MediaRefusedError(422, "pii_remains_after_masking")  # недостижимо: цикл возвращает
 
     def _hide_codes(self, image: Image.Image) -> list[CodeHit]:
         """Находит QR и штрихкоды и закрашивает их на месте (содержимое возвращается)."""
@@ -289,10 +388,8 @@ class ImageMasker:
         except OcrError as exc:
             raise MediaRefusedError(500, "ocr_failed") from exc
 
-    def _find_rects(
-        self, image: Image.Image
-    ) -> tuple[list[OcrWord], list[tuple[int, int, int, int]], int]:
-        """OCR + детектор: возвращает слова, прямоугольники заливки и число low-conf слов."""
+    def _scan(self, image: Image.Image) -> _Scan:
+        """OCR + детектор: слова, прямоугольники заливки, число low-conf слов и находок ПДн."""
         scale = self._ocr_scale(image.size)
         gray = ImageOps.autocontrast(image.convert("L"))
         if scale != 1.0:
@@ -302,9 +399,19 @@ class ImageMasker:
             words = self._ocr.recognize(gray, scale)
         except OcrError as exc:
             raise MediaRefusedError(500, "ocr_failed") from exc
-        flagged = self._flagged_indices(words)
+        pii = self._pii_indices(words)
+        to_paint = set(pii)
+        if self._paint_low_conf:
+            to_paint |= {i for i, w in enumerate(words) if _is_low_conf(w)}
+        flagged = sorted(to_paint)
         low = sum(1 for i in flagged if _is_low_conf(words[i]))
-        return words, self._merge_rects(words, flagged, image.size), low
+        return _Scan(
+            words,
+            self._merge_rects(words, flagged, image.size),
+            low,
+            len(pii),
+            self._merge_rects(words, pii, image.size),
+        )
 
     @staticmethod
     def _ocr_scale(size: tuple[int, int]) -> float:
@@ -315,8 +422,8 @@ class ImageMasker:
             return OCR_MAX_SIDE / longest
         return 1.0
 
-    def _flagged_indices(self, words: list[OcrWord]) -> list[int]:
-        """Индексы слов, пересекающих находки детектора, плюс слова с низкой уверенностью."""
+    def _pii_indices(self, words: list[OcrWord]) -> list[int]:
+        """Индексы слов, пересекающих находки детектора ПДн (по возрастанию)."""
         text, offsets = build_text(words)
         spans: list[tuple[int, int]] = []
         try:
@@ -335,11 +442,10 @@ class ImageMasker:
         except Exception as exc:  # детектор упал: проверить нельзя - отказ
             logger.error("detector failed", extra={"exc_type": type(exc).__name__})
             raise MediaRefusedError(500, "detector_failed") from exc
-        flagged = set()
-        for i, (start, end) in enumerate(offsets):
-            if _is_low_conf(words[i]) or any(s < end and e > start for s, e in spans):
-                flagged.add(i)
-        return sorted(flagged)
+        return [
+            i for i, (start, end) in enumerate(offsets)
+            if any(s < end and e > start for s, e in spans)
+        ]
 
     @staticmethod
     def _merge_rects(
