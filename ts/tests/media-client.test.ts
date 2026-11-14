@@ -60,3 +60,23 @@ describe('HttpMediaMasker: режим «оригинал, если чисто»'
     expect(lastBody).toEqual({ media_type: 'application/pdf', data: IMAGE_B64 });
   });
 });
+
+describe('HttpMediaMasker: типы находок для запроса разрешения', () => {
+  test('pii_kinds, лица и коды складываются в piiKinds без мусора', async () => {
+    const reply = { ...IMAGE_REPLY,
+      stats: { pii_kinds: ['PHONE', 'bad value 79161234567', 'PERSON'], faces: 2, codes: 1 } };
+    const r = await client(reply).maskImage('image/png', IMAGE_B64);
+    expect(r.piiKinds).toEqual(['FACE', 'PERSON', 'PHONE', 'QR_CODE']);
+  });
+
+  test('старый сервис без stats: типов нет', async () => {
+    const r = await client(IMAGE_REPLY).maskImage('image/png', IMAGE_B64);
+    expect(r.piiKinds).toEqual([]);
+  });
+
+  test('PDF: типы со страниц', async () => {
+    const reply = { kind: 'images', pages: [], stats: { pii_kinds: ['INN'] } };
+    const r = await client(reply).extractDocument(IMAGE_B64);
+    expect(r.piiKinds).toEqual(['INN']);
+  });
+});

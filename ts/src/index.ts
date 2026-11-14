@@ -14,6 +14,7 @@ export * from './mask-cache';
 export * from './masker';
 export * from './media';
 export * from './media-client';
+export * from './media-consent';
 export * from './media-text';
 export * from './pseudonymizer-client';
 export * from './request-walker';

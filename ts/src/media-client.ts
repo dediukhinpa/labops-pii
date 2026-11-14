@@ -1,5 +1,7 @@
 import { z } from 'zod';
 import { MediaMaskerError } from './errors';
+import { KIND_FACE, KIND_QR_CODE } from './constants';
+import { sanitizeKinds } from './media-consent';
 
 /** Коды ответа media-masker, означающие «этот файл не обработать» (остальные - сбой сервиса). */
 const REFUSAL_STATUSES: ReadonlySet<number> = new Set([413, 422]);
@@ -13,7 +15,16 @@ const recognizedSchema = z.object({
   codes: z.array(z.object({ kind: z.enum(['qr', 'barcode']), text: z.string() })).default([]),
   hidden_text: z.boolean().default(false),
 });
-const maskImageSchema = imageSchema.extend({ recognized: recognizedSchema.nullish() });
+// Счётчики сервиса: типы находок детектора, лица и коды. Старый сервис поля не присылает.
+const statsSchema = z.object({
+  pii_kinds: z.array(z.string()).default([]),
+  faces: z.number().int().default(0),
+  codes: z.number().int().default(0),
+});
+const maskImageSchema = imageSchema.extend({
+  recognized: recognizedSchema.nullish(),
+  stats: statsSchema.nullish(),
+});
 const extractSchema = z.object({
   kind: z.enum(['text', 'images', 'mixed']),
   pages: z.array(z.object({
@@ -22,6 +33,7 @@ const extractSchema = z.object({
     image: imageSchema.nullable(),
     recognized: recognizedSchema.nullish(),
   })),
+  stats: statsSchema.nullish(),
 });
 const errorSchema = z.object({ error: z.string() });
 
@@ -51,6 +63,11 @@ export interface MaskedImage {
   readonly mediaType: string;
   readonly data: string;
   readonly recognized: Recognized;
+  /**
+   * Типы ПДн, найденные на оригинале (PHONE, PERSON, FACE, QR_CODE...; без значений). Пусто -
+   * находок нет или сервис старой версии: разрешение на оригинал не предлагается.
+   */
+  readonly piiKinds?: readonly string[];
 }
 
 /** Страница PDF: либо текстовый слой, либо замаскированная картинка. */
@@ -61,6 +78,17 @@ export interface DocumentPage {
 
 type RecognizedWire = z.input<typeof recognizedSchema> | null | undefined;
 
+type StatsWire = z.input<typeof statsSchema> | null | undefined;
+
+/** Типы находок из счётчиков сервиса: детектор ПДн плюс лица и QR/штрихкоды. */
+function toKinds(stats: StatsWire): string[] {
+  if (stats === null || stats === undefined) return [];
+  const kinds = [...(stats.pii_kinds ?? [])];
+  if ((stats.faces ?? 0) > 0) kinds.push(KIND_FACE);
+  if ((stats.codes ?? 0) > 0) kinds.push(KIND_QR_CODE);
+  return sanitizeKinds(kinds);
+}
+
 function toRecognized(r: RecognizedWire): Recognized {
   if (r === null || r === undefined) return NOTHING_RECOGNIZED;
   return { text: r.text ?? '', codes: r.codes ?? [], hiddenText: r.hidden_text ?? false };
@@ -69,6 +97,8 @@ function toRecognized(r: RecognizedWire): Recognized {
 /** Результат разбора PDF. */
 export interface ExtractedDocument {
   readonly pages: readonly DocumentPage[];
+  /** Типы ПДн, найденные на растровых страницах (без значений). */
+  readonly piiKinds?: readonly string[];
 }
 
 /** Что нужно прокси от media-masker (в тестах подменяется). */
@@ -105,13 +135,17 @@ export class HttpMediaMasker implements MediaMasker {
       : { media_type: mediaType, data };
     const raw = await this.post('/mask_image', body);
     const r = parseWith(maskImageSchema, raw);
-    return { mediaType: r.media_type, data: r.data, recognized: toRecognized(r.recognized) };
+    return {
+      mediaType: r.media_type, data: r.data, recognized: toRecognized(r.recognized),
+      piiKinds: toKinds(r.stats),
+    };
   }
 
   async extractDocument(data: string): Promise<ExtractedDocument> {
     const raw = await this.post('/extract_document', { media_type: 'application/pdf', data });
     const r = parseWith(extractSchema, raw);
     return {
+      piiKinds: toKinds(r.stats),
       pages: r.pages.map((p) => ({
         text: p.text,
         image: p.image === null ? null : {

@@ -58,6 +58,8 @@ export class RequestWalker {
   passedAttachments = 0;
   /** Сколько вложений обработано через media-masker. */
   maskedAttachments = 0;
+  /** Вложения, отправленные оригиналом по разрешению владельца. */
+  consentOriginals = 0;
   /** Вложения, замененные пометкой (fail closed): счётчик по причинам из закрытого списка. */
   readonly blockedReasons: Partial<Record<BlockReason, number>> = {};
 
@@ -194,24 +196,41 @@ export class RequestWalker {
     }
     try {
       if (block.type === 'image') {
+        // Владелец разрешил оригинал этого файла: блок уходит как есть, без media-masker
+        if (media.originalConsent(source.data) !== undefined) {
+          this.consentOriginals++;
+          return 1;
+        }
         const masked = await media.maskImage(source.mediaType, source.data);
         const src = block.source as JsonObject;
         src.media_type = masked.mediaType;
         src.data = masked.data;
         this.maskedAttachments++;
-        const note = this.recognizedBlock(masked.recognized);
-        if (note === undefined) return 1;
-        // cache_control закрывает префикс: переносим на блок с распознанным текстом
+        const recognizedNote = this.recognizedBlock(masked.recognized);
+        const offerText = media.consentNote(source.data, masked.piiKinds);
+        if (recognizedNote === undefined && offerText === undefined) return 1;
+        const notes: JsonObject[] = [];
+        if (recognizedNote !== undefined) {
+          notes.push(recognizedNote);
+          this.leaves.push({ holder: recognizedNote, key: 'text',
+            text: recognizedNote.text as string });
+        }
+        // Текст про разрешение - не лист: в нём только типы ПДн и id, значений нет
+        if (offerText !== undefined) notes.push({ type: 'text', text: offerText });
+        // cache_control закрывает префикс: переносим на последний добавленный блок
         if (block.cache_control !== undefined) {
-          note.cache_control = block.cache_control;
+          (notes[notes.length - 1] as JsonObject).cache_control = block.cache_control;
           delete block.cache_control;
         }
-        parent.splice(index + 1, 0, note);
-        this.leaves.push({ holder: note, key: 'text', text: note.text as string });
-        return 2;
+        parent.splice(index + 1, 0, ...notes);
+        return 1 + notes.length;
       }
       if (source.mediaType !== PDF_MEDIA_TYPE) return this.block(parent, index, block,
         'unsupported_type');
+      if (media.originalConsent(source.data) !== undefined) {
+        this.consentOriginals++; // документ уходит как есть по разрешению владельца
+        return 1;
+      }
       const replacement = await this.pdfBlocks(block, source.data, media);
       parent.splice(index, 1, ...replacement.blocks);
       this.leaves.push(...replacement.leaves);
@@ -278,6 +297,9 @@ export class RequestWalker {
       }
     }
     if (blocks.length === 0) addText(EMPTY_DOCUMENT_TEXT);
+    // Текст про разрешение на оригинал (не лист: значений ПДн в нём нет)
+    const offerText = media.consentNote(data, doc.piiKinds);
+    if (offerText !== undefined) blocks.push({ type: 'text', text: offerText });
     // cache_control закрывает префикс: переносим на последний блок замены
     if (block.cache_control !== undefined) {
       (blocks[blocks.length - 1] as JsonObject).cache_control = block.cache_control;
