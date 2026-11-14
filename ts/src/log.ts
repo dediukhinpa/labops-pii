@@ -22,6 +22,10 @@ export interface LogFields {
   readonly restored_tokens?: number;
   readonly pii_types?: readonly string[];
   readonly count?: number;
+  /** Короткий id вложения (отпечаток), по которому владелец дал разрешение на оригинал. */
+  readonly media_id?: string;
+  /** Вложения, отправленные оригиналом по разрешению владельца, за запрос. */
+  readonly consent_originals?: number;
 }
 
 /** Приёмник журнала (в тестах подменяется). */

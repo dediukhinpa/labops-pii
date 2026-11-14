@@ -257,3 +257,54 @@ def test_api_flag_reaches_masker(client: object, auth: dict[str, str]) -> None:
         "/mask_image", json={**body, "original_if_clean": True}, headers=auth
     )
     assert on.status_code == 200 and on.json()["stats"]["original_kept"] is True
+
+
+# --- Типы находок для запроса разрешения на оригинал -----------------------------------------
+
+
+@dataclass(frozen=True, slots=True)
+class TypedHit:
+    """Находка с типом (как Detection детектора)."""
+
+    start: int
+    end: int
+    pii_type: str
+
+
+class TypedDetector:
+    """Детектор: слово SECRETWORDA - PHONE, остальные SECRETWORD* - PERSON."""
+
+    def detect(self, text: str) -> list[TypedHit]:
+        return [
+            TypedHit(m.start(), m.end(), "PHONE" if m.group() == f"{SECRET}A" else "PERSON")
+            for m in re.finditer(rf"{SECRET}\w*", text)
+        ]
+
+
+def make_typed_masker(passes: list[list[OcrWord]]) -> ImageMasker:
+    return ImageMasker(
+        ScriptedOcr(passes),  # type: ignore[arg-type]
+        TypedDetector(),  # type: ignore[arg-type]
+        NoFaces(),  # type: ignore[arg-type]
+        hide_unreadable=False,
+        codes=NoCodes(),  # type: ignore[arg-type]
+    )
+
+
+def test_pii_kinds_collected_over_all_passes_in_default_mode() -> None:
+    """Типы находок всех проходов (без значений), по алфавиту."""
+    masker = make_typed_masker([[PII_A], [PII_B], [SAFE]])
+    _out, stats, _rec = masker.mask_image_ex(blank())
+    assert stats.pii_kinds == ("PERSON", "PHONE")
+
+
+def test_pii_kinds_in_original_if_clean_mode() -> None:
+    masker = make_typed_masker([[PII_A, SAFE], [SAFE]])
+    _out, stats, _rec = masker.mask_original_if_clean(blank())
+    assert stats.pii_kinds == ("PHONE",) and stats.original_kept is False
+
+
+def test_pii_kinds_empty_when_clean() -> None:
+    masker = make_typed_masker([[SAFE]])
+    _out, stats, _rec = masker.mask_image_ex(blank())
+    assert stats.pii_kinds == ()

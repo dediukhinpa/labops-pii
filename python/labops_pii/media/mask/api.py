@@ -81,6 +81,7 @@ class StatsOut(BaseModel):
     codes: int = 0
     unreadable_boxes: int = 0
     original_kept: bool = False
+    pii_kinds: list[str] = []
 
 
 class CodeOut(BaseModel):
@@ -136,6 +137,7 @@ def _stats_out(stats: MaskStats) -> StatsOut:
         codes=stats.codes,
         unreadable_boxes=stats.unreadable_boxes,
         original_kept=stats.original_kept,
+        pii_kinds=list(stats.pii_kinds),
     )
 
 

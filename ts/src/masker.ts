@@ -64,6 +64,8 @@ export interface MaskStats {
   readonly strippedAttachments: number;
   /** Вложения, обработанные через media-masker. */
   readonly maskedAttachments: number;
+  /** Вложения, отправленные оригиналом по разрешению владельца. */
+  readonly consentOriginals: number;
   /** Вложения, скрытые пометкой (fail closed), по причинам из закрытого списка. */
   readonly blockedReasons: Readonly<Record<string, number>>;
   /** Листьев взято из памяти восстановлений (без обращения к сервису). */
@@ -306,6 +308,7 @@ export class RequestMasker {
         rememberedLeaves,
         bootId,
         maskedAttachments: walker.maskedAttachments,
+        consentOriginals: walker.consentOriginals,
         blockedReasons: walker.blockedReasons,
       },
       maskedTexts,
