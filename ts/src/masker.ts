@@ -19,6 +19,7 @@ import { BoundedCache, BootTracker, maskCacheKey, textKey } from './mask-cache';
 import type { MediaProcessor } from './media';
 import type { Pseudonymizer } from './pseudonymizer-client';
 import { RequestWalker } from './request-walker';
+import { insertResponsesNote, ResponsesWalker } from './responses-walker';
 import { chunkBatches, mapLimited, splitText } from './text-split';
 
 /**
@@ -30,6 +31,16 @@ import { chunkBatches, mapLimited, splitText } from './text-split';
 export const THREAD_IDLE_RESET_MS = 30 * 60 * 1000;
 /** Предел числа тредов, для которых помнится поколение кэша (старые вытесняются). */
 export const THREAD_EPOCHS_MAX = 100_000;
+
+/**
+ * Формат тела запроса к модели: Anthropic Messages (Claude Code) или OpenAI Responses (Codex).
+ * От формата зависит только обход тела и место справки о токенах; маскирование, кэш, память
+ * восстановлений и вторая линия общие.
+ */
+export type RequestFormat = 'anthropic-messages' | 'openai-responses';
+
+/** Обход тела запроса: листья для маскирования и счётчики вложений. */
+type BodyWalker = RequestWalker | ResponsesWalker;
 
 /** Настройки кэша по тредам. */
 export interface MaskerOptions {
@@ -195,9 +206,15 @@ export class RequestMasker {
    *   ПДн после маски только с `onResidualPii: 'reject'` (по умолчанию остаток дозамаскируется
    *   или лист скрывается заглушкой, запрос не отклоняется).
    */
-  async mask(body: JsonObject, threadId: string): Promise<MaskStats> {
+  async mask(
+    body: JsonObject,
+    threadId: string,
+    format: RequestFormat = 'anthropic-messages',
+  ): Promise<MaskStats> {
     const scope = this.threadScope(threadId);
-    const walker = new RequestWalker(this.imagePolicy, this.media);
+    const walker: BodyWalker = format === 'openai-responses'
+      ? new ResponsesWalker(this.imagePolicy, this.media)
+      : new RequestWalker(this.imagePolicy, this.media);
     await walker.walk(body);
     for (let attempt = 0; attempt < MASK_BOOT_ATTEMPTS; attempt++) {
       // boot_id сверяется до и после маскирования: если сервис перезапустился в середине,
@@ -242,7 +259,12 @@ export class RequestMasker {
           pii_types: [...found.types].sort(),
         });
       }
-      insertSystemNote(body);
+      if (walker instanceof ResponsesWalker) {
+        walker.finish();
+        insertResponsesNote(body, SYSTEM_INSERT_TEXT);
+      } else {
+        insertSystemNote(body);
+      }
       return { ...pass.stats, forgottenLeaves: stale.length, remaskedLeaves: remasked,
         hiddenLeaves: hidden };
     }
@@ -251,7 +273,7 @@ export class RequestMasker {
 
   /** Один проход маскирования листьев при известном boot_id. */
   private async maskOnce(
-    walker: RequestWalker,
+    walker: BodyWalker,
     threadId: string,
     scope: string,
     bootId: string,

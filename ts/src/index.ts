@@ -18,6 +18,8 @@ export * from './media-consent';
 export * from './media-text';
 export * from './pseudonymizer-client';
 export * from './request-walker';
+export * from './responses-walker';
+export * from './responses-restore';
 export * from './restorer';
 export * from './sse';
 export * from './stream-restore';
