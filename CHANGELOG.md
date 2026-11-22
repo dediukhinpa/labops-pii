@@ -2,6 +2,35 @@
 
 Формат: semver. Ломающее изменение — новая major-версия.
 
+## 1.2.0
+
+Минор: второй формат запросов — OpenAI Responses (Codex CLI по подписке ChatGPT). Формат
+Anthropic Messages и его поведение не менялись; новый формат включается только явным
+`format: 'openai-responses'`.
+
+- **TS:** `RequestMasker.mask(body, threadId, format?)` — `format` по умолчанию
+  `'anthropic-messages'` (как раньше), `'openai-responses'` — обход `ResponsesWalker`.
+  Справка о токенах вставляется отдельным developer-сообщением сразу после ведущих
+  developer/system-элементов `input[]` (позиция стабильна — кэш префикса сохраняется).
+- **Обход Responses** (снят с живого трафика Codex 0.171.0 и схемы `ResponseItem`): маскируются
+  `instructions`, текстовые части сообщений, сводки и текст рассуждений, `custom_tool_call.input`
+  (JS-код), аргументы `function_call` (листья разобранного JSON, строка собирается заново),
+  выводы инструментов, действия shell/поиска. Как есть проходят `additional_tools`,
+  `encrypted_content`, `compaction*`, `tool_search_output`. Неизвестный элемент или часть —
+  отказ (fail closed), как у Messages. Картинки `input_image` (data URL) — через media-masker
+  и разрешение владельца на оригинал, как `image` у Messages.
+- **Поток:** `restoreResponsesSse` — `output_text`/`reasoning*` дельты восстанавливаются
+  пачками через буфер границы токена; `custom_tool_call_input` и `function_call_arguments`
+  копятся до `.done` и уходят одной восстановленной дельтой (код с токеном не исполняется);
+  итоговые события (`*.done`, `content_part.done`, `output_item.done`, `response.completed`)
+  получают ровно отданный текст, пары идут в память восстановлений. Сбой —
+  `response.failed`. `restoreResponsesJson` — для ответа без потока.
+- **Клиент сервиса:** `HttpPseudonymizer` повторяет запрос при 503 «занят» (до 4 раз, паузы
+  250/500/1000/2000 мс; `busyRetries`, `busyBackoffMs` в настройках). Сервис пускает 2
+  запроса одновременно и остальным отвечает 503 «retry later», а клиент шлёт до 6
+  параллельно: первый запрос нити Codex с большим системным текстом получал 503 на `/check`.
+  Прочие ошибки, как и раньше, без повтора.
+
 ## 1.1.4
 
 Минор: оригинал вложения с ПДн уходит модели только с разрешения владельца (opt-in, по

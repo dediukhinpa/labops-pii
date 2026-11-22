@@ -117,3 +117,35 @@ describe('HttpPseudonymizer', () => {
     await expect(dead.health()).rejects.toMatchObject({ code: 'unreachable' });
   });
 });
+
+describe('HttpPseudonymizer: повтор при 503 «занят»', () => {
+  const HTTP_BUSY = 503;
+  const busyClient = (baseUrl: string, retries: number): HttpPseudonymizer => new HttpPseudonymizer({
+    baseUrl, token: TOKEN, timeoutMs: TIMEOUT_MS, busyRetries: retries, busyBackoffMs: 1,
+  });
+
+  test('503, затем ответ: запрос повторён и прошёл', async () => {
+    let n = 0;
+    const { hits } = start(() => (++n <= 2
+      ? new Response('busy', { status: HTTP_BUSY }) : json({ has_pii: false, types: [] })));
+    const client = busyClient(`http://127.0.0.1:${server?.port}`, 4);
+    expect(await client.check('текст')).toEqual({ hasPii: false, types: [] });
+    expect(hits.length).toBe(3);
+  });
+
+  test('503 дольше лимита повторов — ошибка http_503 после retries+1 попыток', async () => {
+    const { hits } = start(() => new Response('busy', { status: HTTP_BUSY }));
+    const client = busyClient(`http://127.0.0.1:${server?.port}`, 2);
+    const err = await client.check('текст').catch((e: unknown) => e);
+    expect(err).toBeInstanceOf(PseudonymizerError);
+    expect((err as PseudonymizerError).code).toBe('http_503');
+    expect(hits.length).toBe(3);
+  });
+
+  test('прочие ошибки (500) не повторяются', async () => {
+    const { hits } = start(() => new Response('boom', { status: HTTP_ERROR }));
+    const client = busyClient(`http://127.0.0.1:${server?.port}`, 4);
+    await expect(client.check('текст')).rejects.toBeInstanceOf(PseudonymizerError);
+    expect(hits.length).toBe(1);
+  });
+});
