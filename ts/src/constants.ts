@@ -12,6 +12,18 @@ export const SPLIT_SEARCH_MIN_SHARE = 0.5;
 export const CHECK_OVERLAP_CHARS = 200;
 /** Параллельных вызовов /check и /restore одного запроса. */
 export const SERVICE_CONCURRENCY = 6;
+/**
+ * Повторы запроса к сервису при 503 «занят». Сервис пускает PSEUDONYMIZER_MAX_CONCURRENCY
+ * запросов (по умолчанию 2) и остальным после ~5 с ожидания отвечает 503 «retry later», а
+ * клиент шлёт до SERVICE_CONCURRENCY параллельно. Первый запрос нити Codex (~60 КБ системного
+ * текста, 22.11.2026) так получал 503 и проходил только повтором самого Codex. Отказ по лимиту
+ * случается до обработки, а операции сервиса идемпотентны — повтор безопасен.
+ */
+export const SERVICE_BUSY_RETRIES = 4;
+/** Первая пауза перед повтором при 503, мс; дальше удваивается (250, 500, 1000, 2000). */
+export const SERVICE_BUSY_BACKOFF_MS = 250;
+/** HTTP-статус «сервис занят». */
+export const HTTP_SERVICE_BUSY = 503;
 
 /** Не чаще раза в столько мс опрашивается /health сервиса. */
 export const HEALTH_POLL_MS = 5_000;

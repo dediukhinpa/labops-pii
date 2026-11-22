@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { PseudonymizerError } from './errors';
+import { HTTP_SERVICE_BUSY, SERVICE_BUSY_BACKOFF_MS, SERVICE_BUSY_RETRIES } from './constants';
 
 const healthSchema = z.object({ boot_id: z.string().min(1) });
 const batchSchema = z.object({ items: z.array(z.object({ text: z.string() })) });
@@ -34,6 +35,10 @@ export interface ClientOptions {
   readonly timeoutMs: number;
   /** Слать `case_labels: true` в /pseudonymize_batch; false - поле не отправляется вовсе. */
   readonly caseLabels?: boolean;
+  /** Повторы при 503 «занят» (по умолчанию SERVICE_BUSY_RETRIES). */
+  readonly busyRetries?: number;
+  /** Первая пауза перед повтором при 503, мс (по умолчанию SERVICE_BUSY_BACKOFF_MS). */
+  readonly busyBackoffMs?: number;
 }
 
 /** HTTP-клиент сервиса. Любой сбой (сеть, таймаут, не 2xx, неверный ответ) - PseudonymizerError. */
@@ -80,12 +85,34 @@ export class HttpPseudonymizer implements Pseudonymizer {
     await this.call('DELETE', `/threads/${encodeURIComponent(threadId)}`, undefined, true, true);
   }
 
+  /** Запрос с повтором при 503 «занят» (см. SERVICE_BUSY_RETRIES). */
   private async call(
     method: string,
     path: string,
     body?: unknown,
     auth = true,
     noContent = false,
+  ): Promise<unknown> {
+    const retries = this.options.busyRetries ?? SERVICE_BUSY_RETRIES;
+    let pause = this.options.busyBackoffMs ?? SERVICE_BUSY_BACKOFF_MS;
+    for (let attempt = 0; ; attempt++) {
+      try {
+        return await this.callOnce(method, path, body, auth, noContent);
+      } catch (e) {
+        const busy = e instanceof PseudonymizerError && e.code === `http_${HTTP_SERVICE_BUSY}`;
+        if (!busy || attempt >= retries) throw e;
+      }
+      await new Promise((r) => setTimeout(r, pause));
+      pause *= 2;
+    }
+  }
+
+  private async callOnce(
+    method: string,
+    path: string,
+    body: unknown,
+    auth: boolean,
+    noContent: boolean,
   ): Promise<unknown> {
     const headers: Record<string, string> = {};
     if (auth) headers.authorization = `Bearer ${this.options.token}`;
