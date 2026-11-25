@@ -24,7 +24,7 @@ export interface DetectorOptions {
   maskAddresses?: boolean | undefined;
   /** Основы слов белого списка (как PII_ALLOWED_WORDS в Python); по умолчанию пусто. */
   allowedWords?: readonly string[] | undefined;
-  /** Искать латинские ФИО после метки контакта («Contact: Li Wei»); по умолчанию да. */
+  /** Искать латинские ФИО («Contact: Li Wei», «Sergey Ivanov»); по умолчанию да. */
   latinNames?: boolean | undefined;
 }
 

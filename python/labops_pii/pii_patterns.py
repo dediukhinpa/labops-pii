@@ -302,10 +302,29 @@ PHONE_RE = re.compile(
 # BARE_PHONE_GAP символов, поэтому захват промежутка тоже не длиннее (перебор ограничен).
 # Два перевода строки (пустая строка между меткой и числом) связь по-прежнему разрывают.
 BARE_PHONE_GAP = 24
+# Шаблоны, которые начинаются с lookbehind, движок проверяет на каждой позиции текста. Опережающая
+# проверка первой буквы ключевого слова (с тем же учётом регистра) отсекает почти все позиции
+# сразу: находки те же (200 000 случайных строк без расхождений), время в 1,5-5 раз меньше
+_PHONE_WORD_FIRST = "(?=(?i:[тpмфwvtm]))"
 BARE_PHONE_RE = re.compile(
-    r"(?<![A-Za-zА-Яа-яЁё])(?i:тел|phone|моб|факс|whatsapp|viber|tel|mob)"
+    _PHONE_WORD_FIRST
+    + r"(?<![A-Za-zА-Яа-яЁё])(?i:тел|phone|моб|факс|whatsapp|viber|tel|mob)"
     rf"(?=\D{{0,{BARE_PHONE_GAP}}}\d)(?:[^\d\n]*\n)?[^\d\n]*"
     r"(?<!\d)([3-9]\d{9})(?!\d)(?![.,]\d)"
+)
+
+# Российский номер в необычной разбивке («+7 916 12 345 67», «8 916 12-34-567»): 10 цифр после
+# «+7» или после слова «тел» и т.п. с любыми короткими разделителями. Без «+7» и без слова
+# такая разбивка неотличима от артикулов и сумм. Разделитель между цифрами - не больше двух
+# знаков, промежуток после слова - не больше BARE_PHONE_GAP: перебор ограничен.
+_LOOSE_SEP = r"[ \t\-.()]{0,2}"
+PHONE_LOOSE_RE = re.compile(
+    r"(?=(?i:[+тpмфwvtm]))(?:"  # первая буква: «+7» или ключевое слово (см. _PHONE_WORD_FIRST)
+    rf"(?<![\d+])\+7(?:{_LOOSE_SEP}\d){{10}}(?!\d)(?![.,]\d)"
+    r"|(?<![A-Za-zА-Яа-яЁё])(?i:тел|phone|моб|факс|whatsapp|viber|tel|mob)"
+    rf"[^\d\n]{{0,{BARE_PHONE_GAP}}}?"
+    rf"(?<!\d)((?:\+7|8|7){_LOOSE_SEP}9(?:{_LOOSE_SEP}\d){{9}}|9(?:{_LOOSE_SEP}\d){{9}})"
+    r"(?!\d)(?![.,]\d))"
 )
 
 # --- Банковские реквизиты --------------------------------------------------------
@@ -321,7 +340,12 @@ CARD_RE = re.compile(
 # Расчётный счёт: 20 цифр, балансовый счёт 301/302/40[1-8]/423/426, группы 5-3-1-4-7 через
 # один и тот же разделитель (или без него).
 ACCOUNT_RE = re.compile(
-    r"(?<![\d.,])(?:30[12]|40[1-8]|423|426)\d{2}([ \-]?)\d{3}\1\d\1\d{4}\1\d{7}(?!\d)"
+    r"(?<![\d.,])(?:30[12]|40[1-8]|423|426)(?:"
+    r"\d{2}([ \-]?)\d{3}\1\d\1\d{4}\1\d{7}"
+    # те же 20 цифр группами по 4 («4081 7810 0999 1000 4313»): раньше уходили открытыми
+    # или маскировались картой без хвоста (ревью 25.11.2026)
+    r"|\d([ \-])\d{4}\2\d{4}\2\d{4}\2\d{4}"
+    r")(?!\d)"
 )
 # Счета организаций (301/302, 401-407) — реквизит юрлица, физлица (408, 423, 426) — ПДн.
 ACCOUNT_PERSON_PREFIXES = ("408", "423", "426")
@@ -523,7 +547,9 @@ SNILS_MIN_NUMBER = 1_001_998
 SNILS_MOD = 101
 SNILS_SPECIAL_SUM = 100
 SNILS_BARE_RE = re.compile(rf"(?<!\d)\d{{{SNILS_LEN}}}(?!\d)")
-SNILS_FMT_RE = re.compile(r"(?<!\d)\d{3}[ \-]\d{3}[ \-]\d{3}[ ]?\d{2}(?!\d)")
+# «929-134-653-26» (дефис и перед контрольным числом): сервис маскировал такую запись
+# (дефисы + сумма), а guard её не видел (матрица 25.11.2026)
+SNILS_FMT_RE = re.compile(r"(?<!\d)\d{3}[ \-]\d{3}[ \-]\d{3}[ \-]?\d{2}(?!\d)")
 _NON_DIGIT_RE = re.compile(r"\D")
 
 
@@ -580,6 +606,26 @@ def find_snils_spans(text: str, start: int = 0, end: int | None = None) -> list[
                 spans.append(match.span())
     return sorted(spans)
 
+# --- ИНН группами ------------------------------------------------------------------
+
+# ИНН группами через пробел или дефис («ИНН 5497 0940 0950») - только после слова «ИНН»: без
+# слова группы цифр не отличить от суммы или артикула. Правило общее у сервиса и guard (guard
+# раньше видел только ИНН подряд и пропускал такую запись, матрица 25.11.2026)
+INN_GROUPED_RE = re.compile(r"(?=\d)(?<![\d.,])\d{2,4}(?:[ \-]\d{2,4}){2,5}(?!\d)")
+INN_GROUPED_LENGTHS = (10, 12)
+# Окно слева, в котором ищется слово «ИНН» (как KEYWORD_WINDOW сервиса)
+INN_KEYWORD_WINDOW = 16
+# Левая граница слова нужна: «инн» встречается внутри слов («длинная»); правой нет:
+# «ИНН:5497 0940 0950» тоже находится
+_INN_WORD_RE = re.compile(r"(?<![а-яёa-z])инн")
+
+
+def has_inn_word_before(text: str, pos: int) -> bool:
+    """Есть ли слово «ИНН» в окне INN_KEYWORD_WINDOW слева от позиции (без учёта регистра)."""
+    window = text[max(0, pos - INN_KEYWORD_WINDOW):pos].lower()
+    return _INN_WORD_RE.search(window) is not None
+
+
 # --- E-mail ----------------------------------------------------------------------
 
 # Кириллица и любой Unicode допустимы в локальной части и домене (IDN: «иван@пример.рф»)
@@ -602,9 +648,84 @@ NICK_RE = re.compile(r"(?<![\w.+\-@])@[A-Za-z][A-Za-z0-9_]{4,31}(?![\w@]|\.[A-Za
 # Ссылка на Telegram: «t.me/ник», «t.me/+инвайт», «t.me/joinchat/…» (с протоколом или без).
 # Слева не слово и не «.»/«@»: «dt.me/x» и «a@t.me/x» ссылкой не считаются.
 TME_RE = re.compile(
+    # первая буква ссылки (см. _PHONE_WORD_FIRST): http, www, t.me, m., vk, instagram, ok, fb
+    r"(?=(?i:[hwtmviof]))(?:"
     r"(?<![\w.@\-])(?i:(?:https?://)?(?:www\.)?(?:t|telegram)\.me)/[A-Za-z0-9_+]"
     r"[A-Za-z0-9_+/\-]{1,63}"
+    # Профиль в соцсети («vk.com/ivan.petrov88», «instagram.com/ivan_petrov88»): такой же
+    # идентификатор человека, как ссылка Telegram, раньше уходил открытым (матрица 25.11.2026)
+    r"|(?<![\w.@\-])(?i:(?:https?://)?(?:www\.|m\.)?"
+    r"(?:vk\.com|vkontakte\.ru|instagram\.com|ok\.ru/profile|facebook\.com|fb\.com))"
+    r"/[A-Za-z0-9_][A-Za-z0-9_.]{1,63}(?<!\.))"
 )
+
+# Логин Skype после слова «skype»/«скайп»: «skype: ivan.petrov88», «Скайп - live:ivan_p».
+# Берётся группа login: слово «skype» остаётся открытым (матрица 25.11.2026)
+SKYPE_RE = re.compile(
+    r"(?<![\w@])(?i:skype|скайп)[ \t]{0,3}[:\-]?[ \t]{0,3}"
+    r"(?P<login>(?:live:)?[A-Za-z][A-Za-z0-9._\-]{4,31})(?<![.\-])(?![\w@])"
+)
+
+# Email в обход «@» (матрица 25.11.2026): «ivan.petrov [at] mail.ru», «ivan.petrov @ mail.ru»,
+# «ivan.petrov собака mail.ru». Голое «at» без скобок не берётся: «look at example.com» -
+# обычная фраза; «a @b.com» (пробел только слева) - упоминание «@b.com», не адрес. Зона домена -
+# из списка, чтобы «5 @ file.txt» не стал адресом
+EMAIL_OBFUSCATED_TLDS = (
+    "ru|com|net|org|io|info|biz|su|by|kz|ua|uz|de|me|pro|online|site|ai|dev|co|us|uk|eu|рф"
+)
+EMAIL_LOCAL_MAX = 64
+# Разделитель вместо «@»: ищется первым, локальная часть - назад от него, домен - вперёд.
+# Так поиск линеен, и тексты без «@», «собака» и «at» в скобках (почти все) он не трогает
+_EMAIL_OBF_SEP_RE = re.compile(
+    r"[ \t]{0,3}[\[({](?i:at|собака)[\])}][ \t]{0,3}"
+    r"|[ \t]{1,3}@[ \t]{1,3}|@[ \t]{1,3}|[ \t]{1,3}(?i:собака)[ \t]{1,3}"
+)
+# Опережающая проверка первого знака - как у телефонных шаблонов (_PHONE_WORD_FIRST)
+_EMAIL_OBF_ANCHOR_RE = re.compile(r"(?=(?i:[@с\[({]))(?:@|(?i:собака|[\[({]at[\])}]))")
+_EMAIL_OBF_DOMAIN_RE = re.compile(
+    r"[^\W_][\w\-]{0,62}(?:\.[^\W_][\w\-]{0,62}){0,4}"
+    rf"\.(?i:{EMAIL_OBFUSCATED_TLDS})(?![\w\-]|\.[^\W_])"
+)
+_EMAIL_LOCAL_CHARS = frozenset(
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._%+-"
+)
+
+
+def find_obfuscated_emails(text: str) -> list[tuple[int, int, str, str]]:
+    """Email, записанный в обход «@»: (начало, конец, локальная часть, домен).
+
+    Args:
+        text: Любой текст.
+
+    Returns:
+        Находки по порядку; ключом адреса служит «локальная часть@домен».
+    """
+    if _EMAIL_OBF_ANCHOR_RE.search(text) is None:
+        return []
+    found: list[tuple[int, int, str, str]] = []
+    last_end = 0
+    for sep in _EMAIL_OBF_SEP_RE.finditer(text):
+        local_end = sep.start()
+        local_start = local_end
+        while (
+            local_start > max(last_end, local_end - EMAIL_LOCAL_MAX - 1)
+            and text[local_start - 1] in _EMAIL_LOCAL_CHARS
+        ):
+            local_start -= 1
+        local = text[local_start:local_end]
+        before = text[local_start - 1] if local_start > 0 else ""
+        # Слева от локальной части - не буква, не цифра и не знак адреса: иначе это хвост
+        # слова («ж» в «женаivan») или локальная часть длиннее допустимой
+        glued = bool(before) and (before.isalnum() or before in "_.+-@")
+        if not local or len(local) > EMAIL_LOCAL_MAX or not local[0].isalnum() or glued:
+            continue
+        domain = _EMAIL_OBF_DOMAIN_RE.match(text, sep.end())
+        if domain is None:
+            continue
+        found.append((local_start, domain.end(), local, domain.group()))
+        last_end = domain.end()
+    return found
+
 
 # --- Адреса (этап Г): улица + дом, квартира, индекс --------------------------------
 
@@ -630,6 +751,8 @@ _ADDR_NAME_GUARD = rf"(?!(?i:{_ADDR_NAME_STOP})(?![А-Яа-яЁё]))"
 # Название: «Ленина», «Красной Армии», «1-я Тверская», «8 Марта», «50 лет Октября»
 _ADDR_NAME = (
     r"(?:\d{1,3}-(?:я|й|е|го|ая|ой|ья|ий)[ \t]+|\d{1,3}[ \t]+(?:(?i:лет)[ \t]+)?)?"
+    # «наб. реки Фонтанки», «наб. канала Грибоедова»: строчное слово перед названием
+    r"(?:(?:реки|канала|озера)[ \t]+)?"
     rf"{_ADDR_NAME_GUARD}{_ADDR_WORD}(?:[ \t]+{_ADDR_WORD}){{0,2}}"
 )
 # Название перед ключевым словом («Ленина ул., д. 5», «1-я Тверская ул., 5»)
@@ -642,13 +765,14 @@ _ADDR_NAME_POSTFIX = (
 _ADDR_DESIG = (
     r"(?:(?i:улиц(?:а|е|у|ы)|проспект(?:а|е|у)?|переул(?:ок|ка|ке|ку)|бульвар(?:а|е|у)?|"
     r"набережн(?:ая|ой|ую)|шоссе|площад(?:ь|и)|проезд(?:а|е|у)?|тупик(?:а|е|у)?|"
-    r"алле(?:я|и|е|ю))"
-    r"|(?:(?i:ул|пр-кт|пр-т|пер|б-р|бул|пр-д)\.?|(?i:наб|пл|ш|пр|просп)\.))"
+    r"алле(?:я|и|е|ю)|микрорайон(?:а|е|у)?)"
+    r"|(?:(?i:ул|пр-кт|пр-т|пер|б-р|бул|пр-д|мкр|мкрн)\.?|(?i:наб|пл|ш|пр|просп)\.))"
     r"(?![а-яё])"
 )
 _ADDR_LEFT = r"(?<![А-Яа-яЁёA-Za-z0-9-])"
 # Номер дома: «5», «5а», «12-14» (после normalize_text «12/14» тоже с дефисом)
-_ADDR_HOUSE = r"\d{1,4}(?:-\d{1,4})?[А-Яа-я]?(?![А-Яа-яЁёA-Za-z0-9])"
+# За номером вплотную может идти корпус или строение: «15к2», «7с1» (их берёт _ADDR_SUFFIX)
+_ADDR_HOUSE = r"\d{1,4}(?:-\d{1,4})?[А-Яа-я]?(?!(?![кКсС]\d)[А-Яа-яЁёA-Za-z0-9])"
 # Пометка дома: «д.», «дом», «влд.», «№»
 _ADDR_MARK = r"(?:(?i:д(?:ом)?|вл(?:д|адение)?)\.?[ \t]*(?:№[ \t]*)?|№[ \t]*)"
 # Корпус, строение, литера, квартира, офис, этаж: «, кв. 12», «корп. 2», «стр. 1», «лит. А»
@@ -686,6 +810,28 @@ _ADDR_CONTEXT = (
     r"|(?<![А-Яа-яЁё])(?i:адрес\w{0,6})(?:[ \t]+[а-яё]{2,15}){0,2}(?:[ \t]*[:\-])?[ \t]*)"
 )
 
+# --- Латинская запись адреса (матрица 25.11.2026): «Tverskaya st. 7», «ul. Tverskaya, 7»,
+# «Nevsky prospekt 28», «221 Baker Street». Название - слова с заглавной (одно-два), тип улицы
+# в транслите или по-английски. Без типа улицы латинский адрес не ищется: «Moscow 7» - не адрес
+_LAT_NAME = r"[A-Z][a-z]{1,24}(?:-[A-Z][a-z]{1,24})?(?:[ \t][A-Z][a-z]{1,24}){0,1}"
+_LAT_TYPE_AFTER = (
+    r"(?i:street|str\.?|st\.|avenue|ave\.?|road|rd\.|boulevard|blvd\.?|lane|ln\.|square|"
+    r"sq\.|embankment|emb\.|prospekt|prospect|pr\.|ulitsa|ulica|ul\.|pereulok|per\.|shosse|"
+    r"highway|naberezhnaya|nab\.)"
+)
+_LAT_TYPE_BEFORE = (
+    r"(?i:ul\.?|ulitsa|ulica|pr\.|prosp\.?|prospekt|per\.|pereulok|nab\.|naberezhnaya|pl\.|"
+    r"ploshchad|sh\.|shosse|bul\.|bulvar)"
+)
+_LAT_HOUSE = (
+    r"(?:(?i:d\.|dom|bld\.?|building|house|h\.|no\.?)[ \t]{0,2})?"
+    r"\d{1,4}[A-Za-z]?(?:[-/]\d{1,4})?(?![\dA-Za-z])"
+    r"(?:[ \t]{0,2},?[ \t]{0,2}(?i:apt\.?|ap\.|apartment|kv\.?|office|of\.|suite|ste\.)"
+    r"[ \t]{0,2}\d{1,4}(?!\d))?"
+)
+_LAT_SEP = r"[ \t]{0,2},?[ \t]{1,2}"
+_LAT_US_TYPE = r"(?:Street|St\.|Avenue|Ave\.?|Road|Rd\.|Boulevard|Blvd\.?|Lane|Ln\.)"
+
 ADDRESS_STREET_HOUSE_RE = re.compile(
     # 1) ключевое слово перед названием: «ул. Ленина, д. 5, кв. 12», «по улице Ленина 5»
     rf"{_ADDR_LEFT}(?P<pre>{_ADDR_DESIG}[ \t]*{_ADDR_NAME}{_ADDR_SEP}{_addr_house_part()})"
@@ -697,9 +843,19 @@ ADDRESS_STREET_HOUSE_RE = re.compile(
     rf"{_ADDR_SUFFIXES}{_ADDR_SEP}(?:(?i:по|на)[ \t]+)?{_ADDR_DESIG}[ \t]*{_ADDR_NAME})"
     # 4) без ключевого слова, но в адресном контексте: «г. Москва, Ленина 5»
     rf"|{_ADDR_CONTEXT}(?P<bare>{_ADDR_NAME}{_ADDR_SEP}{_addr_house_part()})"
+    # 5) латиница, тип после названия: «Tverskaya st. 7», «Nevsky prospekt 28, apt. 5»
+    rf"|(?<![A-Za-z0-9])(?P<lat_post>{_LAT_NAME}[ \t]{{1,2}}{_LAT_TYPE_AFTER}{_LAT_SEP}"
+    rf"{_LAT_HOUSE})"
+    # 6) латиница, тип перед названием: «ul. Tverskaya, 7», «pr. Mira, d. 15»
+    rf"|(?<![A-Za-z0-9])(?P<lat_pre>{_LAT_TYPE_BEFORE}[ \t]{{0,2}}{_LAT_NAME}{_LAT_SEP}"
+    rf"{_LAT_HOUSE})"
+    # 7) номер дома впереди: «221 Baker Street», «10 Downing St.»
+    rf"|(?<![A-Za-z0-9.,])(?P<lat_us>\d{{1,5}}[A-Za-z]?[ \t]{{1,2}}{_LAT_NAME}[ \t]{{1,2}}"
+    rf"{_LAT_US_TYPE})"
+    r"(?![A-Za-z])"
 )
 _ADDR_DIGIT_RE = re.compile(r"\d")
-_ADDR_GROUPS = ("pre", "post", "house_first", "bare")
+_ADDR_GROUPS = ("pre", "post", "house_first", "bare", "lat_post", "lat_pre", "lat_us")
 
 # Индекс слева от адреса: «119019, ул. Арбат, д. 1» или «119019, г. Москва, ул. Арбат, 1».
 # Между индексом и адресом допустимы до трёх сегментов без цифр (город, область).

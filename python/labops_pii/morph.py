@@ -89,6 +89,11 @@ def _parse(lowered: str) -> tuple[Parse, ...]:
     return parses
 
 
+
+def parse_word(word: str) -> tuple[Parse, ...]:
+    """Разборы pymorphy слова в любом регистре и с «ё» (из памяти запроса, как `_parse`)."""
+    return _parse(word.lower().replace("ё", "е"))
+
 @lru_cache(maxsize=LEMMA_CACHE_SIZE)
 def lemma(word: str) -> str:
     """Возвращает лемму слова, предпочитая разбор «фамилия/имя/отчество».
@@ -152,6 +157,9 @@ PATRONYM_FEMALE_ENDINGS = ("овна", "евна", "ична", "инична", "
 # Окончания женской формы фамилии на -ов/-ев/-ин/-ын: «Ивановой». «Иванову» сюда не входит
 # (мужской дательный или женский винительный): без уверенности рода нет.
 SURNAME_FEMALE_SUFFIXES = frozenset({"ой"})
+# Окончание без рода: «Иванову» - и «к Иванову (Ивану)», и «на Иванову (Анну)». Раньше считалось
+# мужским, и женщина в винительном падеже получала токен мужчины с тем же ключом (ревью 25.11)
+SURNAME_GENDERLESS_SUFFIX = "у"
 # «Иванова» — женский именительный или мужской родительный/винительный (R9-A4-07). Без
 # других признаков форма по-прежнему считается женской (R3-ALG-14: «Иванова И.И.» не
 # сливается с «Ивановым И.И.»), но её снимают признаки мужского косвенного падежа:
@@ -208,6 +216,8 @@ def _surname_vote(word: str) -> str | None:
     suffix = lowered[len(stem):]
     if not adjectival and suffix == SURNAME_AMBIGUOUS_SUFFIX:
         return _SURNAME_FEMALE_OR_MALE_OBLIQUE
+    if not adjectival and suffix == SURNAME_GENDERLESS_SUFFIX:
+        return None  # «Иванову»: мужской дательный или женский винительный - рода нет
     female = ADJ_SURNAME_FEMALE_SUFFIXES if adjectival else SURNAME_FEMALE_SUFFIXES
     return GENDER_FEMALE if suffix in female else GENDER_MALE
 
@@ -318,6 +328,39 @@ def with_preposition_gender(key: str, text: str) -> str:
     return " ".join(words)
 
 
+def with_female_subject(key: str) -> str:
+    """Помечает ключ ФИО без рода женским: ФИО - подлежащее при глаголе женского рода.
+
+    «Петрова Александра подписала договор»: форма «Петрова Александра» сама по себе - и
+    женский именительный, и мужской родительный (R9-A4-07), поэтому рода в ключе нет, и она
+    сопоставлялась с «Петров Александр» того же треда. Глагол женского рода после ФИО в
+    начале фразы снимает неоднозначность. Ключ с родом не меняется.
+
+    Args:
+        key: Ключ, построенный `person_key`.
+
+    Returns:
+        Ключ с пометкой женского рода (или тот же ключ, если род уже есть).
+    """
+    words, gender = split_key(key)
+    if gender is not None:
+        return key
+    return " ".join([*words, f"{GENDER_PREFIX}{GENDER_FEMALE}"])
+
+
+# Частей имени у одного человека: фамилия, имя, отчество (или их инициалы) и слово-роль,
+# которое NER нередко берёт в находку («Бухгалтер Павлова Елена Сергеевна»). Больше - склейка
+# людей; две пары «имя фамилия» подряд делит на людей уже детектор (_drop_multi_person_spans)
+MAX_PERSON_NAME_PARTS = 4
+# Частицы в составе ФИО, которые частью имени не считаются: «Мамед оглы», «фон Берг»
+NAME_PARTICLES = frozenset({"оглы", "огл", "кызы", "кзы", "ибн", "бен", "фон", "де", "ван", "дер"})
+
+
+def _name_parts(words: list[str]) -> int:
+    """Сколько частей имени в словах ключа (частицы не считаются)."""
+    return sum(1 for w in words if w not in NAME_PARTICLES)
+
+
 def keys_compatible(first: str, second: str) -> bool:
     """Решает, относятся ли два ключа ФИО к одному человеку.
 
@@ -329,6 +372,13 @@ def keys_compatible(first: str, second: str) -> bool:
     words_a, gender_a = split_key(first)
     words_b, gender_b = split_key(second)
     if gender_a and gender_b and gender_a != gender_b:
+        return False
+    # Больше четырёх частей имени - не один человек, а склейка («Петров А.Б. Сидоров В.Г.»).
+    # Нечёткое сопоставление с ней отдавало бы токен склейки каждому её участнику, и restore
+    # возвращал обоих; точное совпадение ключа (повтор того же написания) работает как раньше.
+    if _name_parts(words_a) > MAX_PERSON_NAME_PARTS or _name_parts(words_b) > (
+        MAX_PERSON_NAME_PARTS
+    ):
         return False
     full_a = {w for w in words_a if len(w) > 1}
     full_b = {w for w in words_b if len(w) > 1}

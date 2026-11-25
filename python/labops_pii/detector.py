@@ -27,27 +27,45 @@ from labops_pii.morph import (
     name_gramme,
     person_key,
     request_cache,
+    with_female_subject,
     with_preposition_gender,
 )
-from labops_pii.name_hints import (
+from labops_pii.latin_names import (
+    LATIN_LETTERS,
+    LATIN_LOWER,
+    LATIN_UPPER,
     NOT_A_NAME_WORDS,
-    find_json_field_names,
     find_latin_name_spans,
+)
+from labops_pii.name_hints import (
+    find_json_field_names,
     find_quoted_name_spans,
     find_table_cell_names,
+)
+from labops_pii.patronymic import (
+    find_name_patronymic_spans,
+    find_surname_name_spans,
+    is_dictionary_surname,
+    is_surname_near_patronymic,
 )
 from labops_pii.pii_patterns import (
     ACCOUNT_RE,
     BARE_PHONE_RE,
+    INN_GROUPED_LENGTHS,
+    INN_GROUPED_RE,
     NICK_RE,
+    PHONE_LOOSE_RE,
     PHONE_RE,
+    SKYPE_RE,
     SNILS_KEYWORD_WINDOW,
     SNILS_RE,
     TME_RE,
     find_address_spans,
     find_card_spans,
+    find_obfuscated_emails,
     find_snils_spans,
     fold_for_names,
+    has_inn_word_before,
     normalize_text,
 )
 from labops_pii.tech_tokens import find_tech_spans
@@ -73,6 +91,7 @@ SURNAME_BEFORE_RE = re.compile(r"([А-ЯЁ][а-яё]+(?:-[А-ЯЁ][а-яё]+)?)[
 MIN_MIXED_NAME_LEN = 4
 KEYWORD_WINDOW = 16  # сколько символов слева от числа смотрим на ключевое слово
 PHONE_DIGITS_WITH_PREFIX = 11
+PHONE_NATIONAL_DIGITS = 10
 DIGITS_RE = re.compile(r"\D")
 CYRILLIC_RE = re.compile(r"[А-Яа-яЁё]")
 CYRILLIC_WORD_RE = re.compile(r"[А-Яа-яЁё]+")
@@ -86,14 +105,36 @@ CAPS_GAP_RE = re.compile(r"[ \t]+")
 # Фамилия с двумя инициалами справа или слева без NER (R9-A4-12): Natasha пропускает
 # «Заказ у Петрова О.И. оформлен.» целиком, и фамилия с инициалами уходила в модель.
 # Требуются именно два инициала: одна буква с точкой бывает сокращением («г.», «П. 3»).
+# Фамилия капсом рядом с инициалами: короче - аббревиатура («АЗС», «ТЭЦ»)
+MIN_CAPS_SURNAME_LEN = 4
 INITIALED_WORD = r"[А-ЯЁ][а-яё]{2,}(?:-[А-ЯЁ][а-яё]{2,})?"
 TWO_INITIALS = r"[А-ЯЁ]\.[ \t]?[А-ЯЁ]\."
+# Точка после второго инициала бывает опущена: «Петров А.Б: на связи», «Петров А.Б,»
+TWO_INITIALS_LAST_DOT_OPTIONAL = r"[А-ЯЁ]\.[ \t]?[А-ЯЁ]\.?"
 SURNAME_INITIALS_RE = re.compile(
-    rf"(?<![А-Яа-яЁёA-Za-z0-9_.-])({INITIALED_WORD})[ \t]+({TWO_INITIALS})(?![А-Яа-яЁё])"
+    rf"(?<![А-Яа-яЁёA-Za-z0-9_.-])({INITIALED_WORD})[ \t]+({TWO_INITIALS_LAST_DOT_OPTIONAL})"
+    r"(?![А-Яа-яЁёA-Za-z0-9])"
 )
 INITIALS_SURNAME_RE = re.compile(
     rf"(?<![А-Яа-яЁёA-Za-z0-9_.-])({TWO_INITIALS})[ \t]?({INITIALED_WORD})"
     r"(?![А-Яа-яЁёA-Za-z0-9_-])"
+)
+# Фамилия с ОДНИМ инициалом («Иванов С.», «А. Кузнецов»): NER такие пары почти не размечал, и
+# фамилия уходила в модель. Одна буква с точкой бывает сокращением, поэтому фамилия здесь
+# только словарная (`is_dictionary_surname`), а второй инициал рядом отдан шаблонам выше.
+SURNAME_ONE_INITIAL_RE = re.compile(
+    rf"(?<![А-Яа-яЁёA-Za-z0-9_.-])({INITIALED_WORD})[ \t]+([А-ЯЁ])\."
+    r"(?![ \t]?[А-ЯЁ]\.)(?![А-Яа-яЁё])"
+)
+# Фамилия капсом и два инициала («ПЕХТЫШЕВА Ю.А.», «ГОЛОВАЧ Д.И.»): детектор капса берёт
+# только слова с главным разбором «фамилия», и фамилия вне словаря уходила в модель
+CAPS_SURNAME_INITIALS_RE = re.compile(
+    rf"(?<![А-Яа-яЁёA-Za-z0-9_.-])([А-ЯЁ]{{{MIN_CAPS_SURNAME_LEN},}}(?:-[А-ЯЁ]{{2,}})?)"
+    rf"[ \t]+({TWO_INITIALS})(?![А-Яа-яЁё])"
+)
+ONE_INITIAL_SURNAME_RE = re.compile(
+    rf"(?<![А-Яа-яЁёA-Za-z0-9_.-])([А-ЯЁ])\.[ \t]?({INITIALED_WORD})"
+    r"(?![А-Яа-яЁёA-Za-z0-9_.-])"
 )
 # Предлоги перед ФИО (R9-A4-07). После предлога ФИО стоит в косвенном падеже, а женская
 # фамилия на «-а» бывает только в именительном: «от Петрова», «у Петрова И.И.» — мужчина.
@@ -104,6 +145,14 @@ PREPOSITIONS = frozenset({
 })
 PREPOSITION_WINDOW = 16  # сколько символов слева от ФИО смотрим на предлог
 PREPOSITION_BEFORE_RE = re.compile(r"(?<![А-Яа-яЁёA-Za-z])([А-Яа-яЁё]+)[ \t]+\Z")
+# ФИО в начале фразы и сразу глагол прошедшего времени женского рода или «она»: подлежащее,
+# женщина («Петрова Александра подписала договор»), а не мужской родительный падеж
+FEMININE_SUBJECT_AFTER_RE = re.compile(
+    r"(?:[ \t]{0,3},[ \t]{1,3}|[ \t]{1,3})([а-яё]{2,}ла(?:сь)?|она)(?![а-яё])"
+)
+# Слова на «-ла», которые не глаголы: «дела Петрова Александра» - его дела, родительный падеж
+NOT_FEMININE_VERBS = frozenset({"дела", "тела", "села", "стола", "числа", "зала", "крыла", "она"})
+PHRASE_START_CHARS = "\n.!?:;—–«\"("
 # Группа слов одного регистра не режется по числу слов: «ФАМИЛИЯ ИМЯ ОТЧЕСТВО ДОПОЛНЕНИЕ»
 # (двойное имя, «оглы», «кызы») целиком скрывается, а не оставляет четвёртое слово открытым.
 
@@ -211,9 +260,35 @@ EMAIL_RE = re.compile(r"(?<![\w.+-])[\w.+-]+@[\w-]+(?:\.[\w-]+)+")
 # число должно маскироваться (токен потом восстанавливается, потери для смысла нет).
 NUM10_12_RE = re.compile(r"(?<!\d)(?:\d{12}|\d{10})(?!\d)")
 OGRN_RE = re.compile(r"(?<![\d.,])(?:\d{15}|\d{13})(?!\d)")
+# Промежутки ограничены: «[ \t]+…[ \t]*» на длинном ряду пробелов давал квадратичный перебор
+# (70 000 знаков - 46 с, ревью 25.11.2026)
 PASSPORT_SEP_RE = re.compile(
     r"(?<![\d.,])\d{2}[ \t]?\d{2}"
-    r"(?:[ \t]+(?:№|N|номер)?[ \t]*|[ \t]*(?:№|N|номер)[ \t]*)\d{6}(?!\d)"
+    r"(?:[ \t]{1,3}(?:№|N|номер)?[ \t]{0,3}|[ \t]{0,3}(?:№|N|номер)[ \t]{0,3})\d{6}(?!\d)"
+)
+# Серия и номер со знаками между ними («серия 4510, номер 123456», «4510-123456», «Серия:
+# 45 10, № 123456») - паспорт только при слове «паспорт»/«серия» рядом
+PASSPORT_LOOSE_RE = re.compile(
+    r"(?<![\d.,])\d{2}[ \t]?\d{2}[ \t]{0,3}[,;:\-]?[ \t]{0,3}"
+    r"(?:(?:№|N|номер|ном\.)[ \t]{0,3}:?[ \t]{0,3})?\d{6}(?!\d)"
+)
+PASSPORT_KEYWORD_WINDOW = 24
+# Паспорт без слова «паспорт» (матрица 25.11.2026): за серией и номером идёт «выдан», «код
+# подразделения», «дата выдачи» («Документ: 4510123456, выдан 01.02.2010») или слева
+# «удостоверение личности». Слово «документ» само по себе не признак: номера актов и счетов
+# тоже «документы». Между номером и словом нет цифр и перевода строки.
+PASSPORT_AFTER_WINDOW = 40
+PASSPORT_AFTER_RE = re.compile(
+    rf"[^\d\n]{{0,{PASSPORT_AFTER_WINDOW}}}?(?<![а-яё])(?i:выдан|код[ \t]+подразделения|"
+    r"дата[ \t]+выдачи)"
+)
+KW_PASSPORT_IDENTITY = ("удостоверени", "удостоверяющ")
+# «Удостоверение личности 4510-123456»: до начала слова два слова и пробелы
+PASSPORT_IDENTITY_WINDOW = 32
+# Другие документы тоже «выданы»: номер после них - не паспорт («Накладная 4510123456 выдана»)
+KW_OTHER_DOCUMENTS = (
+    "наклад", "счет", "счёт", "акт", "договор", "заказ", "доверен", "справк", "квитанц", "чек",
+    "упд", "ттн", "лиценз", "сертификат", "полис", "пропуск", "диплом", "аттестат",
 )
 PASSPORT_KW_RE = re.compile(r"(?<![\d.,])\d{10}(?!\d)")
 ORG_RE = re.compile(
@@ -227,9 +302,10 @@ LATIN_NAME_LABEL_RE = re.compile(
     r"(?<![A-Za-z])(?i:contact(?:[ \t]+person)?|attn|attention|sales[ \t]+manager|manager|"
     r"representative|best[ \t]+regards|kind[ \t]+regards|regards|sincerely|signed)"
     r"[ \t]*[:,\-]?[ \t\r\n]{0,3}"
-    r"(?P<name>[A-Z][a-z]{1,19}(?:[ \t]+[A-Z][a-z]{1,19}){1,2})(?![A-Za-z])"
+    rf"(?P<name>[{LATIN_UPPER}][{LATIN_LOWER}]{{1,19}}"
+    rf"(?:[ \t]+[{LATIN_UPPER}][{LATIN_LOWER}]{{1,19}}){{1,2}})(?![{LATIN_LETTERS}])"
 )
-LATIN_NAME_WORD_RE = re.compile(r"[A-Z][a-z]+")
+LATIN_NAME_WORD_RE = re.compile(rf"[{LATIN_UPPER}][{LATIN_LOWER}]+")
 LATIN_MIN_NAME_WORDS = 2
 # Короче слово в повторе не ищется отдельно: «Li», «Mo» слишком часто встречаются сами
 LATIN_MIN_REPEAT_WORD_LEN = 3
@@ -251,22 +327,47 @@ OGRN_FIRST_DIGITS = ("1", "5")
 # Слова адреса, не входящие в ключ: ключевые слова улицы во всех падежах и пометки дома.
 # Ключ строится без них, чтобы «ул. Ленина, д. 5» и «на улице Ленина, дом 5» были одним
 # адресом и получали один токен.
-ADDRESS_NOISE_WORDS = frozenset({
-    "улица", "улице", "улицу", "улицы", "ул", "проспект", "проспекта", "проспекте", "проспекту",
-    "просп", "пр", "пр-т", "пр-кт", "переулок", "переулка", "переулке", "переулку", "пер",
-    "бульвар", "бульвара", "бульваре", "бульвару", "б-р", "бул", "набережная", "набережной",
-    "набережную", "наб", "шоссе", "ш", "площадь", "площади", "пл", "проезд", "проезда",
-    "проезде", "проезду", "пр-д", "тупик", "тупика", "тупике", "тупику", "аллея", "аллеи",
-    "аллее", "аллею", "д", "дом", "влд", "владение", "по", "на",
-})
+# Тип улицы в ключе адреса - одним кодом: «ул. Мира, д. 5» и «пр-т Мира, д. 5» - разные адреса
+# (раньше тип выбрасывался, и restore второго возвращал первый, ревью 25.11.2026), а падеж и
+# сокращение типа ключ не меняют
+ADDRESS_STREET_TYPES: dict[str, tuple[str, ...]] = {
+    "ул": ("улица", "улице", "улицу", "улицы", "улицей", "ул", "ul", "ulitsa", "ulica", "street",
+           "str", "st"),
+    "пр": ("проспект", "проспекта", "проспекте", "проспекту", "проспектом", "просп", "пр",
+           "пр-т", "пр-кт", "pr", "prosp", "prospekt", "prospect", "avenue", "ave"),
+    "пер": ("переулок", "переулка", "переулке", "переулку", "переулком", "пер", "per",
+            "pereulok", "lane", "ln"),
+    "бр": ("бульвар", "бульвара", "бульваре", "бульвару", "бульваром", "б-р", "бул", "bul",
+           "bulvar", "boulevard", "blvd"),
+    "наб": ("набережная", "набережной", "набережную", "наб", "nab", "naberezhnaya",
+            "embankment", "emb"),
+    "ш": ("шоссе", "ш", "sh", "shosse", "highway"),
+    "дор": ("road", "rd"),
+    "пл": ("площадь", "площади", "площадью", "пл", "pl", "ploshchad", "square", "sq"),
+    "прд": ("проезд", "проезда", "проезде", "проезду", "проездом", "пр-д"),
+    "туп": ("тупик", "тупика", "тупике", "тупику", "тупиком"),
+    "ал": ("аллея", "аллеи", "аллее", "аллею", "аллеей"),
+    "мкр": ("микрорайон", "микрорайона", "микрорайоне", "микрорайону", "мкр", "мкрн"),
+}
+ADDRESS_STREET_TYPE_CODES = {
+    word: code for code, words in ADDRESS_STREET_TYPES.items() for word in words
+}
+# Префикс кода типа улицы в ключе: не буква, с названием улицы не совпадёт
+ADDRESS_STREET_TYPE_PREFIX = "#"
+ADDRESS_NOISE_WORDS = frozenset({"д", "дом", "влд", "владение", "по", "на", "реки", "канала",
+                                 "озера", "d", "dom", "bld", "building", "house", "h", "no"})
 # Квартира, корпус и т.п. в ключе записываются одной буквенной меткой перед номером
 ADDRESS_SUFFIX_CODES = {
     "корп": "к", "корпус": "к", "к": "к", "стр": "с", "строение": "с", "с": "с",
     "лит": "л", "литера": "л", "кв": "кв", "квартира": "кв", "оф": "оф", "офис": "оф",
     "пом": "пом", "помещение": "пом", "комн": "комн", "комната": "комн", "эт": "эт",
-    "этаж": "эт",
+    "этаж": "эт", "apt": "кв", "ap": "кв", "apartment": "кв", "kv": "кв", "office": "оф",
+    "of": "оф", "suite": "оф", "ste": "оф",
 }
-ADDRESS_TOKEN_RE = re.compile(r"[А-Яа-яЁё]+(?:-[А-Яа-яЁё]+)*|\d+(?:-\d+)?[А-Яа-я]?")
+# Латинские слова тоже в ключе: иначе «Tverskaya st. 7» и «Lenina st. 7» дали бы один ключ «7»
+ADDRESS_TOKEN_RE = re.compile(
+    r"[А-Яа-яЁё]+(?:-[А-Яа-яЁё]+)*|[A-Za-z]+(?:-[A-Za-z]+)*|\d+(?:-\d+)?[А-Яа-яA-Za-z]?"
+)
 
 KW_INN = ("инн",)
 KW_OGRN = ("огрн",)
@@ -297,6 +398,25 @@ def _keyword_before(
     if not word_start:
         return any(w in window for w in words)
     return any(re.search(rf"(?<![а-яёa-z]){re.escape(w)}", window) for w in words)
+
+
+def _passport_context(text: str, start: int, end: int, window_size: int) -> bool:
+    """Серия и номер в контексте паспорта: слово «паспорт»/«серия» или «удостоверение
+    личности» слева либо «выдан»/«код подразделения»/«дата выдачи» справа.
+
+    Args:
+        text: Текст.
+        start: Начало номера.
+        end: Конец номера.
+        window_size: Окно слева для слова «паспорт»/«серия».
+    """
+    if _keyword_before(text, start, KW_PASSPORT, window_size) or _keyword_before(
+        text, start, KW_PASSPORT_IDENTITY, PASSPORT_IDENTITY_WINDOW
+    ):
+        return True
+    return PASSPORT_AFTER_RE.match(text, end) is not None and not _keyword_before(
+        text, start, KW_OTHER_DOCUMENTS, PASSPORT_IDENTITY_WINDOW, word_start=True
+    )
 
 
 class PiiDetector:
@@ -371,7 +491,12 @@ class PiiDetector:
         found += self._detect_field_names(text)
         found += self._detect_mixed_case_persons(folded, tech)
         found += self._detect_case_shifted_persons(folded, tech)
-        found += self._detect_initialed_surnames(folded, tech)
+        atoms = self._detect_initialed_surnames(folded, tech)
+        atoms += self._detect_name_patronymic(folded, tech)
+        # Находка ФИО, целиком составленная из двух и более людей («Петров А.Б. Сидоров
+        # В.Г.», «Иван Петров Анна Сидорова»), делится на них: иначе оба получали один токен,
+        # и restore любого из них по отдельности возвращал обоих (ревью 25.11.2026)
+        found = _drop_multi_person_spans(found, atoms, folded) + atoms
         found += self._detect_known_names(folded, known_lemmas, tech)
         found += self._detect_tech_names(folded, tech, known_lemmas)
         # Слова ФИО, найденные в этом же тексте, ловятся и в других местах: подвал карточки
@@ -387,7 +512,8 @@ class PiiDetector:
                 d.pii_type in ALLOWLIST_TYPES and is_allowed_fragment(text[d.start:d.end])
             )
         ]
-        return _with_preposition_genders(text, _resolve_overlaps(found, text))
+        resolved = [_with_initial_dot(d, text) for d in _resolve_overlaps(found, text)]
+        return _with_preposition_genders(text, resolved)
 
     # --- регулярные детекторы -------------------------------------------------
 
@@ -408,10 +534,16 @@ class PiiDetector:
         return result
 
     def _detect_email(self, text: str) -> list[Detection]:
-        return [
+        found = [
             Detection(m.start(), m.end(), PiiType.EMAIL, m.group().lower(), PRIO_EMAIL)
             for m in EMAIL_RE.finditer(text)
         ]
+        # Запись в обход «@» - тот же адрес: ключ как у «local@domain», токен общий
+        found += [
+            Detection(start, end, PiiType.EMAIL, f"{local}@{domain}".lower(), PRIO_EMAIL)
+            for start, end, local, domain in find_obfuscated_emails(text)
+        ]
+        return found
 
     def _detect_phone(self, text: str) -> list[Detection]:
         result: list[Detection] = []
@@ -425,6 +557,11 @@ class PiiDetector:
                 # «0086 …» и «+86 …» - один номер: ключ без префикса «00»
                 digits = digits[len(INTL_ZERO_PREFIX):]
             result.append(Detection(m.start(), m.end(), PiiType.PHONE, digits, PRIO_PHONE))
+        # Необычная разбивка после «+7» или слова «тел» («+7 916 12 345 67»)
+        for m in PHONE_LOOSE_RE.finditer(text):
+            start, end = m.span(1) if m.group(1) is not None else m.span()
+            digits = DIGITS_RE.sub("", text[start:end])[-PHONE_NATIONAL_DIGITS:]
+            result.append(Detection(start, end, PiiType.PHONE, digits, PRIO_PHONE))
         # Десять цифр подряд — телефон только после слова «тел» (ключевое слово внутри шаблона)
         for m in BARE_PHONE_RE.finditer(text):
             number = m.group(1)
@@ -441,7 +578,7 @@ class PiiDetector:
         Найденное после метки или по словарю имя ищется по всему тексту: целиком (в той же
         записи слов) и каждое слово отдельно (фамилия «Smith»), с точным совпадением регистра
         и границами слова. Без метки и без пары «имя из словаря + слово» одиночное латинское
-        слово не маскируется (правила словаря - в `name_hints.find_latin_name_spans`).
+        слово не маскируется (правила словаря - в `latin_names.find_latin_name_spans`).
         """
         result: list[Detection] = []
         names: list[list[str]] = []
@@ -510,10 +647,13 @@ class PiiDetector:
     def _detect_numbers(self, text: str) -> list[Detection]:
         """ИНН, ОГРН/ОГРНИП, СНИЛС, паспорт — по формату, контрольной сумме и ключевым словам."""
         result: list[Detection] = []
+        # «тел 9161234567»: номер после слова «тел» - телефон, даже если сошлась сумма ИНН
+        # (иначе модель видела бы «[INN_1]» вместо телефона, матрица 25.11.2026)
+        phone_spans = {m.span(1) for m in PHONE_LOOSE_RE.finditer(text) if m.group(1)}
         for m in NUM10_12_RE.finditer(text):
             digits = m.group()
             kw = _keyword_before(text, m.start(), KW_INN, word_start=True)
-            if not (checksums.is_valid_inn(digits) or kw):
+            if not (checksums.is_valid_inn(digits) or kw) or (not kw and m.span() in phone_spans):
                 continue
             result.append(Detection(m.start(), m.end(), PiiType.INN, digits, PRIO_INN))
         for m in OGRN_RE.finditer(text):
@@ -550,8 +690,23 @@ class PiiDetector:
         for m in PASSPORT_SEP_RE.finditer(text):
             digits = DIGITS_RE.sub("", m.group())
             result.append(Detection(m.start(), m.end(), PiiType.PASSPORT, digits, PRIO_PASSPORT))
+        for m in PASSPORT_LOOSE_RE.finditer(text):
+            if _passport_context(text, m.start(), m.end(), PASSPORT_KEYWORD_WINDOW):
+                digits = DIGITS_RE.sub("", m.group())
+                result.append(
+                    Detection(m.start(), m.end(), PiiType.PASSPORT, digits, PRIO_PASSPORT)
+                )
+        # ИНН группами после слова «ИНН» (правило общее с guard, pii_patterns)
+        for m in INN_GROUPED_RE.finditer(text):
+            digits = DIGITS_RE.sub("", m.group())
+            if (
+                len(digits) in INN_GROUPED_LENGTHS
+                and checksums.is_valid_inn(digits)
+                and has_inn_word_before(text, m.start())
+            ):
+                result.append(Detection(m.start(), m.end(), PiiType.INN, digits, PRIO_INN))
         for m in PASSPORT_KW_RE.finditer(text):
-            if _keyword_before(text, m.start(), KW_PASSPORT):
+            if _passport_context(text, m.start(), m.end(), KEYWORD_WINDOW):
                 result.append(
                     Detection(m.start(), m.end(), PiiType.PASSPORT, m.group(), PRIO_PASSPORT)
                 )
@@ -562,11 +717,19 @@ class PiiDetector:
         sources = [(NICK_RE, norm), (TME_RE, text)]
         if self._contacts_re is not None:
             sources.append((self._contacts_re, text))
-        return [
+        found = [
             Detection(m.start(), m.end(), PiiType.CONTACT, m.group().casefold(), PRIO_CONTACT)
             for pattern, source in sources
             for m in pattern.finditer(source)
         ]
+        found += [
+            Detection(
+                m.start("login"), m.end("login"), PiiType.CONTACT,
+                m.group("login").casefold(), PRIO_CONTACT,
+            )
+            for m in SKYPE_RE.finditer(text)
+        ]
+        return found
 
     def _detect_addresses(self, text: str) -> list[Detection]:
         """Адрес на уровне дома: улица + номер дома (+ квартира, индекс). Город не трогается."""
@@ -705,7 +868,7 @@ class PiiDetector:
         group: list[tuple[int, int, str]] = []  # (начало, конец, грамема)
         for m in CAPS_WORD_RE.finditer(text):
             kind = _case_kind(m.group())
-            grams = name_gramme(m.group()) if kind else None
+            grams = _caps_gramme(m.group()) if kind else None
             skip = (
                 grams is None
                 or _glued_to_word(text, m.start(), m.end())
@@ -731,16 +894,41 @@ class PiiDetector:
         result: list[Detection] = []
         taken: set[int] = set()  # начала инициалов, уже отданных фамилии слева
         for m in SURNAME_INITIALS_RE.finditer(text):
-            if _overlaps(tech, m.start(), m.end()) or not is_surname_candidate(m.group(1)):
+            if _overlaps(tech, m.start(), m.end()) or not _initialed_surname(m.group(1)):
                 continue
             taken.add(m.start(2))
             result.append(self._initialed_person(text, m.start(), m.end()))
         for m in INITIALS_SURNAME_RE.finditer(text):
-            if _overlaps(tech, m.start(), m.end()) or not is_surname_candidate(m.group(2)):
+            if _overlaps(tech, m.start(), m.end()) or not _initialed_surname(m.group(2)):
                 continue
             start = m.start(2) if m.start(1) in taken else m.start()
             result.append(self._initialed_person(text, start, m.end()))
+        for m in CAPS_SURNAME_INITIALS_RE.finditer(text):
+            if _overlaps(tech, m.start(), m.end()) or _is_caps_stop(m.group(1)):
+                continue
+            if _initialed_surname(m.group(1)):
+                result.append(self._initialed_person(text, m.start(), m.end()))
+        for regex, group in ((SURNAME_ONE_INITIAL_RE, 1), (ONE_INITIAL_SURNAME_RE, 2)):
+            for m in regex.finditer(text):
+                if _overlaps(tech, m.start(), m.end()) or not _initialed_surname(
+                    m.group(group)
+                ):
+                    continue
+                result.append(self._initialed_person(text, m.start(), m.end()))
         return result
+
+    @staticmethod
+    def _detect_name_patronymic(text: str, tech: list[tuple[int, int]]) -> list[Detection]:
+        """ФИО по якорю «имя + отчество» без NER (см. `labops_pii.patronymic`).
+
+        NER пропускал полное ФИО в обычных фразах («Позвоните Иванов Сергей Петрович
+        завтра.») и не брал в находку фамилию вне словаря, через дефис или капсом.
+        """
+        return [
+            Detection(start, end, PiiType.PERSON, person_key(text[start:end]), PRIO_PERSON)
+            for start, end in _patronymic_and_pair_spans(text)
+            if not _overlaps(tech, start, end) and not _glued_to_word(text, start, end)
+        ]
 
     @staticmethod
     def _initialed_person(text: str, start: int, end: int) -> Detection:
@@ -850,6 +1038,99 @@ class PiiDetector:
             # «Подписант» за имя, и вторая проверка отклоняла сообщение (28.10.2026).
             return None
         return Detection(start, end, PiiType.PERSON, person_key(chunk), PRIO_PERSON)
+
+
+# ФИО, кончающееся инициалом: «Петров А.Б», «Kuznetsov A» (точка после него - часть ФИО)
+_INITIAL_END_RE = re.compile(r"(?:^|[\s.])[А-ЯЁA-Z]\Z")
+
+
+def _with_initial_dot(det: Detection, text: str) -> Detection:
+    """Точка после последнего инициала входит в находку ФИО, кто бы её ни нашёл.
+
+    NER и капс брали точку в находку («Петров А.Б.»), шаблон инициалов - нет («Петров
+    А.Б»). Ключ у обоих один, токен общий, а оригинал - первого упоминания: restore второго
+    терял или добавлял точку («Петров А.Б в отпуске.»). Граница теперь одна для всех.
+    """
+    if det.pii_type is not PiiType.PERSON or det.exact:
+        return det
+    if det.end >= len(text) or text[det.end] != ".":
+        return det
+    if not _INITIAL_END_RE.search(text, det.start, det.end):
+        return det
+    return replace(det, end=det.end + 1)
+
+
+def _patronymic_and_pair_spans(text: str) -> list[tuple[int, int]]:
+    """ФИО с отчеством и пары «фамилия + имя», не задевающие ни одного ФИО с отчеством.
+
+    Пара на стыке двух ФИО («…Сергеевна Иванова Ольга Петровна…» -> «Иванова Ольга») иначе
+    связала бы двух людей в одну находку.
+    """
+    with_patronymic = find_name_patronymic_spans(text)
+    pairs = [
+        (start, end) for start, end in find_surname_name_spans(text)
+        if not any(start < p_end and p_start < end for p_start, p_end in with_patronymic)
+    ]
+    return with_patronymic + pairs
+
+
+def _atom_clusters(atoms: list[Detection], start: int, end: int) -> list[tuple[int, int]]:
+    """Диапазоны людей внутри [start, end): пересекающиеся «атомы» ФИО сливаются в одного."""
+    clusters: list[tuple[int, int]] = []
+    inside = sorted((a.start, a.end) for a in atoms if start <= a.start and a.end <= end)
+    for a_start, a_end in inside:
+        if clusters and a_start < clusters[-1][1]:
+            clusters[-1] = (clusters[-1][0], max(clusters[-1][1], a_end))
+        else:
+            clusters.append((a_start, a_end))
+    return clusters
+
+
+def _covers_only_people(text: str, start: int, end: int, clusters: list[tuple[int, int]]) -> bool:
+    """Каждое слово фрагмента лежит внутри одного из людей (между ними - только знаки)."""
+    return all(
+        any(c_start <= w.start() and w.end() <= c_end for c_start, c_end in clusters)
+        for w in WORD_RE.finditer(text, start, end)
+    )
+
+
+def _drop_multi_person_spans(
+    found: list[Detection], atoms: list[Detection], text: str
+) -> list[Detection]:
+    """Убирает находки ФИО, которые целиком состоят из двух и более людей-«атомов».
+
+    Атомы - находки детерминированных шаблонов (фамилия с инициалами, «имя + отчество», пара
+    «фамилия + имя»), каждая про одного человека. Широкая находка NER или другого детектора
+    поверх нескольких атомов без лишних слов - это перечисление людей: она удаляется, атомы
+    остаются и маскируются по отдельности. Находка с любым словом вне атомов не трогается.
+    """
+    if len(atoms) < 2:
+        return found
+    result: list[Detection] = []
+    for det in found:
+        if det.pii_type is PiiType.PERSON and not det.exact:
+            clusters = _atom_clusters(atoms, det.start, det.end)
+            if len(clusters) > 1 and _covers_only_people(text, det.start, det.end, clusters):
+                continue
+        result.append(det)
+    return result
+
+
+def _initialed_surname(word: str) -> bool:
+    """Слово рядом с инициалами - фамилия: по словарю или по признакам рядом с отчеством.
+
+    `is_surname_candidate` не узнаёт словарные нарицательные и прилагательные-фамилии
+    («Д.И. Головач», «Белых И.П.»), и фамилия уходила в модель; роли и должности («И.О.
+    Директора») отсекает `is_surname_near_patronymic`.
+    """
+    return is_surname_candidate(word) or is_surname_near_patronymic(word)
+
+
+def _caps_gramme(word: str) -> str | None:
+    """Грамема слова капсом/строчными; фамилия через дефис («САЛТЫКОВ-ЩЕДРИН») - «Surn»."""
+    if "-" in word and is_dictionary_surname(word):
+        return "Surn"
+    return name_gramme(word)
 
 
 def _name_like_word(word: str) -> bool:
@@ -1139,6 +1420,7 @@ def _address_key(fragment: str) -> str:
     """
     names: list[str] = []
     numbers: list[str] = []
+    street_type = ""
     pending: str | None = None  # метка квартиры/корпуса, ждущая номер
     for token in ADDRESS_TOKEN_RE.findall(fragment):
         low = token.casefold()
@@ -1147,9 +1429,11 @@ def _address_key(fragment: str) -> str:
             pending = None
         elif low in ADDRESS_SUFFIX_CODES:
             pending = ADDRESS_SUFFIX_CODES[low]
+        elif low in ADDRESS_STREET_TYPE_CODES:
+            street_type = f"{ADDRESS_STREET_TYPE_PREFIX}{ADDRESS_STREET_TYPE_CODES[low]}"
         elif low not in ADDRESS_NOISE_WORDS:
             names.append("-".join(common_lemma(part) for part in low.split("-")))
-    return " ".join([*names, *numbers])
+    return " ".join([*([street_type] if street_type else []), *names, *numbers])
 
 
 def _after_preposition(text: str, start: int) -> bool:
@@ -1178,8 +1462,24 @@ def _with_preposition_genders(text: str, found: list[Detection]) -> list[Detecti
             key = with_preposition_gender(det.key, text[det.start:det.end])
             if key != det.key:
                 det = replace(det, key=key)
+        elif det.pii_type is PiiType.PERSON and not det.exact and _is_feminine_subject(
+            text, det.start, det.end
+        ):
+            det = replace(det, key=with_female_subject(det.key))
         result.append(det)
     return result
+
+
+def _is_feminine_subject(text: str, start: int, end: int) -> bool:
+    """ФИО начинает фразу, и за ним глагол женского рода («подписала») или «она»."""
+    prefix = text[:start].rstrip(" \t")
+    if prefix and prefix[-1] not in PHRASE_START_CHARS:
+        return False
+    after = FEMININE_SUBJECT_AFTER_RE.match(text, end)
+    if after is None:
+        return False
+    word = after.group(1)
+    return word == "она" or word not in NOT_FEMININE_VERBS
 
 
 def _priority_order(det: Detection) -> tuple[int, int, int]:

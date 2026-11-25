@@ -2,10 +2,12 @@
  * Поиск ФИО без NLP-моделей: словарь имён/фамилий (pymorphy3) + правила по расположению слов.
  * Что ловится: «Иванов Иван», «Иванов Иван Иванович», «Иван Иванович», падежные формы
  * («Иванову Петру»), инициалы («И. И. Иванов», «Иванов И.И.»), ФИО заглавными и (строго)
- * строчными, латиница после метки контакта, одиночные имя/фамилия после слов-признаков
- * («менеджер Алексей», «позвони Петрову»).
- * Что не ловится (хуже Python/Natasha): одиночная фамилия без слова-признака, незнакомые
- * иностранные фамилии без инициалов, ФИО в именах файлов.
+ * строчными, одиночные имя/фамилия после слов-признаков («менеджер Алексей», «позвони Петрову»).
+ * Якорь «Имя Отчество» (как в Python) берёт фамилию и вне словаря («Головач», «Дамберг»,
+ * «Новикова-Прибой»), в том числе через запятую («Иванов, Сергей Петрович»). Латиница: после
+ * метки контакта и по словарю латинских имён из Python («Sergey Ivanov», «Hans Müller»).
+ * Что не ловится (хуже Python/Natasha): одиночная фамилия без слова-признака, ФИО в именах
+ * файлов.
  */
 import { foldWord, isAllowedWord } from './allowlist';
 import { ci, ciAny } from './regex-utils';
@@ -16,13 +18,23 @@ import {
   isStopWord,
   type PersonToken,
 } from './person-words';
+import { LATIN_LOWER, LATIN_UPPER } from './dictionary/latin-names-data';
+import { findLatinDictionaryNames } from './latin-names';
+import { isRoleWord, isSurnameNearPatronymic } from './surname-context';
 import type { DetectedSpan } from './types';
 
 const TOKEN_RE = /[А-ЯЁ]\.|[А-Яа-яЁё]+(?:-[А-Яа-яЁё]+)*/g;
-const GAP_SPACES_RE = /^[ \t ]+$/;
-const GAP_SPACES_OPT_RE = /^[ \t ]*$/;
-const GLUE_BEFORE_RE = /[A-Za-z0-9_@]/;
-const GLUE_AFTER_RE = /[A-Za-z0-9_@]/;
+const GAP_SPACES_RE = /^(?:[ \t\u00A0]+|_)$/;
+const GAP_SPACES_OPT_RE = /^(?:[ \t\u00A0]*|_)$/;
+/*
+ * Слово, склеенное с латиницей, цифрой или «@», - часть идентификатора, не ФИО. Подчёркивание
+ * между кириллическими словами - разделитель имени файла или папки («Договор_Иванов_С.П.docx»,
+ * «/docs/Петрова_Анна/»): такие ФИО раньше уходили открытыми (матрица 25.11.2026).
+ */
+const GLUE_RE = /[A-Za-z0-9_@]/;
+const CYRILLIC_RE = /[А-Яа-яЁё]/;
+/** Расширение файла сразу после инициала: «С.П.docx». */
+const FILE_EXTENSION_AFTER_RE = /^[A-Za-z0-9]{1,5}(?![A-Za-z0-9])/;
 const MAX_INITIALS = 2;
 const MIN_GENERIC_SURNAME_LEN = 3;
 const CONTEXT_WINDOW = 48;
@@ -70,15 +82,21 @@ const EXCLUDE_BEFORE_RE = new RegExp(
 /** Продолжение списка: «, Козлов» или « и Козлов» сразу после найденного ФИО. */
 const AFTER_INITIALS_GAP_RE = /^\.[ \t\u00A0]+$/;
 const LIST_GAP_RE = /^[ \t ]*(?:,|и)[ \t ]+$/;
+/** Фамилия через запятую перед «Имя Отчество»: «Иванов, Сергей Петрович» (как в Python). */
+const COMMA_GAP_RE = /^[ \t\u00A0]{0,2},[ \t\u00A0]{1,3}$/;
 
-/** Лишнее для фамилии «общее» слово при двух инициалах. */
+/**
+ * Слово вне словаря как фамилия при двух инициалах. Роль и глагол не годятся: иначе
+ * «Позвоните К.Г. Дамберг» давало «Позвоните К.Г», а «Дамберг» уходил открытым.
+ */
 function isGenericSurname(token: PersonToken): boolean {
   return (
     (token.shape === 'cap' || token.shape === 'upper') &&
     token.name === 0 &&
     !token.patr &&
     token.text.length >= MIN_GENERIC_SURNAME_LEN &&
-    !isStopWord(foldWord(token.text))
+    !isStopWord(foldWord(token.text)) &&
+    isSurnameNearPatronymic(token)
   );
 }
 
@@ -110,10 +128,27 @@ class PersonScanner {
       const word = m[0];
       const before = start > 0 ? text.charAt(start - 1) : '';
       const after = text.charAt(start + word.length);
-      const glued = GLUE_BEFORE_RE.test(before) || GLUE_AFTER_RE.test(after);
+      const glued =
+        this.gluedAt(start - 1, start - 2, before) ||
+        (this.gluedAt(start + word.length, start + word.length + 1, after) &&
+          !(word.endsWith('.') && FILE_EXTENSION_AFTER_RE.test(text.slice(start + word.length))));
       const token = analyzeWord(word, start, allowed);
       this.tokens.push(glued ? { ...token, shape: 'mixed', surn: 0, name: 0, patr: false } : token);
     }
+  }
+
+  /**
+   * Склеено ли слово с соседним знаком: латиница, цифра, «@» или подчёркивание, за которым
+   * не кириллица (подчёркивание между кириллическими словами - разделитель).
+   *
+   * @param pos Позиция соседнего знака.
+   * @param beyond Позиция знака за ним (для подчёркивания).
+   * @param char Соседний знак.
+   */
+  private gluedAt(pos: number, beyond: number, char: string): boolean {
+    if (!GLUE_RE.test(char)) return false;
+    if (char !== '_' || pos < 0) return true;
+    return !CYRILLIC_RE.test(this.text.charAt(beyond));
   }
 
   /** Все найденные ФИО. */
@@ -191,11 +226,16 @@ class PersonScanner {
     if (t0 === undefined) return null;
     if (t0.shape === 'initial') return this.matchInitialsFirst(i);
     if (!this.isWord(t0)) return null;
+    const comma = this.commaBeforeNamePatronymic(i);
+    if (comma !== null) return comma;
     const t1 = this.adjacent(i) ? this.tok(i + 1) : undefined;
     const t2 = t1 !== undefined && this.adjacent(i + 1) ? this.tok(i + 2) : undefined;
     // Фамилия + инициалы
     if (t1?.shape === 'initial') {
       const n = this.initialsRun(i + 1);
+      // «Слово К.Г. Дамберг»: словарная фамилия справа от инициалов важнее слова вне словаря слева
+      const right = this.adjacent(i + n) ? this.tok(i + n + 1) : undefined;
+      if (t0.surn === 0 && this.isWord(right) && right.surn > 0) return null;
       const ok = n >= MAX_INITIALS
         ? t0.surn > 0 || isGenericSurname(t0)
         : t0.surn >= STRENGTH_HEURISTIC;
@@ -206,20 +246,17 @@ class PersonScanner {
       return null;
     }
     if (!this.isWord(t1)) return null;
-    // Фамилия Имя Отчество
-    if (this.isWord(t2) && t2.patr && t0.surn > 0 && t1.name > 0) {
+    // Фамилия Имя Отчество: «Имя Отчество» - якорь, фамилией слева годится и слово вне
+    // словаря («Головач», «Дамберг»), если это не роль и не глагол
+    if (this.isWord(t2) && t2.patr && t1.name > 0 && isSurnameNearPatronymic(t0)) {
       this.add(i, 3);
       return { count: 3 };
     }
-    // Имя Отчество Фамилия
-    if (this.isWord(t2) && t1.patr && t0.name > 0 && t2.surn > 0) {
-      this.add(i, 3);
-      return { count: 3 };
-    }
-    // Имя Отчество
+    // Имя Отчество Фамилия / Имя Отчество
     if (t1.patr && t0.name > 0) {
-      this.add(i, 2);
-      return { count: 2 };
+      const count = this.isWord(t2) && isSurnameNearPatronymic(t2) ? 3 : 2;
+      this.add(i, count);
+      return { count };
     }
     // Фамилия Имя / Имя Фамилия
     const surnName = pairOk(t0.surn, t1.name) &&
@@ -231,6 +268,21 @@ class PersonScanner {
       return { count: 2 };
     }
     return null;
+  }
+
+  /** «Иванов, Сергей Петрович»: фамилия, запятая, затем якорь «Имя Отчество». */
+  private commaBeforeNamePatronymic(i: number): Match | null {
+    const t0 = this.tok(i);
+    const t1 = this.tok(i + 1);
+    const t2 = this.tok(i + 2);
+    if (t0 === undefined || !this.isWord(t1) || !this.isWord(t2) || !this.adjacent(i + 1)) {
+      return null;
+    }
+    const gap = this.text.slice(t0.end, t1.start);
+    if (!COMMA_GAP_RE.test(gap) || t0.shape !== t1.shape) return null;
+    if (!(t1.name > 0 && t2.patr && isSurnameNearPatronymic(t0))) return null;
+    this.add(i, 3);
+    return { count: 3 };
   }
 
   private matchInitialsFirst(i: number): Match | null {
@@ -252,10 +304,11 @@ class PersonScanner {
     this.tokens.forEach((t, i) => {
       if (!this.isWord(t) || covered(t)) return;
       const strong = t.surn === STRENGTH_STRONG || t.name === STRENGTH_STRONG;
-      if (!strong) return;
+      // После слова-признака годится и фамилия по окончанию («Звонил Дамберг», «Белых»)
+      const heuristic = t.surn >= STRENGTH_HEURISTIC && !isRoleWord(t.text);
+      if (!strong && !heuristic) return;
       const before = this.text.slice(Math.max(0, t.start - CONTEXT_WINDOW), t.start);
-      let cued = CUE_RE.test(before);
-      if (!cued) cued = this.followsPerson(t);
+      const cued = CUE_RE.test(before) || (strong && this.followsPerson(t));
       if (!cued) return;
       this.add(i, 1);
     });
@@ -295,9 +348,16 @@ class PersonScanner {
         t.surn === STRENGTH_STRONG && t.name === 0;
       const nbs = (t: PersonToken): boolean =>
         t.name === STRENGTH_STRONG && t.surn === 0;
+      // Рядом с «имя отчество» строчная фамилия - словарная или с окончанием фамилии
+      // Словарная фамилия, которая бывает и именем («ким»), тоже годится
+      const nearPatr = (t: PersonToken | undefined): boolean =>
+        t?.shape === 'lower' &&
+        (t.name === 0 || t.surn === STRENGTH_STRONG) &&
+        t.surn > 0 &&
+        isSurnameNearPatronymic(t);
       let count = 0;
-      if (b.patr && a.name === STRENGTH_STRONG) count = c?.shape === 'lower' && abs(c) ? 3 : 2;
-      else if (c?.shape === 'lower' && c.patr && abs(a) && nbs(b)) count = 3;
+      if (b.patr && a.name === STRENGTH_STRONG) count = nearPatr(c) ? 3 : 2;
+      else if (c?.shape === 'lower' && c.patr && nearPatr(a) && nbs(b)) count = 3;
       else if ((abs(a) && nbs(b)) || (nbs(a) && abs(b))) count = 2;
       if (count > 0) {
         this.add(i, count);
@@ -317,10 +377,12 @@ const LATIN_LABEL = `(?<![A-Za-z])(?:${ciAny(['contact', 'attn', 'attention', 'm
   `${ci('kind')}[ \\t]+${ci('regards')})`;
 const LATIN_NAME_RE = new RegExp(
   `${LATIN_LABEL}[ \\t]*[:,\\-]?[ \\t\\r\\n]{0,3}` +
-    '(?<name>[A-Z][a-z]{1,19}(?:[ \\t]+[A-Z][a-z]{1,19}){1,2})(?![A-Za-z])',
+    `(?<name>[${LATIN_UPPER}][${LATIN_LOWER}]{1,19}` +
+    `(?:[ \\t]+[${LATIN_UPPER}][${LATIN_LOWER}]{1,19}){1,2})(?![${LATIN_UPPER}${LATIN_LOWER}])`,
   'gd',
 );
-const LATIN_WORD_RE = /[A-Z][a-z]+/g;
+// Латиница с диакритикой («Hans Müller»), как в Python
+const LATIN_WORD_RE = new RegExp(`[${LATIN_UPPER}][${LATIN_LOWER}]+`, 'g');
 const LATIN_MIN_WORDS = 2;
 const LATIN_MIN_REPEAT_LEN = 3;
 const LATIN_NOT_NAME = new Set(
@@ -388,7 +450,7 @@ export function dropOverlaps(spans: DetectedSpan[]): DetectedSpan[] {
  *
  * @param text Исходный текст.
  * @param allowedStems Основы белого списка (нормализованные).
- * @param latinNames Искать ли латинские ФИО после метки контакта.
+ * @param latinNames Искать ли латинские ФИО (после метки контакта и по словарю имён).
  */
 export function findPersons(
   text: string,
@@ -396,6 +458,6 @@ export function findPersons(
   latinNames: boolean,
 ): DetectedSpan[] {
   const found = new PersonScanner(text, allowedStems).scan();
-  if (latinNames) found.push(...findLatinNames(text));
+  if (latinNames) found.push(...findLatinNames(text), ...findLatinDictionaryNames(text));
   return dropOverlaps(found);
 }
