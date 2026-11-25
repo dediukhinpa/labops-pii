@@ -45,6 +45,7 @@ from labops_pii.pii_patterns import (
     find_address_spans,
     find_card_spans,
     find_snils_spans,
+    fold_for_names,
     normalize_text,
 )
 from labops_pii.tech_tokens import find_tech_spans
@@ -359,18 +360,22 @@ class PiiDetector:
         # Технические токены считаются один раз на запрос: функция чистая, а пять детекторов
         # раньше пересчитывали её каждый сам (~130 мс на тексте в 70 тыс. символов).
         tech = find_tech_spans(text)
-        found += self._detect_persons(text, tech)
+        # Кириллические детекторы ФИО идут по свёрнутой копии той же длины: без невидимых знаков,
+        # меток направления письма и латинских гомоглифов, иначе разорванное или подменённое имя
+        # проходит мимо NER и морфологии. На чистом тексте копия побайтно равна оригиналу.
+        folded = fold_for_names(text)
+        found += self._detect_persons(folded, tech)
         found += self._detect_latin_names(text, tech)
         found += self._detect_field_names(text)
-        found += self._detect_mixed_case_persons(text, tech)
-        found += self._detect_case_shifted_persons(text, tech)
-        found += self._detect_initialed_surnames(text, tech)
-        found += self._detect_known_names(text, known_lemmas, tech)
-        found += self._detect_tech_names(text, tech, known_lemmas)
+        found += self._detect_mixed_case_persons(folded, tech)
+        found += self._detect_case_shifted_persons(folded, tech)
+        found += self._detect_initialed_surnames(folded, tech)
+        found += self._detect_known_names(folded, known_lemmas, tech)
+        found += self._detect_tech_names(folded, tech, known_lemmas)
         # Слова ФИО, найденные в этом же тексте, ловятся и в других местах: подвал карточки
         # «Фамилия Имя • Резюме обновлено» после поля "name" иначе оставался открытым (NER не
         # видит фамилию без контекста, а леммы треда пополняются только после ответа)
-        found += self._detect_repeated_names(text, found, known_lemmas, tech)
+        found += self._detect_repeated_names(folded, found, known_lemmas, tech)
         if self._mask_legal:
             found += self._detect_orgs(text)
         # Слова белого списка (PII_ALLOWED_WORDS) не ПДн: ни ФИО, ни организация
@@ -782,9 +787,14 @@ class PiiDetector:
 
     # --- NER ------------------------------------------------------------------
 
-    def _detect_persons(self, text: str, tech: list[tuple[int, int]]) -> list[Detection]:
-        """ФИО через Natasha NER (Slovnet), с захватом соседних инициалов."""
-        doc = Doc(text)
+    def _detect_persons(self, folded: str, tech: list[tuple[int, int]]) -> list[Detection]:
+        """ФИО через Natasha NER (Slovnet), с захватом соседних инициалов.
+
+        Работает по свёрнутой копии (`fold_for_names`): без невидимых знаков, меток направления
+        письма и латинских гомоглифов. Длина копии равна исходной, поэтому позиции находок
+        указывают на оригинал, а псевдонимизатор заменяет исходный фрагмент (round-trip побайтный).
+        """
+        doc = Doc(folded)
         doc.segment(self._segmenter)
         doc.tag_ner(self._ner)
         result: list[Detection] = []
@@ -793,13 +803,13 @@ class PiiDetector:
                 continue
             for piece_start, piece_end in _subtract(span.start, span.stop, tech):
                 # Находка NER через несколько строк (список людей) - по ФИО на строку
-                lines = _split_name_lines(text, piece_start, piece_end)
+                lines = _split_name_lines(folded, piece_start, piece_end)
                 for k, (line_start, line_end) in enumerate(lines):
                     # Отделённая строка - находка, только если в ней есть словарное имя или
                     # фамилия: «Буллеты:» под ФИО спикера - заголовок, а не второй человек
-                    if k and not _line_has_name_word(text, line_start, line_end):
+                    if k and not _line_has_name_word(folded, line_start, line_end):
                         continue
-                    found = self._person_from_piece(text, line_start, line_end, tech)
+                    found = self._person_from_piece(folded, line_start, line_end, tech)
                     if found is not None:
                         result.append(found)
         return result
