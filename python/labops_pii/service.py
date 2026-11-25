@@ -523,12 +523,16 @@ class Pseudonymizer:
             aliased = self._store.find_token(thread_id, alias_type, det.key)
             if aliased is not None:  # это написание уже сопоставлено раньше: токен не меняем
                 resolved = self._store.get_original(thread_id, aliased)
-                if resolved is not None:
+                # Токен с тех пор мог расшириться до ФИО, с которым это написание уже не
+                # совместимо («Иванов И.» -> «Иванов Пётр Сергеевич»): тогда псевдоним устарел
+                if resolved is not None and self._still_compatible(thread_id, det.key, resolved):
                     return resolved
             candidates = persons.compatible_entries(det.key)
             if len(candidates) == 1:  # неоднозначность -> новый токен, безопаснее
                 other_key, token = candidates[0]
-                if _adds_words(det.key, other_key):
+                if _adds_words(det.key, other_key) and self._aliases_allow(
+                    thread_id, alias_type, token, det.key
+                ):
                     # Новое упоминание полнее прежнего («Игорь» -> «Игорь Валентинович
                     # Крутоголов»). Оставить токен с прежним оригиналом нельзя: /restore вернул
                     # бы только «Игорь», отчество и фамилия пропали бы из ответа. Токен остаётся
@@ -536,7 +540,7 @@ class Pseudonymizer:
                     if self._widen(thread_id, pii_type, token, det, original):
                         persons.replace(other_key, det.key, token)
                         return token
-                else:
+                elif not _adds_words(det.key, other_key):
                     self._remember_alias(thread_id, alias_type, det.key, token)
                     return token
         token = f"[{pii_type}_{self._store.count(thread_id, pii_type) + 1}]"
@@ -563,6 +567,28 @@ class Pseudonymizer:
         except (ReplacementConflictError, KeyError):
             return False
         return True
+
+    def _still_compatible(self, thread_id: str, key: str, token: str) -> bool:
+        """Совместим ли ключ с нынешним ключом токена ФИО (после возможного расширения)."""
+        current = next(
+            (k for k, t in self._store.list_keys(thread_id, PiiType.PERSON.value) if t == token),
+            None,
+        )
+        return current is None or keys_compatible(current, key)
+
+    def _aliases_allow(self, thread_id: str, alias_type: str, token: str, new_key: str) -> bool:
+        """Можно ли расширить токен до new_key: каждое его прежнее написание с ним совместимо.
+
+        «Иванов» -> псевдоним «Иванов И.» -> «Иванов Пётр Сергеевич»: расширение превратило бы
+        уже выданный «Иванов И.» в Петра. Тогда полное ФИО получает свой токен (неоднозначность
+        - новый токен), а прежние упоминания восстанавливаются как раньше.
+        """
+        prefix = f"{token}~"
+        return all(
+            keys_compatible(key, new_key)
+            for key, alias in self._store.list_keys(thread_id, alias_type)
+            if alias.startswith(prefix)
+        )
 
     def _remember_alias(self, thread_id: str, alias_type: str, key: str, token: str) -> None:
         """Запоминает, что ключ ФИО разрешился в token (запись-псевдоним, см. ALIAS_TYPE_SUFFIX)."""

@@ -752,7 +752,7 @@
       "type": "PERSON"
      }
     ],
-    "text": "[PERSON_19]. отсутствует"
+    "text": "[PERSON_19] отсутствует"
    },
    {
     "entities": [
@@ -2242,11 +2242,11 @@
    {
     "entities": [
      {
-      "token": "[PERSON_1]",
+      "token": "[PERSON_67]",
       "type": "PERSON"
      }
     ],
-    "text": "[PERSON_1]"
+    "text": "[PERSON_67]"
    },
    {
     "entities": [
@@ -2260,20 +2260,11 @@
    {
     "entities": [
      {
-      "token": "[PERSON_67]",
-      "type": "PERSON"
-     }
-    ],
-    "text": "Поставщик [PERSON_67]"
-   },
-   {
-    "entities": [
-     {
       "token": "[PERSON_68]",
       "type": "PERSON"
      }
     ],
-    "text": "[PERSON_68]"
+    "text": "Поставщик [PERSON_68]"
    },
    {
     "entities": [
@@ -2282,7 +2273,16 @@
       "type": "PERSON"
      }
     ],
-    "text": "Генеральный директор [PERSON_69]"
+    "text": "[PERSON_69]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_70]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "Генеральный директор [PERSON_70]"
    },
    {
     "entities": [
@@ -2300,34 +2300,7 @@
       "type": "PERSON"
      }
     ],
-    "text": "{\"owner\": \"[PERSON_2].\"}"
-   },
-   {
-    "entities": [
-     {
-      "token": "[PERSON_25]",
-      "type": "PERSON"
-     }
-    ],
-    "text": "Нужен цемент М500, 40 тонн. Контакт: [PERSON_25]."
-   },
-   {
-    "entities": [
-     {
-      "token": "[PERSON_70]",
-      "type": "PERSON"
-     }
-    ],
-    "text": "[PERSON_70]"
-   },
-   {
-    "entities": [
-     {
-      "token": "[PERSON_28]",
-      "type": "PERSON"
-     }
-    ],
-    "text": "[PERSON_28]"
+    "text": "{\"owner\": \"[PERSON_2]\"}"
    },
    {
     "entities": [
@@ -2336,7 +2309,34 @@
       "type": "PERSON"
      }
     ],
-    "text": "[PERSON_71]"
+    "text": "Нужен цемент М500, 40 тонн. Контакт: [PERSON_71]."
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_72]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "[PERSON_72]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_67]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "[PERSON_67]"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_73]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "[PERSON_73]"
    },
    {
     "entities": [],
@@ -2404,7 +2404,7 @@
    {
     "entities": [
      {
-      "token": "[PERSON_70]",
+      "token": "[PERSON_72]",
       "type": "PERSON"
      },
      {
@@ -2412,7 +2412,7 @@
       "type": "PERSON"
      }
     ],
-    "text": "школа имени [PERSON_70] [PERSON_59]"
+    "text": "школа имени [PERSON_72] [PERSON_59]"
    },
    {
     "entities": [],
@@ -2445,11 +2445,11 @@
    {
     "entities": [
      {
-      "token": "[PERSON_72]",
+      "token": "[PERSON_74]",
       "type": "PERSON"
      }
     ],
-    "text": "[PERSON_72]"
+    "text": "[PERSON_74]"
    },
    {
     "entities": [],
@@ -2458,16 +2458,16 @@
    {
     "entities": [
      {
-      "token": "[PERSON_71]",
+      "token": "[PERSON_73]",
       "type": "PERSON"
      }
     ],
-    "text": "[PERSON_71]"
+    "text": "[PERSON_73]"
    },
    {
     "entities": [
      {
-      "token": "[PERSON_70]",
+      "token": "[PERSON_72]",
       "type": "PERSON"
      },
      {
@@ -2475,29 +2475,29 @@
       "type": "PERSON"
      }
     ],
-    "text": "Позвони [PERSON_70]. [PERSON_40] придёт позже"
+    "text": "Позвони [PERSON_72]. [PERSON_40] придёт позже"
    },
    {
     "entities": [
      {
-      "token": "[PERSON_73]",
+      "token": "[PERSON_75]",
       "type": "PERSON"
      },
      {
-      "token": "[PERSON_28]",
+      "token": "[PERSON_67]",
       "type": "PERSON"
      }
     ],
-    "text": "[PERSON_73]. [PERSON_28] пришёл"
+    "text": "[PERSON_75]. [PERSON_67] пришёл"
    },
    {
     "entities": [
      {
-      "token": "[PERSON_74]",
+      "token": "[PERSON_76]",
       "type": "PERSON"
      }
     ],
-    "text": "[PERSON_74]"
+    "text": "[PERSON_76]"
    },
    {
     "entities": [
@@ -3354,7 +3354,7 @@
      "type": "PERSON"
     }
    ],
-   "text": "[PERSON_1]. отсутствует"
+   "text": "[PERSON_1] отсутствует"
   },
   {
    "entities": [
@@ -4898,7 +4898,7 @@
      "type": "PERSON"
     }
    ],
-   "text": "{\"owner\": \"[PERSON_1].\"}"
+   "text": "{\"owner\": \"[PERSON_1]\"}"
   },
   {
    "entities": [
@@ -8870,7 +8870,7 @@
      "type": "PERSON"
     }
    ],
-   "text": "[PERSON_1]. отсутствует"
+   "text": "[PERSON_1] отсутствует"
   },
   {
    "entities": [
@@ -10414,7 +10414,7 @@
      "type": "PERSON"
     }
    ],
-   "text": "{\"owner\": \"[PERSON_1].\"}"
+   "text": "{\"owner\": \"[PERSON_1]\"}"
   },
   {
    "entities": [

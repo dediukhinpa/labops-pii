@@ -172,7 +172,11 @@ def find_name_patronymic_spans(text: str) -> list[tuple[int, int]]:
         if not (is_first_name(first.group()) and is_patronymic(patr.group())):
             continue
         start, end = first.start(), patr.end()
-        if i > 0 and _surname_at(text, words[i - 1], first.start(), style, left=True):
+        # Слово, уже отданное предыдущему ФИО, второй раз фамилией не становится: иначе два
+        # человека подряд («Анна Сергеевна Иванова Ольга Петровна») склеились бы в один
+        if i > 0 and words[i - 1].start() >= last_end and _surname_at(
+            text, words[i - 1], first.start(), style, left=True
+        ):
             start = words[i - 1].start()
         elif i + 2 < len(words) and _surname_at(text, words[i + 2], patr.end(), style,
                                                 left=False):
@@ -256,8 +260,13 @@ def find_surname_name_spans(text: str) -> list[tuple[int, int]]:
     """
     words = list(_WORD_RE.finditer(text))
     spans: list[tuple[int, int]] = []
+    last_end = -1
     for i in range(len(words) - 1):
         left, right = words[i], words[i + 1]
+        # Пары не цепляются друг за друга: «Иван Петров Анна Сидорова» - два человека, а не
+        # цепочка пересекающихся пар, которую детектор свёл бы в одно ФИО
+        if left.start() < last_end:
+            continue
         if i > 0 and _NAMED_AFTER_RE.fullmatch(words[i - 1].group().lower()):
             continue  # «ул. Ивана Франко», «школа имени Ивана Петрова»: название, не человек
         style = _style(left.group())
@@ -270,4 +279,5 @@ def find_surname_name_spans(text: str) -> list[tuple[int, int]]:
             _best_is_name(a) and _pair_surname(b, style)
         ):
             spans.append((left.start(), right.end()))
+            last_end = right.end()
     return spans

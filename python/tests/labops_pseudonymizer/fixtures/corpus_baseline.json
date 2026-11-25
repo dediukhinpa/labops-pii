@@ -752,7 +752,7 @@
       "type": "PERSON"
      }
     ],
-    "text": "[PERSON_19]. отсутствует"
+    "text": "[PERSON_19] отсутствует"
    },
    {
     "entities": [
@@ -2173,7 +2173,7 @@
      "type": "PERSON"
     }
    ],
-   "text": "[PERSON_1]. отсутствует"
+   "text": "[PERSON_1] отсутствует"
   },
   {
    "entities": [
