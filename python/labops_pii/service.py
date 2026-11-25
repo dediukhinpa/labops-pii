@@ -10,7 +10,13 @@ from collections.abc import Callable, Iterator, Sequence
 from dataclasses import dataclass, replace
 
 from labops_pii.config import DEFAULT_MAX_RESTORE_TOKENS
-from labops_pii.detector import Detection, PiiDetector, PiiType, follows_preposition
+from labops_pii.detector import (
+    ADDRESS_STREET_TYPE_PREFIX,
+    Detection,
+    PiiDetector,
+    PiiType,
+    follows_preposition,
+)
 from labops_pii.inflect import address_street_word_nominative
 from labops_pii.jsonlog import log_info_formatted, thread_hash
 from labops_pii.morph import (
@@ -33,7 +39,9 @@ ESCAPE_MARK = "\u200b"
 # модель в ответе, поэтому в /restore она склоняет ФИО, а во входе /pseudonymize всегда буквальна.
 CASE_CODES = "nomn|gent|datv|accs|ablt|loct"
 LABEL_RE = re.compile(rf"\[([A-Z]+)_(\d+)(?:\|({CASE_CODES}))?\]")
-SEEN_OR_ESCAPED_RE = re.compile(rf"\[({ESCAPE_MARK})?([A-Z]+)_(\d+)(?:\|({CASE_CODES}))?\]")
+# Знаков экранирования может быть несколько: во входе уже бывает экранированная метка («[​X_1]»
+# из прошлого ответа), она экранируется ещё раз, а restore снимает ровно один знак
+SEEN_OR_ESCAPED_RE = re.compile(rf"\[({ESCAPE_MARK}+)?([A-Z]+)_(\d+)(?:\|({CASE_CODES}))?\]")
 # Только у ФИО метка меняет текст; у остальных типов она игнорируется.
 INFLECTABLE_TYPE = PiiType.PERSON.value
 # Тип записи-псевдонима: ключ, который разрешился в существующий токен нечётким сопоставлением
@@ -208,13 +216,19 @@ def _escape_literal_tokens(text: str, foreign: set[str]) -> str:
     экранируются безусловно (restore их не тронет).
     """
     def escape(match: re.Match[str]) -> str:
-        """Ставит невидимый символ после «[» у метки, которую restore трогать нельзя."""
-        simple = f"[{match.group(1)}_{match.group(2)}]"
-        if match.group(3) is None and simple not in foreign:
-            return match.group(0)
+        """Ставит невидимый символ после «[» у метки, которую restore трогать нельзя.
+
+        Уже экранированная метка («[» + знак + метка) экранируется ещё одним знаком: иначе
+        модель видела бы её неотличимой от токена, а restore снимал бы знак, и текст после
+        круга не совпадал бы с исходным (ревью 25.11.2026).
+        """
+        if match.group(1) is None:
+            simple = f"[{match.group(2)}_{match.group(3)}]"
+            if match.group(4) is None and simple not in foreign:
+                return match.group(0)
         return f"[{ESCAPE_MARK}{match.group(0)[1:]}"
 
-    return LABEL_RE.sub(escape, text)
+    return SEEN_OR_ESCAPED_RE.sub(escape, text)
 
 
 class Pseudonymizer:
@@ -518,6 +532,10 @@ class Pseudonymizer:
             )
         if existing is not None:
             return existing
+        if det.pii_type is PiiType.ADDRESS:
+            typed = self._typed_address_token(thread_id, det.key)
+            if typed is not None:
+                return typed
         if det.pii_type in FUZZY_TYPES:
             alias_type = pii_type + ALIAS_TYPE_SUFFIX
             aliased = self._store.find_token(thread_id, alias_type, det.key)
@@ -567,6 +585,22 @@ class Pseudonymizer:
         except (ReplacementConflictError, KeyError):
             return False
         return True
+
+    def _typed_address_token(self, thread_id: str, key: str) -> str | None:
+        """Токен адреса с типом улицы для того же адреса без типа («Ленина 5» после «ул. Ленина 5»).
+
+        Тип улицы входит в ключ («ул. Мира 5» и «пр-т Мира 5» - разные адреса), поэтому запись
+        без типа сопоставляется с адресом, который отличается только типом, - если такой ровно
+        один; иначе неоднозначно, и адрес получает свой токен.
+        """
+        if key.startswith(ADDRESS_STREET_TYPE_PREFIX):
+            return None
+        matches = [
+            token
+            for other, token in self._store.list_keys(thread_id, PiiType.ADDRESS.value)
+            if other.startswith(ADDRESS_STREET_TYPE_PREFIX) and other.partition(" ")[2] == key
+        ]
+        return matches[0] if len(matches) == 1 else None
 
     def _still_compatible(self, thread_id: str, key: str, token: str) -> bool:
         """Совместим ли ключ с нынешним ключом токена ФИО (после возможного расширения)."""

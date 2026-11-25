@@ -784,10 +784,11 @@ class MemoryReplacementStore:
         self._clock = clock
         self._lock = threading.RLock()
         self._threads: dict[str, _MemoryThread] = {}
-        # Журнал пачки: (тред, токен) в порядке добавления; None — пачки нет
-        self._journal: list[tuple[str, str]] | None = None
-        # Расширения пачки: (тред, тип, токен, прежний ключ, прежний оригинал) для отката
-        self._widened: list[tuple[str, str, str, str, str]] = []
+        # Журнал пачки в порядке операций; None — пачки нет. Добавление: (тред, токен, None);
+        # расширение: (тред, токен, (тип, прежний ключ, прежний оригинал)). Один журнал, а не
+        # два: откат строго в обратном порядке, иначе ключ, освобождённый расширением и занятый
+        # новым токеном той же пачки, после отката терялся (ревью 25.11.2026)
+        self._journal: list[tuple[str, str, tuple[str, str, str] | None]] | None = None
 
     def _touch_locked(self, thread: _MemoryThread) -> None:
         """Отмечает обращение к треду; под self._lock."""
@@ -833,7 +834,7 @@ class MemoryReplacementStore:
             thread.keys.setdefault(pii_type, []).append((key, token))
             self._touch_locked(thread)
             if self._journal is not None:
-                self._journal.append((thread_id, token))
+                self._journal.append((thread_id, token, None))
 
     def widen(self, thread_id: str, token: str, pii_type: str, key: str, original: str) -> None:
         """Заменяет ключ и оригинал токена; в пачке запоминает прежние для отката.
@@ -852,8 +853,8 @@ class MemoryReplacementStore:
             if key != old_key and (pii_type, key) in thread.by_key:
                 raise ReplacementConflictError("ключ уже занят другим токеном")
             if self._journal is not None:
-                self._widened.append(
-                    (thread_id, pii_type, token, old_key, thread.originals[token])
+                self._journal.append(
+                    (thread_id, token, (pii_type, old_key, thread.originals[token]))
                 )
             del thread.by_key[(pii_type, old_key)]
             thread.by_key[(pii_type, key)] = token
@@ -887,7 +888,6 @@ class MemoryReplacementStore:
         """
         with self._lock:
             self._journal = []
-            self._widened = []
         try:
             yield
         except BaseException:
@@ -896,34 +896,46 @@ class MemoryReplacementStore:
             raise
         with self._lock:
             self._journal = None
-            self._widened = []
 
     def _rollback_locked(self) -> None:
-        """Убирает записи, добавленные в пачке (с конца); под self._lock."""
-        for thread_id, pii_type, token, old_key, old_original in reversed(self._widened):
+        """Отменяет операции пачки строго в обратном порядке; под self._lock."""
+        for thread_id, token, widened in reversed(self._journal or []):
             thread = self._threads.get(thread_id)
-            pairs = thread.keys.get(pii_type, []) if thread else []
-            index = next((i for i, (_, t) in enumerate(pairs) if t == token), None)
-            if thread is None or index is None:
+            if thread is None:
                 continue
-            del thread.by_key[(pii_type, pairs[index][0])]
-            thread.by_key[(pii_type, old_key)] = token
-            pairs[index] = (old_key, token)
-            thread.originals[token] = old_original
-        self._widened = []
-        for thread_id, token in reversed(self._journal or []):
-            thread = self._threads.get(thread_id)
-            if thread is None or token not in thread.originals:
-                continue
-            del thread.originals[token]
-            for pii_type, pairs in thread.keys.items():
-                if pairs and pairs[-1][1] == token:
-                    key = pairs.pop()[0]
-                    thread.by_key.pop((pii_type, key), None)
-                    break
-            if not thread.originals:
-                del self._threads[thread_id]
+            if widened is not None:
+                self._undo_widen_locked(thread, token, *widened)
+            else:
+                self._undo_add_locked(thread_id, thread, token)
         self._journal = None
+
+    @staticmethod
+    def _undo_widen_locked(
+        thread: _MemoryThread, token: str, pii_type: str, old_key: str, old_original: str
+    ) -> None:
+        """Возвращает токену прежние ключ и оригинал."""
+        pairs = thread.keys.get(pii_type, [])
+        index = next((i for i, (_, t) in enumerate(pairs) if t == token), None)
+        if index is None:
+            return
+        del thread.by_key[(pii_type, pairs[index][0])]
+        thread.by_key[(pii_type, old_key)] = token
+        pairs[index] = (old_key, token)
+        thread.originals[token] = old_original
+
+    def _undo_add_locked(self, thread_id: str, thread: _MemoryThread, token: str) -> None:
+        """Убирает добавленный токен (он последний в списке своего типа)."""
+        if token not in thread.originals:
+            return
+        del thread.originals[token]
+        for pii_type, pairs in thread.keys.items():
+            if pairs and pairs[-1][1] == token:
+                key = pairs.pop()[0]
+                if thread.by_key.get((pii_type, key)) == token:
+                    del thread.by_key[(pii_type, key)]
+                break
+        if not thread.originals:
+            del self._threads[thread_id]
 
     def purge_idle(self, max_idle_seconds: float) -> int:
         """Удаляет треды без обращений дольше max_idle_seconds целиком.
