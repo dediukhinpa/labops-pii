@@ -24,6 +24,7 @@ from labops_pii.pii_patterns import (
     PHONE_LOOSE_RE,
     PHONE_RE,
     find_card_spans,
+    find_obfuscated_emails,
     find_snils_spans,
     fold_name_homoglyphs,
     has_street_house,
@@ -395,7 +396,7 @@ def find_pii_types(text: str) -> set[str]:
     # Сначала нормализация (NFKC, тире и «/» -> «-», NBSP -> пробел), потом вырезание токенов
     clean = strip_tokens(normalize_text(_split_slash_lists(text)))
     found: set[str] = set()
-    if has_email(clean):
+    if has_email(clean) or find_obfuscated_emails(clean):
         found.add(EMAIL)
     search_names = names_mode() is not NamesMode.OFF
     search_address = address_mode() is not AddressMode.OFF

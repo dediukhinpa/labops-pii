@@ -1,4 +1,4 @@
-"""Цифровые ПДн в форматах, которые уходили открытыми (ревью и матрица 25.11.2026).
+"""ПДн в записи, которая уходила открытой: цифры, контакты, латиница (ревью и матрица 25.11.2026).
 
 Номера вымышленные; ИНН, карты и счета подобраны с верной контрольной суммой.
 """
@@ -118,3 +118,79 @@ def test_new_formats_round_trip(service: Pseudonymizer, text: str) -> None:
     masked, _ = service.pseudonymize("n", text)
     assert not any(ch.isdigit() for ch in masked.replace("_1]", "]"))
     assert service.restore("n", masked) == text
+
+
+@pytest.mark.parametrize(
+    ("text", "fragment"),
+    [
+        ("Профиль: https://vk.com/ivan.petrov88.", "https://vk.com/ivan.petrov88"),
+        ("instagram.com/ivan_petrov88", "instagram.com/ivan_petrov88"),
+        ("https://vk.com/id123456789", "https://vk.com/id123456789"),
+    ],
+)
+def test_social_profile_links_are_contacts(
+    detector: PiiDetector, text: str, fragment: str
+) -> None:
+    assert _types(detector, text) == [("CONTACT", fragment)]
+
+
+def test_social_domain_inside_other_url_is_not_contact(detector: PiiDetector) -> None:
+    assert _types(detector, "Смотрите https://example.com/vk.com/x") == []
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "ivan.petrov [at] mail.ru",
+        "ivan.petrov @ mail.ru",
+        "ivan.petrov собака mail.ru",
+        "Пишите: ivan.petrov(at)yandex.ru.",
+    ],
+)
+def test_email_written_around_at_sign(service: Pseudonymizer, text: str) -> None:
+    masked, _ = service.pseudonymize("o", text)
+    assert "ivan.petrov" not in masked
+    assert service.restore("o", masked) == text
+    assert "email" in find_pii_types(text)
+
+
+def test_email_around_at_sign_shares_token_with_plain_form(service: Pseudonymizer) -> None:
+    plain, _ = service.pseudonymize("o2", "ivan.petrov@mail.ru")
+    obfuscated, _ = service.pseudonymize("o2", "ivan.petrov [at] mail.ru")
+    assert plain == obfuscated == "[EMAIL_1]"
+
+
+@pytest.mark.parametrize("text", ["look at example.com", "цена 5 @ file.txt", "skype для бизнеса"])
+def test_phrases_are_not_email_or_skype(detector: PiiDetector, text: str) -> None:
+    assert _types(detector, text) == []
+
+
+@pytest.mark.parametrize(
+    ("text", "login"),
+    [
+        ("skype: ivan.petrov88", "ivan.petrov88"),
+        ("Скайп - live:ivan_p88, звоните", "live:ivan_p88"),
+    ],
+)
+def test_skype_login_is_contact(detector: PiiDetector, text: str, login: str) -> None:
+    assert _types(detector, text) == [("CONTACT", login)]
+
+
+def test_email_pattern_is_fast_on_long_words(detector: PiiDetector) -> None:
+    started = time.perf_counter()
+    detector.detect(("a" * 60 + " ") * 1000 + "@ " * 1000)
+    find_pii_types(("a" * 60 + " @ ") * 1000)
+    assert time.perf_counter() - started < HOSTILE_SECONDS
+
+
+@pytest.mark.parametrize(
+    ("text", "fragment"),
+    [("Contact: Hans Müller", "Hans Müller"), ("HANS MÜLLER", "HANS MÜLLER")],
+)
+def test_latin_name_with_diacritics(detector: PiiDetector, text: str, fragment: str) -> None:
+    assert _types(detector, text) == [("PERSON", fragment)]
+
+
+@pytest.mark.parametrize("text", ["Über den Fluss", "Straße Bäckerei"])
+def test_latin_words_with_diacritics_are_not_names(detector: PiiDetector, text: str) -> None:
+    assert _types(detector, text) == []

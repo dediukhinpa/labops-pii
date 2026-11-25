@@ -28,6 +28,9 @@ from labops_pii.morph import (
     with_preposition_gender,
 )
 from labops_pii.name_hints import (
+    LATIN_LETTERS,
+    LATIN_LOWER,
+    LATIN_UPPER,
     NOT_A_NAME_WORDS,
     find_json_field_names,
     find_latin_name_spans,
@@ -46,11 +49,13 @@ from labops_pii.pii_patterns import (
     NICK_RE,
     PHONE_LOOSE_RE,
     PHONE_RE,
+    SKYPE_RE,
     SNILS_KEYWORD_WINDOW,
     SNILS_RE,
     TME_RE,
     find_address_spans,
     find_card_spans,
+    find_obfuscated_emails,
     find_snils_spans,
     fold_for_names,
     normalize_text,
@@ -267,9 +272,10 @@ LATIN_NAME_LABEL_RE = re.compile(
     r"(?<![A-Za-z])(?i:contact(?:[ \t]+person)?|attn|attention|sales[ \t]+manager|manager|"
     r"representative|best[ \t]+regards|kind[ \t]+regards|regards|sincerely|signed)"
     r"[ \t]*[:,\-]?[ \t\r\n]{0,3}"
-    r"(?P<name>[A-Z][a-z]{1,19}(?:[ \t]+[A-Z][a-z]{1,19}){1,2})(?![A-Za-z])"
+    rf"(?P<name>[{LATIN_UPPER}][{LATIN_LOWER}]{{1,19}}"
+    rf"(?:[ \t]+[{LATIN_UPPER}][{LATIN_LOWER}]{{1,19}}){{1,2}})(?![{LATIN_LETTERS}])"
 )
-LATIN_NAME_WORD_RE = re.compile(r"[A-Z][a-z]+")
+LATIN_NAME_WORD_RE = re.compile(rf"[{LATIN_UPPER}][{LATIN_LOWER}]+")
 LATIN_MIN_NAME_WORDS = 2
 # Короче слово в повторе не ищется отдельно: «Li», «Mo» слишком часто встречаются сами
 LATIN_MIN_REPEAT_WORD_LEN = 3
@@ -470,10 +476,16 @@ class PiiDetector:
         return result
 
     def _detect_email(self, text: str) -> list[Detection]:
-        return [
+        found = [
             Detection(m.start(), m.end(), PiiType.EMAIL, m.group().lower(), PRIO_EMAIL)
             for m in EMAIL_RE.finditer(text)
         ]
+        # Запись в обход «@» - тот же адрес: ключ как у «local@domain», токен общий
+        found += [
+            Detection(start, end, PiiType.EMAIL, f"{local}@{domain}".lower(), PRIO_EMAIL)
+            for start, end, local, domain in find_obfuscated_emails(text)
+        ]
+        return found
 
     def _detect_phone(self, text: str) -> list[Detection]:
         result: list[Detection] = []
@@ -641,11 +653,19 @@ class PiiDetector:
         sources = [(NICK_RE, norm), (TME_RE, text)]
         if self._contacts_re is not None:
             sources.append((self._contacts_re, text))
-        return [
+        found = [
             Detection(m.start(), m.end(), PiiType.CONTACT, m.group().casefold(), PRIO_CONTACT)
             for pattern, source in sources
             for m in pattern.finditer(source)
         ]
+        found += [
+            Detection(
+                m.start("login"), m.end("login"), PiiType.CONTACT,
+                m.group("login").casefold(), PRIO_CONTACT,
+            )
+            for m in SKYPE_RE.finditer(text)
+        ]
+        return found
 
     def _detect_addresses(self, text: str) -> list[Detection]:
         """Адрес на уровне дома: улица + номер дома (+ квартира, индекс). Город не трогается."""

@@ -204,11 +204,17 @@ LATIN_FIRST_NAMES = _build_latin_first_names()
 
 # --- латинские ФИО -------------------------------------------------------------------------
 
+# Латиница с диакритикой европейских фамилий («Müller», «Łukasz», «Dvořák»): без неё
+# «Hans Müller» уходил открытым целиком (матрица 25.11.2026)
+LATIN_UPPER = "A-ZÀ-ÖØ-ÞĄĆČĎĘĚŁŃŇŐŘŚŠŤŮŰŹŻŽ"
+LATIN_LOWER = "a-zß-öø-ÿąćčďęěłńňőřśšťůűźżž"
+LATIN_LETTERS = LATIN_UPPER + LATIN_LOWER
 # Слово: «Ivan», «IVAN», «Jean-Pierre»; слева и справа не буква/цифра/знак пути или адреса.
+_LATIN_TITLE = rf"[{LATIN_UPPER}][{LATIN_LOWER}]{{2,19}}"
 _LATIN_WORD = (
-    r"(?<![A-Za-z0-9_@./\\:+-])"
-    r"(?:[A-Z][a-z]{2,19}(?:-[A-Z][a-z]{2,19})?|[A-Z]{3,20})"
-    r"(?![A-Za-z0-9_@/\\-])"
+    rf"(?<![{LATIN_LETTERS}0-9_@./\\:+-])"
+    rf"(?:{_LATIN_TITLE}(?:-{_LATIN_TITLE})?|[{LATIN_UPPER}]{{3,20}})"
+    rf"(?![{LATIN_LETTERS}0-9_@/\\-])"
 )
 # Цепочка слов через пробелы любой длины: окна по 2-3 слова перебираются внутри неё, иначе
 # «Senior Developer Maria Ivanova» резалась бы на «Senior Developer Maria» и «Ivanova».

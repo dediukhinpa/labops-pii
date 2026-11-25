@@ -622,7 +622,79 @@ NICK_RE = re.compile(r"(?<![\w.+\-@])@[A-Za-z][A-Za-z0-9_]{4,31}(?![\w@]|\.[A-Za
 TME_RE = re.compile(
     r"(?<![\w.@\-])(?i:(?:https?://)?(?:www\.)?(?:t|telegram)\.me)/[A-Za-z0-9_+]"
     r"[A-Za-z0-9_+/\-]{1,63}"
+    # Профиль в соцсети («vk.com/ivan.petrov88», «instagram.com/ivan_petrov88»): такой же
+    # идентификатор человека, как ссылка Telegram, раньше уходил открытым (матрица 25.11.2026)
+    r"|(?<![\w.@\-])(?i:(?:https?://)?(?:www\.|m\.)?"
+    r"(?:vk\.com|vkontakte\.ru|instagram\.com|ok\.ru/profile|facebook\.com|fb\.com))"
+    r"/[A-Za-z0-9_][A-Za-z0-9_.]{1,63}(?<!\.)"
 )
+
+# Логин Skype после слова «skype»/«скайп»: «skype: ivan.petrov88», «Скайп - live:ivan_p».
+# Берётся группа login: слово «skype» остаётся открытым (матрица 25.11.2026)
+SKYPE_RE = re.compile(
+    r"(?<![\w@])(?i:skype|скайп)[ \t]{0,3}[:\-]?[ \t]{0,3}"
+    r"(?P<login>(?:live:)?[A-Za-z][A-Za-z0-9._\-]{4,31})(?<![.\-])(?![\w@])"
+)
+
+# Email в обход «@» (матрица 25.11.2026): «ivan.petrov [at] mail.ru», «ivan.petrov @ mail.ru»,
+# «ivan.petrov собака mail.ru». Голое «at» без скобок не берётся: «look at example.com» -
+# обычная фраза; «a @b.com» (пробел только слева) - упоминание «@b.com», не адрес. Зона домена -
+# из списка, чтобы «5 @ file.txt» не стал адресом
+EMAIL_OBFUSCATED_TLDS = (
+    "ru|com|net|org|io|info|biz|su|by|kz|ua|uz|de|me|pro|online|site|ai|dev|co|us|uk|eu|рф"
+)
+EMAIL_LOCAL_MAX = 64
+# Разделитель вместо «@»: ищется первым, локальная часть - назад от него, домен - вперёд.
+# Так поиск линеен, и тексты без «@», «собака» и «at» в скобках (почти все) он не трогает
+_EMAIL_OBF_SEP_RE = re.compile(
+    r"[ \t]{0,3}[\[({](?i:at|собака)[\])}][ \t]{0,3}"
+    r"|[ \t]{1,3}@[ \t]{1,3}|@[ \t]{1,3}|[ \t]{1,3}(?i:собака)[ \t]{1,3}"
+)
+_EMAIL_OBF_ANCHOR_RE = re.compile(r"@|(?i:собака|[\[({]at[\])}])")
+_EMAIL_OBF_DOMAIN_RE = re.compile(
+    r"[^\W_][\w\-]{0,62}(?:\.[^\W_][\w\-]{0,62}){0,4}"
+    rf"\.(?i:{EMAIL_OBFUSCATED_TLDS})(?![\w\-]|\.[^\W_])"
+)
+_EMAIL_LOCAL_CHARS = frozenset(
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._%+-"
+)
+
+
+def find_obfuscated_emails(text: str) -> list[tuple[int, int, str, str]]:
+    """Email, записанный в обход «@»: (начало, конец, локальная часть, домен).
+
+    Args:
+        text: Любой текст.
+
+    Returns:
+        Находки по порядку; ключом адреса служит «локальная часть@домен».
+    """
+    if _EMAIL_OBF_ANCHOR_RE.search(text) is None:
+        return []
+    found: list[tuple[int, int, str, str]] = []
+    last_end = 0
+    for sep in _EMAIL_OBF_SEP_RE.finditer(text):
+        local_end = sep.start()
+        local_start = local_end
+        while (
+            local_start > max(last_end, local_end - EMAIL_LOCAL_MAX - 1)
+            and text[local_start - 1] in _EMAIL_LOCAL_CHARS
+        ):
+            local_start -= 1
+        local = text[local_start:local_end]
+        before = text[local_start - 1] if local_start > 0 else ""
+        # Слева от локальной части - не буква, не цифра и не знак адреса: иначе это хвост
+        # слова («ж» в «женаivan») или локальная часть длиннее допустимой
+        glued = bool(before) and (before.isalnum() or before in "_.+-@")
+        if not local or len(local) > EMAIL_LOCAL_MAX or not local[0].isalnum() or glued:
+            continue
+        domain = _EMAIL_OBF_DOMAIN_RE.match(text, sep.end())
+        if domain is None:
+            continue
+        found.append((local_start, domain.end(), local, domain.group()))
+        last_end = domain.end()
+    return found
+
 
 # --- Адреса (этап Г): улица + дом, квартира, индекс --------------------------------
 
