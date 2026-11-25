@@ -23,6 +23,7 @@ from labops_pii.pii_patterns import (
     PHONE_RE,
     find_card_spans,
     find_snils_spans,
+    fold_name_homoglyphs,
     has_street_house,
     is_email_local_char,
     is_snils_checksum_valid,
@@ -365,8 +366,11 @@ def find_pii_types(text: str) -> set[str]:
         found.add(EMAIL)
     search_names = names_mode() is not NamesMode.OFF
     search_address = address_mode() is not AddressMode.OFF
-    # Белый список слов (PII_ALLOWED_WORDS - не ФИО): слова затираются пробелами той же длины
-    name_text = strip_allowed_words(clean) if search_names else clean
+    # Белый список слов (PII_ALLOWED_WORDS - не ФИО): слова затираются пробелами той же длины.
+    # Гомоглифы латиницы сворачиваются в кириллицу (длина сохраняется): «Пeтрoв» эвристика
+    # иначе не узнаёт, и имя проходит мимо guard в режиме enforce (невидимые знаки уже убрал
+    # normalize_text выше). Свёртка только на поверхности ФИО: цифровые детекторы её не видят.
+    name_text = fold_name_homoglyphs(strip_allowed_words(clean)) if search_names else clean
     for start, end in _windows(clean):
         found |= _find_digit_types(clean, start, end)
         # Окна общие с цифровыми детекторами: длинный текст не держит GIL одним проходом
