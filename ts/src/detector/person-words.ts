@@ -46,21 +46,34 @@ const COMMON_LOOKALIKES: ReadonlySet<string> = new Set(
     'картина машина корзина резина витрина кабина лавина пластина дрова слова острова ' +
     'сорта бревна полотна ' +
     'гардина медина нова перина лучина осина ' +
-    'мужской женской'
+    'мужской женской ' +
+    'других таких каких своих моих твоих наших ваших новых старых первых последних больших ' +
+    'малых разных лучших айсберг карман туман обман шаман талисман ' +
+    'тягач калач богач силач трубач скрипач циркач ловкач усач рвач кумач басмач первач'
   ).split(' '),
 );
 
 /** Основы, от которых «-евич/-евна» — не отчество (царевич, королевна). */
 const NOT_PATRONYMIC_STEMS: ReadonlySet<string> = new Set(['цар', 'корол', 'княж', 'коро']);
 
-const PATRONYMIC_MALE_RE = /^([а-я]+?)(?:ович|евич|ьич)(?:а|у|ем|е)?$/;
+// Творительный после «ч» бывает и «-ом»: «Ильичом», «Кузьмичом», «Фомичом»
+const PATRONYMIC_MALE_RE = /^([а-я]+?)(?:(?:ович|евич)(?:а|у|ем|е)?|ьич(?:а|у|ем|ом|е)?)$/;
 const PATRONYMIC_FEMALE_RE = /^([а-я]+?)(?:овн|евн|ьичн|иничн)(?:а|ы|е|у|ой|ою)$/;
 /** «Никитична», «Лукична»: без «ин»/«ь» перед суффиксом только для этих основ. */
-const PATRONYMIC_PLAIN_RE = /^(?:никит|лук|фом|савв)(?:ич(?:а|у|ем|е)?|ичн(?:а|ы|е|у|ой|ою))$/;
+const PATRONYMIC_PLAIN_RE = /^(?:никит|лук|фом|савв)(?:ич(?:а|у|ем|ом|е)?|ичн(?:а|ы|е|у|ой|ою))$/;
 const MIN_SURNAME_STEM = 3;
 const SURNAME_SUFFIX_RE =
   /^[а-я]{3,}(?:ов|ев|ин|ын)(?:а|у|ым|ом|ем|е|ой|ою|ы|ых|ыми)?$/;
 const SURNAME_ADJ_RE = /^[а-я]{2,}(?:ск|цк)(?:ий|ого|ому|им|ом|ая|ой|ую|ое|ие|их)$/;
+/*
+ * Окончания фамилий вне словаря, как SURNAME_ENDINGS в Python (`labops_pii/patronymic.py`):
+ * несклоняемые («Сидоренко», «Белых», «Чавчавадзе») и склоняемые по согласному («Шевчук»,
+ * «Петросяна», «Дамбергу»). Без них «Дамберг Карл» уходил открытым (матрица 25.11.2026).
+ */
+const SURNAME_INDECLINABLE_RE = /^[а-я]{3,}(?:енко|дзе|швили|ых|их)$/;
+// «-ач» (Головач, Ткач, Пугач) - нарицательные на «-ач» перечислены в COMMON_LOOKALIKES
+const SURNAME_CONSONANT_RE =
+  /^[а-я]{3,}(?:ук|юк|ян|янц|ман|берг|штейн|ич|ач)(?:а|у|ом|ем|е|ым)?$/;
 
 /** Форма слова по регистру (дефисные слова — по всем частям). */
 export function shapeOf(word: string): WordShape {
@@ -96,13 +109,17 @@ function partRoles(low: string): PartRoles {
   if (STOP_WORDS.has(low)) return { surn: STRENGTH_NONE, name: STRENGTH_NONE, patr: false };
   if (isPatronymic(low)) return { surn: STRENGTH_NONE, name: STRENGTH_NONE, patr: true };
   const hit = lookupName(low);
+  const looksLikeSurname =
+    !COMMON_LOOKALIKES.has(low) &&
+    low.length >= MIN_SURNAME_STEM + 2 &&
+    (SURNAME_SUFFIX_RE.test(low) || SURNAME_ADJ_RE.test(low) ||
+      SURNAME_INDECLINABLE_RE.test(low) || SURNAME_CONSONANT_RE.test(low));
   let surn = STRENGTH_NONE;
-  if (hit?.surname === true) surn = hit.weak ? STRENGTH_WEAK : STRENGTH_STRONG;
-  else if (hit === null && !COMMON_LOOKALIKES.has(low)) {
-    const looksLikeSurname =
-      low.length >= MIN_SURNAME_STEM + 2 &&
-      (SURNAME_SUFFIX_RE.test(low) || SURNAME_ADJ_RE.test(low));
-    if (looksLikeSurname) surn = STRENGTH_HEURISTIC;
+  if (hit?.surname === true) {
+    // Слабая словарная фамилия с окончанием фамилии («Белых») - не слабее эвристики
+    surn = !hit.weak ? STRENGTH_STRONG : looksLikeSurname ? STRENGTH_HEURISTIC : STRENGTH_WEAK;
+  } else if (hit === null && looksLikeSurname) {
+    surn = STRENGTH_HEURISTIC;
   }
   let name = STRENGTH_NONE;
   if (hit?.name === true) name = hit.weak ? STRENGTH_WEAK : STRENGTH_STRONG;
@@ -135,7 +152,25 @@ export function analyzeWord(
   if (parts.length === 1) return { ...none, ...first };
   return {
     ...none,
-    surn: Math.min(...roles.map((r) => r.surn)),
+    surn: hyphenSurnameStrength(parts, roles),
     name: Math.min(...roles.map((r) => r.name)),
   };
+}
+
+/**
+ * Сила фамилии через дефис: все части фамилии — как у слабейшей; часть фамилии и прочие
+ * обычные слова («Новикова-Прибой») — эвристика, как в Python (`is_surname_near_patronymic`).
+ * Части-имена и стоп-слова фамилию не дают («Анна-Мария», «ИП-Иванов»).
+ */
+function hyphenSurnameStrength(parts: readonly string[], roles: readonly PartRoles[]): number {
+  const weakest = Math.min(...roles.map((r) => r.surn));
+  const strongest = Math.max(...roles.map((r) => r.surn));
+  // «Салтыков-Щедрин»: слабая словарная часть не опускает фамилию ниже эвристики
+  if (weakest > STRENGTH_NONE) return Math.max(weakest, Math.min(strongest, STRENGTH_HEURISTIC));
+  const othersPlain = roles.every(
+    (r, i) =>
+      r.surn > STRENGTH_NONE ||
+      (r.name === STRENGTH_NONE && !r.patr && !STOP_WORDS.has(parts[i] ?? '')),
+  );
+  return strongest >= STRENGTH_HEURISTIC && othersPlain ? STRENGTH_HEURISTIC : STRENGTH_NONE;
 }
