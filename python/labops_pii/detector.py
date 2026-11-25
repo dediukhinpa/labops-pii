@@ -25,6 +25,7 @@ from labops_pii.morph import (
     name_gramme,
     person_key,
     request_cache,
+    with_female_subject,
     with_preposition_gender,
 )
 from labops_pii.name_hints import (
@@ -137,6 +138,14 @@ PREPOSITIONS = frozenset({
 })
 PREPOSITION_WINDOW = 16  # сколько символов слева от ФИО смотрим на предлог
 PREPOSITION_BEFORE_RE = re.compile(r"(?<![А-Яа-яЁёA-Za-z])([А-Яа-яЁё]+)[ \t]+\Z")
+# ФИО в начале фразы и сразу глагол прошедшего времени женского рода или «она»: подлежащее,
+# женщина («Петрова Александра подписала договор»), а не мужской родительный падеж
+FEMININE_SUBJECT_AFTER_RE = re.compile(
+    r"(?:[ \t]{0,3},[ \t]{1,3}|[ \t]{1,3})([а-яё]{2,}ла(?:сь)?|она)(?![а-яё])"
+)
+# Слова на «-ла», которые не глаголы: «дела Петрова Александра» - его дела, родительный падеж
+NOT_FEMININE_VERBS = frozenset({"дела", "тела", "села", "стола", "числа", "зала", "крыла", "она"})
+PHRASE_START_CHARS = "\n.!?:;—–«\"("
 # Группа слов одного регистра не режется по числу слов: «ФАМИЛИЯ ИМЯ ОТЧЕСТВО ДОПОЛНЕНИЕ»
 # (двойное имя, «оглы», «кызы») целиком скрывается, а не оставляет четвёртое слово открытым.
 
@@ -1420,8 +1429,24 @@ def _with_preposition_genders(text: str, found: list[Detection]) -> list[Detecti
             key = with_preposition_gender(det.key, text[det.start:det.end])
             if key != det.key:
                 det = replace(det, key=key)
+        elif det.pii_type is PiiType.PERSON and not det.exact and _is_feminine_subject(
+            text, det.start, det.end
+        ):
+            det = replace(det, key=with_female_subject(det.key))
         result.append(det)
     return result
+
+
+def _is_feminine_subject(text: str, start: int, end: int) -> bool:
+    """ФИО начинает фразу, и за ним глагол женского рода («подписала») или «она»."""
+    prefix = text[:start].rstrip(" \t")
+    if prefix and prefix[-1] not in PHRASE_START_CHARS:
+        return False
+    after = FEMININE_SUBJECT_AFTER_RE.match(text, end)
+    if after is None:
+        return False
+    word = after.group(1)
+    return word == "она" or word not in NOT_FEMININE_VERBS
 
 
 def _priority_order(det: Detection) -> tuple[int, int, int]:

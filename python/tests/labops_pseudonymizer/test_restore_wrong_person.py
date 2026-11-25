@@ -92,3 +92,27 @@ def test_initial_dot_round_trips_in_every_mention(service: Pseudonymizer, texts:
     """Точка после инициала - часть ФИО у всех детекторов: restore её не теряет и не добавляет."""
     for (masked, back), text in zip(_roundtrip(service, texts), texts, strict=True):
         assert back == text, masked
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Петрова Александра подписала договор.",
+        "Александра Петрова приехала.",
+        "Петрова Александра, она бухгалтер.",
+    ],
+)
+def test_feminine_subject_is_not_the_man(service: Pseudonymizer, text: str) -> None:
+    """«Петрова Александра» + глагол женского рода - женщина, а не «Петров Александр».
+
+    Без глагола форма остаётся неоднозначной (R9-A4-07): «Нет подписи Петрова Александра» -
+    мужской родительный падеж, и это тот же человек.
+    """
+    (first, _), (genitive, _), (masked, back) = _roundtrip(
+        service,
+        ["Счёт подписал Петров Александр Иванович.", "Нет подписи Петрова Александра.", text],
+    )
+    assert first == "Счёт подписал [PERSON_1]."
+    assert genitive == "Нет подписи [PERSON_1]."
+    assert "[PERSON_1]" not in masked
+    assert back == text
