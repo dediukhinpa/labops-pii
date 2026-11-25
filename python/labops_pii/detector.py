@@ -999,15 +999,33 @@ def _cut_foreign_next_lines(text: str, start: int, end: int) -> int:
     cut = text.find("\n", start, end)
     while 0 <= cut:
         word = WORD_RE.search(text, cut, end)
-        if word is None or not (
-            name_gramme(word.group()) is not None or is_surname_candidate(word.group())
-        ):
+        if word is None or not _continues_name(text, start, cut, word):
             end = cut
             while end > start and text[end - 1] in TRIM_CHARS:
                 end -= 1
             return end
         cut = text.find("\n", cut + 1, end)
     return end
+
+
+def _continues_name(text: str, start: int, cut: int, word: re.Match[str]) -> bool:
+    """Слово после перевода строки продолжает ФИО, а не начинает следующую строку.
+
+    «Имя: Диана Арепьева\nБуллеты:» (шаблон слайда, 25.11.2026): «Буллеты» нет в словаре,
+    is_surname_candidate пропускал его как возможную фамилию, и под одним токеном оказывалось
+    «Имя Фамилия\nБуллеты». Модель видела токен вместо имени спикера и сочинила фамилию, а
+    при обратной подстановке в слайд попадало лишнее слово. Поэтому:
+    - слово с двоеточием после него - заголовок строки («Опыт:», «Буллеты:»), не часть ФИО;
+    - словарное имя/отчество/фамилия продолжает ФИО всегда («Иванов Иван\nИванович»);
+    - слово, которое только похоже на фамилию (нет в словаре), продолжает ФИО лишь после
+      одного слова: фамилии ещё нет, и перенос мог разорвать «Иван\nКрутоголов».
+    """
+    if text[word.end():word.end() + 2].lstrip(" \t").startswith(":"):
+        return False
+    if name_gramme(word.group()) is not None:
+        return True
+    words_before = WORD_RE.findall(text, start, cut)
+    return len(words_before) <= 1 and is_surname_candidate(word.group())
 
 
 def _trim_non_name_words(text: str, start: int, end: int) -> tuple[int, int]:
