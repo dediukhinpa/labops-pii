@@ -89,6 +89,11 @@ def _parse(lowered: str) -> tuple[Parse, ...]:
     return parses
 
 
+
+def parse_word(word: str) -> tuple[Parse, ...]:
+    """Разборы pymorphy слова в любом регистре и с «ё» (из памяти запроса, как `_parse`)."""
+    return _parse(word.lower().replace("ё", "е"))
+
 @lru_cache(maxsize=LEMMA_CACHE_SIZE)
 def lemma(word: str) -> str:
     """Возвращает лемму слова, предпочитая разбор «фамилия/имя/отчество».

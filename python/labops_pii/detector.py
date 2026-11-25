@@ -34,6 +34,12 @@ from labops_pii.name_hints import (
     find_quoted_name_spans,
     find_table_cell_names,
 )
+from labops_pii.patronymic import (
+    find_name_patronymic_spans,
+    find_surname_name_spans,
+    is_dictionary_surname,
+    is_surname_near_patronymic,
+)
 from labops_pii.pii_patterns import (
     ACCOUNT_RE,
     BARE_PHONE_RE,
@@ -84,6 +90,8 @@ CAPS_GAP_RE = re.compile(r"[ \t]+")
 # Фамилия с двумя инициалами справа или слева без NER (R9-A4-12): Natasha пропускает
 # «Заказ у Петрова О.И. оформлен.» целиком, и фамилия с инициалами уходила в модель.
 # Требуются именно два инициала: одна буква с точкой бывает сокращением («г.», «П. 3»).
+# Фамилия капсом рядом с инициалами: короче - аббревиатура («АЗС», «ТЭЦ»)
+MIN_CAPS_SURNAME_LEN = 4
 INITIALED_WORD = r"[А-ЯЁ][а-яё]{2,}(?:-[А-ЯЁ][а-яё]{2,})?"
 TWO_INITIALS = r"[А-ЯЁ]\.[ \t]?[А-ЯЁ]\."
 SURNAME_INITIALS_RE = re.compile(
@@ -92,6 +100,23 @@ SURNAME_INITIALS_RE = re.compile(
 INITIALS_SURNAME_RE = re.compile(
     rf"(?<![А-Яа-яЁёA-Za-z0-9_.-])({TWO_INITIALS})[ \t]?({INITIALED_WORD})"
     r"(?![А-Яа-яЁёA-Za-z0-9_-])"
+)
+# Фамилия с ОДНИМ инициалом («Иванов С.», «А. Кузнецов»): NER такие пары почти не размечал, и
+# фамилия уходила в модель. Одна буква с точкой бывает сокращением, поэтому фамилия здесь
+# только словарная (`is_dictionary_surname`), а второй инициал рядом отдан шаблонам выше.
+SURNAME_ONE_INITIAL_RE = re.compile(
+    rf"(?<![А-Яа-яЁёA-Za-z0-9_.-])({INITIALED_WORD})[ \t]+([А-ЯЁ])\."
+    r"(?![ \t]?[А-ЯЁ]\.)(?![А-Яа-яЁё])"
+)
+# Фамилия капсом и два инициала («ПЕХТЫШЕВА Ю.А.», «ГОЛОВАЧ Д.И.»): детектор капса берёт
+# только слова с главным разбором «фамилия», и фамилия вне словаря уходила в модель
+CAPS_SURNAME_INITIALS_RE = re.compile(
+    rf"(?<![А-Яа-яЁёA-Za-z0-9_.-])([А-ЯЁ]{{{MIN_CAPS_SURNAME_LEN},}}(?:-[А-ЯЁ]{{2,}})?)"
+    rf"[ \t]+({TWO_INITIALS})(?![А-Яа-яЁё])"
+)
+ONE_INITIAL_SURNAME_RE = re.compile(
+    rf"(?<![А-Яа-яЁёA-Za-z0-9_.-])([А-ЯЁ])\.[ \t]?({INITIALED_WORD})"
+    r"(?![А-Яа-яЁёA-Za-z0-9_.-])"
 )
 # Предлоги перед ФИО (R9-A4-07). После предлога ФИО стоит в косвенном падеже, а женская
 # фамилия на «-а» бывает только в именительном: «от Петрова», «у Петрова И.И.» — мужчина.
@@ -370,6 +395,7 @@ class PiiDetector:
         found += self._detect_mixed_case_persons(folded, tech)
         found += self._detect_case_shifted_persons(folded, tech)
         found += self._detect_initialed_surnames(folded, tech)
+        found += self._detect_name_patronymic(folded, tech)
         found += self._detect_known_names(folded, known_lemmas, tech)
         found += self._detect_tech_names(folded, tech, known_lemmas)
         # Слова ФИО, найденные в этом же тексте, ловятся и в других местах: подвал карточки
@@ -703,7 +729,7 @@ class PiiDetector:
         group: list[tuple[int, int, str]] = []  # (начало, конец, грамема)
         for m in CAPS_WORD_RE.finditer(text):
             kind = _case_kind(m.group())
-            grams = name_gramme(m.group()) if kind else None
+            grams = _caps_gramme(m.group()) if kind else None
             skip = (
                 grams is None
                 or _glued_to_word(text, m.start(), m.end())
@@ -729,16 +755,41 @@ class PiiDetector:
         result: list[Detection] = []
         taken: set[int] = set()  # начала инициалов, уже отданных фамилии слева
         for m in SURNAME_INITIALS_RE.finditer(text):
-            if _overlaps(tech, m.start(), m.end()) or not is_surname_candidate(m.group(1)):
+            if _overlaps(tech, m.start(), m.end()) or not _initialed_surname(m.group(1)):
                 continue
             taken.add(m.start(2))
             result.append(self._initialed_person(text, m.start(), m.end()))
         for m in INITIALS_SURNAME_RE.finditer(text):
-            if _overlaps(tech, m.start(), m.end()) or not is_surname_candidate(m.group(2)):
+            if _overlaps(tech, m.start(), m.end()) or not _initialed_surname(m.group(2)):
                 continue
             start = m.start(2) if m.start(1) in taken else m.start()
             result.append(self._initialed_person(text, start, m.end()))
+        for m in CAPS_SURNAME_INITIALS_RE.finditer(text):
+            if _overlaps(tech, m.start(), m.end()) or _is_caps_stop(m.group(1)):
+                continue
+            if _initialed_surname(m.group(1)):
+                result.append(self._initialed_person(text, m.start(), m.end()))
+        for regex, group in ((SURNAME_ONE_INITIAL_RE, 1), (ONE_INITIAL_SURNAME_RE, 2)):
+            for m in regex.finditer(text):
+                if _overlaps(tech, m.start(), m.end()) or not _initialed_surname(
+                    m.group(group)
+                ):
+                    continue
+                result.append(self._initialed_person(text, m.start(), m.end()))
         return result
+
+    @staticmethod
+    def _detect_name_patronymic(text: str, tech: list[tuple[int, int]]) -> list[Detection]:
+        """ФИО по якорю «имя + отчество» без NER (см. `labops_pii.patronymic`).
+
+        NER пропускал полное ФИО в обычных фразах («Позвоните Иванов Сергей Петрович
+        завтра.») и не брал в находку фамилию вне словаря, через дефис или капсом.
+        """
+        return [
+            Detection(start, end, PiiType.PERSON, person_key(text[start:end]), PRIO_PERSON)
+            for start, end in (*find_name_patronymic_spans(text), *find_surname_name_spans(text))
+            if not _overlaps(tech, start, end) and not _glued_to_word(text, start, end)
+        ]
 
     @staticmethod
     def _initialed_person(text: str, start: int, end: int) -> Detection:
@@ -846,6 +897,23 @@ class PiiDetector:
             # «Подписант» за имя, и вторая проверка отклоняла сообщение (28.10.2026).
             return None
         return Detection(start, end, PiiType.PERSON, person_key(chunk), PRIO_PERSON)
+
+
+def _initialed_surname(word: str) -> bool:
+    """Слово рядом с инициалами - фамилия: по словарю или по признакам рядом с отчеством.
+
+    `is_surname_candidate` не узнаёт словарные нарицательные и прилагательные-фамилии
+    («Д.И. Головач», «Белых И.П.»), и фамилия уходила в модель; роли и должности («И.О.
+    Директора») отсекает `is_surname_near_patronymic`.
+    """
+    return is_surname_candidate(word) or is_surname_near_patronymic(word)
+
+
+def _caps_gramme(word: str) -> str | None:
+    """Грамема слова капсом/строчными; фамилия через дефис («САЛТЫКОВ-ЩЕДРИН») - «Surn»."""
+    if "-" in word and is_dictionary_surname(word):
+        return "Surn"
+    return name_gramme(word)
 
 
 def _name_like_word(word: str) -> bool:

@@ -100,11 +100,15 @@ def test_two_quoted_names_on_one_line(detector: PiiDetector) -> None:
         "Тариф «Максимум Плюс Бизнес»",
         "Город «Сергиев Посад Центр»",
         "Заголовок «Как Это Работает»",
-        "«Позвоните Анне Сергеевне завтра»",
     ],
 )
 def test_quoted_titles_are_not_persons(detector: PiiDetector, text: str) -> None:
     assert persons(detector, text) == []
+
+
+def test_name_and_patronymic_inside_quoted_phrase_is_person(detector: PiiDetector) -> None:
+    """Цитата целиком не ФИО, но «имя + отчество» внутри неё - человек (матрица 25.11.2026)."""
+    assert persons(detector, "«Позвоните Анне Сергеевне завтра»") == ["Анне Сергеевне"]
 
 
 def test_pseudonymize_masks_and_restores_quoted_name(service: Pseudonymizer) -> None:

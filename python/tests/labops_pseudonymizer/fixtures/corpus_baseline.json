@@ -728,17 +728,13 @@
     "text": "Заказчик [PERSON_16]"
    },
    {
-    "entities": [],
-    "text": "Получатель Крылова Анна"
-   },
-   {
     "entities": [
      {
       "token": "[PERSON_17]",
       "type": "PERSON"
      }
     ],
-    "text": "ФИО: [PERSON_17]"
+    "text": "Получатель [PERSON_17]"
    },
    {
     "entities": [
@@ -747,7 +743,7 @@
       "type": "PERSON"
      }
     ],
-    "text": "[PERSON_18]. отсутствует"
+    "text": "ФИО: [PERSON_18]"
    },
    {
     "entities": [
@@ -756,7 +752,16 @@
       "type": "PERSON"
      }
     ],
-    "text": "позвони [PERSON_19], пожалуйста"
+    "text": "[PERSON_19]. отсутствует"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_20]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "позвони [PERSON_20], пожалуйста"
    },
    {
     "entities": [
@@ -770,20 +775,20 @@
    {
     "entities": [
      {
-      "token": "[PERSON_20]",
-      "type": "PERSON"
-     }
-    ],
-    "text": "Письмо от [PERSON_20] получено"
-   },
-   {
-    "entities": [
-     {
       "token": "[PERSON_21]",
       "type": "PERSON"
      }
     ],
-    "text": "Отправь счёт [PERSON_21]"
+    "text": "Письмо от [PERSON_21] получено"
+   },
+   {
+    "entities": [
+     {
+      "token": "[PERSON_22]",
+      "type": "PERSON"
+     }
+    ],
+    "text": "Отправь счёт [PERSON_22]"
    },
    {
     "entities": [
@@ -882,11 +887,11 @@
    {
     "entities": [
      {
-      "token": "[PERSON_22]",
+      "token": "[PERSON_17]",
       "type": "PERSON"
      }
     ],
-    "text": "Для [PERSON_22] подготовить КП"
+    "text": "Для [PERSON_17] подготовить КП"
    },
    {
     "entities": [
@@ -1219,15 +1224,15 @@
    {
     "entities": [
      {
-      "token": "[PERSON_18]",
+      "token": "[PERSON_19]",
       "type": "PERSON"
      },
      {
-      "token": "[PERSON_19]",
+      "token": "[PERSON_20]",
       "type": "PERSON"
      }
     ],
-    "text": "[PERSON_18]: [PERSON_19], директор"
+    "text": "[PERSON_19]: [PERSON_20], директор"
    },
    {
     "entities": [
@@ -2144,8 +2149,13 @@
    "text": "Заказчик [PERSON_1]"
   },
   {
-   "entities": [],
-   "text": "Получатель Крылова Анна"
+   "entities": [
+    {
+     "token": "[PERSON_1]",
+     "type": "PERSON"
+    }
+   ],
+   "text": "Получатель [PERSON_1]"
   },
   {
    "entities": [
