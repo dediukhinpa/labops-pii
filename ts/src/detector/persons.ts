@@ -20,14 +20,21 @@ import {
 } from './person-words';
 import { LATIN_LOWER, LATIN_UPPER } from './dictionary/latin-names-data';
 import { findLatinDictionaryNames } from './latin-names';
-import { isSurnameNearPatronymic } from './surname-context';
+import { isRoleWord, isSurnameNearPatronymic } from './surname-context';
 import type { DetectedSpan } from './types';
 
 const TOKEN_RE = /[А-ЯЁ]\.|[А-Яа-яЁё]+(?:-[А-Яа-яЁё]+)*/g;
-const GAP_SPACES_RE = /^[ \t ]+$/;
-const GAP_SPACES_OPT_RE = /^[ \t ]*$/;
-const GLUE_BEFORE_RE = /[A-Za-z0-9_@]/;
-const GLUE_AFTER_RE = /[A-Za-z0-9_@]/;
+const GAP_SPACES_RE = /^(?:[ \t\u00A0]+|_)$/;
+const GAP_SPACES_OPT_RE = /^(?:[ \t\u00A0]*|_)$/;
+/*
+ * Слово, склеенное с латиницей, цифрой или «@», - часть идентификатора, не ФИО. Подчёркивание
+ * между кириллическими словами - разделитель имени файла или папки («Договор_Иванов_С.П.docx»,
+ * «/docs/Петрова_Анна/»): такие ФИО раньше уходили открытыми (матрица 25.11.2026).
+ */
+const GLUE_RE = /[A-Za-z0-9_@]/;
+const CYRILLIC_RE = /[А-Яа-яЁё]/;
+/** Расширение файла сразу после инициала: «С.П.docx». */
+const FILE_EXTENSION_AFTER_RE = /^[A-Za-z0-9]{1,5}(?![A-Za-z0-9])/;
 const MAX_INITIALS = 2;
 const MIN_GENERIC_SURNAME_LEN = 3;
 const CONTEXT_WINDOW = 48;
@@ -121,10 +128,27 @@ class PersonScanner {
       const word = m[0];
       const before = start > 0 ? text.charAt(start - 1) : '';
       const after = text.charAt(start + word.length);
-      const glued = GLUE_BEFORE_RE.test(before) || GLUE_AFTER_RE.test(after);
+      const glued =
+        this.gluedAt(start - 1, start - 2, before) ||
+        (this.gluedAt(start + word.length, start + word.length + 1, after) &&
+          !(word.endsWith('.') && FILE_EXTENSION_AFTER_RE.test(text.slice(start + word.length))));
       const token = analyzeWord(word, start, allowed);
       this.tokens.push(glued ? { ...token, shape: 'mixed', surn: 0, name: 0, patr: false } : token);
     }
+  }
+
+  /**
+   * Склеено ли слово с соседним знаком: латиница, цифра, «@» или подчёркивание, за которым
+   * не кириллица (подчёркивание между кириллическими словами - разделитель).
+   *
+   * @param pos Позиция соседнего знака.
+   * @param beyond Позиция знака за ним (для подчёркивания).
+   * @param char Соседний знак.
+   */
+  private gluedAt(pos: number, beyond: number, char: string): boolean {
+    if (!GLUE_RE.test(char)) return false;
+    if (char !== '_' || pos < 0) return true;
+    return !CYRILLIC_RE.test(this.text.charAt(beyond));
   }
 
   /** Все найденные ФИО. */
@@ -280,10 +304,11 @@ class PersonScanner {
     this.tokens.forEach((t, i) => {
       if (!this.isWord(t) || covered(t)) return;
       const strong = t.surn === STRENGTH_STRONG || t.name === STRENGTH_STRONG;
-      if (!strong) return;
+      // После слова-признака годится и фамилия по окончанию («Звонил Дамберг», «Белых»)
+      const heuristic = t.surn >= STRENGTH_HEURISTIC && !isRoleWord(t.text);
+      if (!strong && !heuristic) return;
       const before = this.text.slice(Math.max(0, t.start - CONTEXT_WINDOW), t.start);
-      let cued = CUE_RE.test(before);
-      if (!cued) cued = this.followsPerson(t);
+      const cued = CUE_RE.test(before) || (strong && this.followsPerson(t));
       if (!cued) return;
       this.add(i, 1);
     });

@@ -77,6 +77,12 @@ describe('ФИО: короткие формы и латиница', () => {
     ['Contact: Hans Müller', 'Hans Müller'],
     ['Name: Łukasz Dvořák, phone', 'Łukasz Dvořák'],
     ['Mehmet Yılmaz', 'Mehmet Yılmaz'],
+    ['Звонил Дамберг, просил перезвонить.', 'Дамберг'],
+    ['Звонил Белых, просил перезвонить.', 'Белых'],
+    ['Звонил Новикова-Прибой, просил перезвонить.', 'Новикова-Прибой'],
+    ['Файл Договор_Иванов_С.П.docx отправлен', 'Иванов_С.П'],
+    ['/home/docs/Петрова_Анна/паспорт.pdf', 'Петрова_Анна'],
+    ['Письмо_Дмитрию_Николаевичу.docx', 'Дмитрию_Николаевичу'],
   ])('%s -> %s', (text, expected) => {
     expect(detectPersons(text).map((s) => s.text)).toEqual([expected]);
   });
@@ -100,6 +106,8 @@ describe('ФИО: роль, глагол и обычное слово рядом
     'Yesterday Anna went home',
     'Тягач Дмитрий',
     'Айсберг Д.',
+    'config_Иванов_test',
+    'user_Петров@mail',
   ])('%s: ничего', (text) => {
     expect(detectPersons(text)).toEqual([]);
   });
