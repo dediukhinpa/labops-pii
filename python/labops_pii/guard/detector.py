@@ -18,14 +18,17 @@ from labops_pii.guard.names import NAME_TYPE, NamesMode, has_person_name, names_
 from labops_pii.pii_patterns import (
     ACCOUNT_RE,
     BARE_PHONE_RE,
+    CARD_CONTEXT_RE,
     EMAIL_DOMAIN_RUN_RE,
     EMAIL_TLD_RE,
+    PHONE_LOOSE_RE,
     PHONE_RE,
     find_card_spans,
     find_snils_spans,
     fold_name_homoglyphs,
     has_street_house,
     is_email_local_char,
+    is_luhn_valid,
     is_snils_checksum_valid,
     normalize_text,
 )
@@ -185,6 +188,9 @@ def _split_slash_lists(text: str) -> str:
             stop = unit.end() if unit is not None else end
             # Символ после единицы нужен для \b; до участка - не цифра и не «/» по построению
             segment = text[start : min(stop + 1, size)]
+            if _slash_list_is_pii(text, start, end):
+                hit = _SLASH_BETWEEN_DIGITS_RE.search(text, end)
+                continue
             replaced = _SLASH_LIST_UNIT_RE.sub(_semicolons, segment)
             replaced = _SLASH_LIST_FOUR_RE.sub(_semicolons, replaced)
             if replaced != segment:
@@ -196,6 +202,33 @@ def _split_slash_lists(text: str) -> str:
         return text
     parts.append(text[done:])
     return "".join(parts)
+
+
+# Телефон через «/» ровно в разбивке номера с кодом страны: «8/916/123/45/67». Общий
+# PHONE_RE здесь шире нужного («425/660/1000 мл» он тоже считает номером), а без «8»/«7»
+# разбивка 3-3-2-2 бывает и списком объёмов («425/660/10/20 мл») - такой список режется
+_SLASH_PHONE_SHAPE_RE = re.compile(
+    r"\+?[78]\s?-\s?[3-9]\d{2}\s?-\s?\d{3}\s?-\s?\d{2}\s?-\s?\d{2}"
+)
+# Карта рядом со словом «карта»/«card» - сколько символов слева смотреть
+_SLASH_CARD_CONTEXT_LEFT = 32
+_CARD_DIGITS = 16
+
+
+def _slash_list_is_pii(text: str, start: int, end: int) -> bool:
+    """Участок через «/» - телефон, счёт или карта: такой список не режется.
+
+    Единицы ищутся без учёта регистра, и предлог «в» (как «В», вольт) или «г.» (город)
+    после номера делали из «8/916/123/45/67» список размеров: телефон, счёт и карту,
+    которые сервис маскирует, guard пропускал (ревью 25.11.2026).
+    """
+    candidate = text[start:end].strip().replace("/", "-")
+    if _SLASH_PHONE_SHAPE_RE.fullmatch(candidate) or ACCOUNT_RE.fullmatch(candidate):
+        return True
+    digits = "".join(ch for ch in candidate if ch.isdecimal())
+    if len(digits) != _CARD_DIGITS or not is_luhn_valid(digits):
+        return False
+    return bool(CARD_CONTEXT_RE.search(text, max(0, start - _SLASH_CARD_CONTEXT_LEFT), start))
 
 
 def _semicolons(match: re.Match[str]) -> str:
@@ -328,7 +361,7 @@ def _find_digit_types(clean: str, start: int, end: int) -> set[str]:
     Левый контекст (lookbehind) шаблоны видят за границей окна, правый обрезан концом окна.
     """
     found: set[str] = set()
-    if PHONE_RE.search(clean, start, end) or any(
+    if PHONE_RE.search(clean, start, end) or PHONE_LOOSE_RE.search(clean, start, end) or any(
         not is_valid_inn(m.group(1)) for m in BARE_PHONE_RE.finditer(clean, start, end)
     ):
         found.add(PHONE)

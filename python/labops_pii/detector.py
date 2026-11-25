@@ -44,6 +44,7 @@ from labops_pii.pii_patterns import (
     ACCOUNT_RE,
     BARE_PHONE_RE,
     NICK_RE,
+    PHONE_LOOSE_RE,
     PHONE_RE,
     SNILS_KEYWORD_WINDOW,
     SNILS_RE,
@@ -77,6 +78,7 @@ SURNAME_BEFORE_RE = re.compile(r"([А-ЯЁ][а-яё]+(?:-[А-ЯЁ][а-яё]+)?)[
 MIN_MIXED_NAME_LEN = 4
 KEYWORD_WINDOW = 16  # сколько символов слева от числа смотрим на ключевое слово
 PHONE_DIGITS_WITH_PREFIX = 11
+PHONE_NATIONAL_DIGITS = 10
 DIGITS_RE = re.compile(r"\D")
 CYRILLIC_RE = re.compile(r"[А-Яа-яЁё]")
 CYRILLIC_WORD_RE = re.compile(r"[А-Яа-яЁё]+")
@@ -237,10 +239,22 @@ EMAIL_RE = re.compile(r"(?<![\w.+-])[\w.+-]+@[\w-]+(?:\.[\w-]+)+")
 # число должно маскироваться (токен потом восстанавливается, потери для смысла нет).
 NUM10_12_RE = re.compile(r"(?<!\d)(?:\d{12}|\d{10})(?!\d)")
 OGRN_RE = re.compile(r"(?<![\d.,])(?:\d{15}|\d{13})(?!\d)")
+# Промежутки ограничены: «[ \t]+…[ \t]*» на длинном ряду пробелов давал квадратичный перебор
+# (70 000 знаков - 46 с, ревью 25.11.2026)
 PASSPORT_SEP_RE = re.compile(
     r"(?<![\d.,])\d{2}[ \t]?\d{2}"
-    r"(?:[ \t]+(?:№|N|номер)?[ \t]*|[ \t]*(?:№|N|номер)[ \t]*)\d{6}(?!\d)"
+    r"(?:[ \t]{1,3}(?:№|N|номер)?[ \t]{0,3}|[ \t]{0,3}(?:№|N|номер)[ \t]{0,3})\d{6}(?!\d)"
 )
+# Серия и номер со знаками между ними («серия 4510, номер 123456», «4510-123456», «Серия:
+# 45 10, № 123456») - паспорт только при слове «паспорт»/«серия» рядом
+PASSPORT_LOOSE_RE = re.compile(
+    r"(?<![\d.,])\d{2}[ \t]?\d{2}[ \t]{0,3}[,;:\-]?[ \t]{0,3}"
+    r"(?:(?:№|N|номер|ном\.)[ \t]{0,3}:?[ \t]{0,3})?\d{6}(?!\d)"
+)
+PASSPORT_KEYWORD_WINDOW = 24
+# ИНН группами через пробел или дефис («ИНН 5497 0940 0950») - только после слова «ИНН»
+INN_SPACED_RE = re.compile(r"(?<![\d.,])\d{2,4}(?:[ \-]\d{2,4}){2,5}(?!\d)")
+INN_LENGTHS = (10, 12)
 PASSPORT_KW_RE = re.compile(r"(?<![\d.,])\d{10}(?!\d)")
 ORG_RE = re.compile(
     r"\b(?:ООО|АО|ПАО|ЗАО|ОАО|НАО|ОБЩЕСТВО С ОГРАНИЧЕННОЙ ОТВЕТСТВЕННОСТЬЮ)[ \t]+"
@@ -457,6 +471,11 @@ class PiiDetector:
                 # «0086 …» и «+86 …» - один номер: ключ без префикса «00»
                 digits = digits[len(INTL_ZERO_PREFIX):]
             result.append(Detection(m.start(), m.end(), PiiType.PHONE, digits, PRIO_PHONE))
+        # Необычная разбивка после «+7» или слова «тел» («+7 916 12 345 67»)
+        for m in PHONE_LOOSE_RE.finditer(text):
+            start, end = m.span(1) if m.group(1) is not None else m.span()
+            digits = DIGITS_RE.sub("", text[start:end])[-PHONE_NATIONAL_DIGITS:]
+            result.append(Detection(start, end, PiiType.PHONE, digits, PRIO_PHONE))
         # Десять цифр подряд — телефон только после слова «тел» (ключевое слово внутри шаблона)
         for m in BARE_PHONE_RE.finditer(text):
             number = m.group(1)
@@ -582,6 +601,18 @@ class PiiDetector:
         for m in PASSPORT_SEP_RE.finditer(text):
             digits = DIGITS_RE.sub("", m.group())
             result.append(Detection(m.start(), m.end(), PiiType.PASSPORT, digits, PRIO_PASSPORT))
+        for m in PASSPORT_LOOSE_RE.finditer(text):
+            if _keyword_before(text, m.start(), KW_PASSPORT, PASSPORT_KEYWORD_WINDOW):
+                digits = DIGITS_RE.sub("", m.group())
+                result.append(
+                    Detection(m.start(), m.end(), PiiType.PASSPORT, digits, PRIO_PASSPORT)
+                )
+        for m in INN_SPACED_RE.finditer(text):
+            digits = DIGITS_RE.sub("", m.group())
+            if len(digits) in INN_LENGTHS and checksums.is_valid_inn(digits) and _keyword_before(
+                text, m.start(), KW_INN, word_start=True
+            ):
+                result.append(Detection(m.start(), m.end(), PiiType.INN, digits, PRIO_INN))
         for m in PASSPORT_KW_RE.finditer(text):
             if _keyword_before(text, m.start(), KW_PASSPORT):
                 result.append(
