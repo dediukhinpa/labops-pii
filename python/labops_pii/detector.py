@@ -589,10 +589,13 @@ class PiiDetector:
     def _detect_numbers(self, text: str) -> list[Detection]:
         """ИНН, ОГРН/ОГРНИП, СНИЛС, паспорт — по формату, контрольной сумме и ключевым словам."""
         result: list[Detection] = []
+        # «тел 9161234567»: номер после слова «тел» - телефон, даже если сошлась сумма ИНН
+        # (иначе модель видела бы «[INN_1]» вместо телефона, матрица 25.11.2026)
+        phone_spans = {m.span(1) for m in PHONE_LOOSE_RE.finditer(text) if m.group(1)}
         for m in NUM10_12_RE.finditer(text):
             digits = m.group()
             kw = _keyword_before(text, m.start(), KW_INN, word_start=True)
-            if not (checksums.is_valid_inn(digits) or kw):
+            if not (checksums.is_valid_inn(digits) or kw) or (not kw and m.span() in phone_spans):
                 continue
             result.append(Detection(m.start(), m.end(), PiiType.INN, digits, PRIO_INN))
         for m in OGRN_RE.finditer(text):

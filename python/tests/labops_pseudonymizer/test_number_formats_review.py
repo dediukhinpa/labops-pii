@@ -194,3 +194,17 @@ def test_latin_name_with_diacritics(detector: PiiDetector, text: str, fragment: 
 @pytest.mark.parametrize("text", ["Über den Fluss", "Straße Bäckerei"])
 def test_latin_words_with_diacritics_are_not_names(detector: PiiDetector, text: str) -> None:
     assert _types(detector, text) == []
+
+
+@pytest.mark.parametrize(
+    ("text", "kind"),
+    [
+        ("тел 9161234567", "PHONE"),  # сумма ИНН сходится случайно: после «тел» это телефон
+        ("ИНН 9161234567", "INN"),
+        ("Реквизиты: 7707083893", "INN"),
+    ],
+)
+def test_phone_keyword_beats_checksum_only_inn(
+    detector: PiiDetector, text: str, kind: str
+) -> None:
+    assert [t for t, _ in _types(detector, text)] == [kind]
