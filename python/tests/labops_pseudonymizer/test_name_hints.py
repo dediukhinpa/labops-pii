@@ -295,3 +295,17 @@ def test_repeat_skips_hyphenated_profession(detector: PiiDetector) -> None:
     assert not _name_like_word("Инженер-программист")
     assert _name_like_word("Петрова-Водкина")
     assert _name_like_word("Кузнецов")
+
+
+@pytest.mark.parametrize("text", ["Santa Barbara", "Lake Victoria", "Hotel Maria", "San Diego"])
+def test_latin_places_are_not_names(text: str) -> None:
+    """Место или заведение с именем во второй части - не человек."""
+    assert name_hints.find_latin_name_spans(text) == []
+
+
+def test_has_latin_name_matches_find() -> None:
+    """has_latin_name (для guard) - то же, что непустой find_latin_name_spans."""
+    from labops_pii.latin_names import has_latin_name
+
+    for text in ("John Smith", "Visual Studio Code", "Contact: Sergey Ivanov", "Santa Barbara"):
+        assert has_latin_name(text) == bool(name_hints.find_latin_name_spans(text)), text

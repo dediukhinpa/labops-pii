@@ -1,6 +1,6 @@
 /**
  * Латинские ФИО без метки контакта: «Ivan Petrov», «Sidorova Elena», «Ivan Petrovich Sidorov»
- * (перенос `find_latin_name_spans` из `python/labops_pii/name_hints.py`; данные — из Python,
+ * (перенос `find_latin_name_spans` из `python/labops_pii/latin_names.py`; данные — из Python,
  * см. tools/gen_ts_latin_names.py).
  *
  * Нужно имя из словаря рядом со словом, похожим на фамилию, отчество или имя. Слова-стопы
