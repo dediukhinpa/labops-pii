@@ -386,6 +386,86 @@ def is_inanimate_common_noun(word: str) -> bool:
     )
 
 
+TYPO_MIN_LEN = 5  # короче - слишком много словарных соседей, правило ловило бы фамилии
+# Пары букв, которые распознавание речи путает на слух: звонкие/глухие, безударные гласные.
+# Опечатка расшифровки почти всегда такая («Садачу» ← «задачу»), а случайная фамилия
+# в одну такую замену от словарного слова - редкость: правило не раскрывает фамилии.
+SOUND_ALIKE_PAIRS = (
+    "зс", "дт", "бп", "вф", "гк", "жш", "ао", "еи", "иы", "эе", "ея", "юу", "цс", "щш", "чщ",
+)
+SOUND_ALIKE: dict[str, str] = {}
+for _pair in SOUND_ALIKE_PAIRS:
+    SOUND_ALIKE[_pair[0]] = SOUND_ALIKE.get(_pair[0], "") + _pair[1]
+    SOUND_ALIKE[_pair[1]] = SOUND_ALIKE.get(_pair[1], "") + _pair[0]
+# Окончания фамилий во всех падежах: «Крутоголов», «Свежинина», «Белоусову». У таких слов
+# почти всегда найдётся словарный сосед в одну букву, и правило опечатки раскрывало бы фамилию.
+SURNAME_SHAPE_RE = re.compile(
+    r"(?:ов|ев|ёв|ин|ын|ск|цк|ых|их)(?:а|у|ой|ым|ыми|ом|е|ы|ых|им|ими|ого|ому|ая|ую|ий|ый)?$"
+)
+
+
+def typo_noun_parses(word: str) -> list[Parse]:
+    """Разборы словарного существительного, опечаткой которого похоже слово вне словаря.
+
+    Распознавание голосовых пишет «Садачу» вместо «задачу» (25.11.2026): слова нет в словаре,
+    оно с заглавной, и NER принимал его за фамилию. Модель видела токен вместо слова, не могла
+    заметить ошибку и вставила «Садачу» в слайд. Опечатка расшифровки - замена первой буквы на
+    созвучную (SOUND_ALIKE). Словарные слова и слова с окончанием фамилии сюда не попадают.
+    Одного этого признака мало: «Кадар», «Танака» тоже в одну созвучную замену от словарных
+    слов. Поэтому детектор дополнительно требует согласованное определение перед словом.
+
+    Args:
+        word: Слово из находки ФИО.
+
+    Returns:
+        Разборы неодушевлённых существительных-кандидатов; пусто, если слово не опечатка.
+    """
+    lowered = word.lower().replace("ё", "е")
+    if len(lowered) < TYPO_MIN_LEN or not lowered.isalpha() or SURNAME_SHAPE_RE.search(lowered):
+        return []
+    if any(p.is_known for p in _parse(lowered)):
+        return []
+    found: list[Parse] = []
+    # Только первая буква: на стыке слов распознавание чаще всего путает начало («вашу Садачу»
+    # ← «вашу задачу»), а замена в середине давала соседей фамилиям («Кадар» ← «катар»).
+    for letter in SOUND_ALIKE.get(lowered[0], ""):
+        found += [
+            parse
+            for parse in _parse(letter + lowered[1:])
+            if parse.is_known
+            and parse.tag.POS == "NOUN"
+            and "anim" not in parse.tag
+            and not any(g in parse.tag for g in NAME_GRAMMEMES)
+        ]
+    return found
+
+
+MODIFIER_POS = frozenset({"ADJF", "PRTF"})  # «вашу», «эту», «новую», «сделанную»
+
+
+def agrees_as_modifier(modifier: str, nouns: list[Parse]) -> bool:
+    """Слово - определение (прилагательное, местоимение, причастие), согласованное с одним из
+    разборов существительного по падежу, числу и (в единственном числе) роду.
+
+    Args:
+        modifier: Слово перед существительным.
+        nouns: Разборы существительного.
+
+    Returns:
+        True, если есть согласованная пара разборов.
+    """
+    lowered = modifier.lower().replace("ё", "е")
+    for mod in _parse(lowered):
+        if mod.tag.POS not in MODIFIER_POS:
+            continue
+        for noun in nouns:
+            if mod.tag.case != noun.tag.case or mod.tag.number != noun.tag.number:
+                continue
+            if noun.tag.number == "plur" or mod.tag.gender == noun.tag.gender:
+                return True
+    return False
+
+
 def is_surname_candidate(word: str) -> bool:
     """Говорит, что слово рядом с двумя инициалами можно считать фамилией.
 

@@ -18,6 +18,8 @@ from labops_pii.morph import (
     WORD_RE,
     common_lemma,
     is_inanimate_common_noun,
+    agrees_as_modifier,
+    typo_noun_parses,
     is_non_name_word,
     is_person_word,
     is_surname_candidate,
@@ -839,6 +841,8 @@ class PiiDetector:
         if _overlaps(tech, start, end) or _glued_to_word(text, start, end):
             return None  # захват вылез на имя файла/слово через «_»
         words = WORD_RE.findall(chunk)
+        if _typo_after_modifier(text, start, words):
+            return None  # «разбираем вашу Садачу»: опечатка расшифровки голоса, не фамилия
         if words and all(is_inanimate_common_noun(w) for w in words):
             return None  # «Металлопрокат», «Сибирь» — названия, не ФИО
         if words and all(w.upper() in CAPS_IP_STOPWORDS for w in words):
@@ -1023,6 +1027,30 @@ def _cut_foreign_next_lines(text: str, start: int, end: int) -> int:
             return end
         cut = text.find("\n", cut + 1, end)
     return end
+
+
+MODIFIER_WINDOW = 40  # хватает на одно слово-определение с пробелами
+
+
+def _typo_after_modifier(text: str, start: int, words: list[str]) -> bool:
+    """Одно незнакомое слово с согласованным определением перед ним - опечатка, не ФИО.
+
+    «Разбираем вашу Садачу вживую» (голосовое, 25.11.2026): расшифровка написала «Садачу»
+    с заглавной вместо «задачу», NER отдал слово как фамилию. Признак опечатки (созвучная
+    замена буквы до словарного неодушевлённого существительного) сам по себе раскрывал бы
+    редкие фамилии («Кадар», «Танака»), поэтому нужно и согласованное определение прямо перед
+    словом: «вашу/эту/новую задачу». Определение берётся из грамматики, а не из списка слов,
+    так что правило работает для любых таких фраз.
+    """
+    if len(words) != 1:
+        return False
+    nouns = typo_noun_parses(words[0])
+    if not nouns:
+        return False
+    before = list(WORD_RE.finditer(text, max(0, start - MODIFIER_WINDOW), start))
+    if not before or text[before[-1].end():start].strip():
+        return False  # перед словом знак препинания или ничего: определения нет
+    return agrees_as_modifier(before[-1].group(), nouns)
 
 
 def _split_name_lines(text: str, start: int, end: int) -> list[tuple[int, int]]:
