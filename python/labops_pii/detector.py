@@ -28,13 +28,15 @@ from labops_pii.morph import (
     with_female_subject,
     with_preposition_gender,
 )
-from labops_pii.name_hints import (
+from labops_pii.latin_names import (
     LATIN_LETTERS,
     LATIN_LOWER,
     LATIN_UPPER,
     NOT_A_NAME_WORDS,
-    find_json_field_names,
     find_latin_name_spans,
+)
+from labops_pii.name_hints import (
+    find_json_field_names,
     find_quoted_name_spans,
     find_table_cell_names,
 )
@@ -47,6 +49,8 @@ from labops_pii.patronymic import (
 from labops_pii.pii_patterns import (
     ACCOUNT_RE,
     BARE_PHONE_RE,
+    INN_GROUPED_LENGTHS,
+    INN_GROUPED_RE,
     NICK_RE,
     PHONE_LOOSE_RE,
     PHONE_RE,
@@ -59,6 +63,7 @@ from labops_pii.pii_patterns import (
     find_obfuscated_emails,
     find_snils_spans,
     fold_for_names,
+    has_inn_word_before,
     normalize_text,
 )
 from labops_pii.tech_tokens import find_tech_spans
@@ -283,9 +288,6 @@ KW_OTHER_DOCUMENTS = (
     "наклад", "счет", "счёт", "акт", "договор", "заказ", "доверен", "справк", "квитанц", "чек",
     "упд", "ттн", "лиценз", "сертификат", "полис", "пропуск", "диплом", "аттестат",
 )
-# ИНН группами через пробел или дефис («ИНН 5497 0940 0950») - только после слова «ИНН»
-INN_SPACED_RE = re.compile(r"(?<![\d.,])\d{2,4}(?:[ \-]\d{2,4}){2,5}(?!\d)")
-INN_LENGTHS = (10, 12)
 PASSPORT_KW_RE = re.compile(r"(?<![\d.,])\d{10}(?!\d)")
 ORG_RE = re.compile(
     r"\b(?:ООО|АО|ПАО|ЗАО|ОАО|НАО|ОБЩЕСТВО С ОГРАНИЧЕННОЙ ОТВЕТСТВЕННОСТЬЮ)[ \t]+"
@@ -574,7 +576,7 @@ class PiiDetector:
         Найденное после метки или по словарю имя ищется по всему тексту: целиком (в той же
         записи слов) и каждое слово отдельно (фамилия «Smith»), с точным совпадением регистра
         и границами слова. Без метки и без пары «имя из словаря + слово» одиночное латинское
-        слово не маскируется (правила словаря - в `name_hints.find_latin_name_spans`).
+        слово не маскируется (правила словаря - в `latin_names.find_latin_name_spans`).
         """
         result: list[Detection] = []
         names: list[list[str]] = []
@@ -692,10 +694,13 @@ class PiiDetector:
                 result.append(
                     Detection(m.start(), m.end(), PiiType.PASSPORT, digits, PRIO_PASSPORT)
                 )
-        for m in INN_SPACED_RE.finditer(text):
+        # ИНН группами после слова «ИНН» (правило общее с guard, pii_patterns)
+        for m in INN_GROUPED_RE.finditer(text):
             digits = DIGITS_RE.sub("", m.group())
-            if len(digits) in INN_LENGTHS and checksums.is_valid_inn(digits) and _keyword_before(
-                text, m.start(), KW_INN, word_start=True
+            if (
+                len(digits) in INN_GROUPED_LENGTHS
+                and checksums.is_valid_inn(digits)
+                and has_inn_word_before(text, m.start())
             ):
                 result.append(Detection(m.start(), m.end(), PiiType.INN, digits, PRIO_INN))
         for m in PASSPORT_KW_RE.finditer(text):

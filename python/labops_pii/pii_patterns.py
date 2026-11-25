@@ -302,8 +302,13 @@ PHONE_RE = re.compile(
 # BARE_PHONE_GAP символов, поэтому захват промежутка тоже не длиннее (перебор ограничен).
 # Два перевода строки (пустая строка между меткой и числом) связь по-прежнему разрывают.
 BARE_PHONE_GAP = 24
+# Шаблоны, которые начинаются с lookbehind, движок проверяет на каждой позиции текста. Опережающая
+# проверка первой буквы ключевого слова (с тем же учётом регистра) отсекает почти все позиции
+# сразу: находки те же (200 000 случайных строк без расхождений), время в 1,5-5 раз меньше
+_PHONE_WORD_FIRST = "(?=(?i:[тpмфwvtm]))"
 BARE_PHONE_RE = re.compile(
-    r"(?<![A-Za-zА-Яа-яЁё])(?i:тел|phone|моб|факс|whatsapp|viber|tel|mob)"
+    _PHONE_WORD_FIRST
+    + r"(?<![A-Za-zА-Яа-яЁё])(?i:тел|phone|моб|факс|whatsapp|viber|tel|mob)"
     rf"(?=\D{{0,{BARE_PHONE_GAP}}}\d)(?:[^\d\n]*\n)?[^\d\n]*"
     r"(?<!\d)([3-9]\d{9})(?!\d)(?![.,]\d)"
 )
@@ -314,11 +319,12 @@ BARE_PHONE_RE = re.compile(
 # знаков, промежуток после слова - не больше BARE_PHONE_GAP: перебор ограничен.
 _LOOSE_SEP = r"[ \t\-.()]{0,2}"
 PHONE_LOOSE_RE = re.compile(
+    r"(?=(?i:[+тpмфwvtm]))(?:"  # первая буква: «+7» или ключевое слово (см. _PHONE_WORD_FIRST)
     rf"(?<![\d+])\+7(?:{_LOOSE_SEP}\d){{10}}(?!\d)(?![.,]\d)"
     r"|(?<![A-Za-zА-Яа-яЁё])(?i:тел|phone|моб|факс|whatsapp|viber|tel|mob)"
     rf"[^\d\n]{{0,{BARE_PHONE_GAP}}}?"
     rf"(?<!\d)((?:\+7|8|7){_LOOSE_SEP}9(?:{_LOOSE_SEP}\d){{9}}|9(?:{_LOOSE_SEP}\d){{9}})"
-    r"(?!\d)(?![.,]\d)"
+    r"(?!\d)(?![.,]\d))"
 )
 
 # --- Банковские реквизиты --------------------------------------------------------
@@ -541,7 +547,9 @@ SNILS_MIN_NUMBER = 1_001_998
 SNILS_MOD = 101
 SNILS_SPECIAL_SUM = 100
 SNILS_BARE_RE = re.compile(rf"(?<!\d)\d{{{SNILS_LEN}}}(?!\d)")
-SNILS_FMT_RE = re.compile(r"(?<!\d)\d{3}[ \-]\d{3}[ \-]\d{3}[ ]?\d{2}(?!\d)")
+# «929-134-653-26» (дефис и перед контрольным числом): сервис маскировал такую запись
+# (дефисы + сумма), а guard её не видел (матрица 25.11.2026)
+SNILS_FMT_RE = re.compile(r"(?<!\d)\d{3}[ \-]\d{3}[ \-]\d{3}[ \-]?\d{2}(?!\d)")
 _NON_DIGIT_RE = re.compile(r"\D")
 
 
@@ -598,6 +606,26 @@ def find_snils_spans(text: str, start: int = 0, end: int | None = None) -> list[
                 spans.append(match.span())
     return sorted(spans)
 
+# --- ИНН группами ------------------------------------------------------------------
+
+# ИНН группами через пробел или дефис («ИНН 5497 0940 0950») - только после слова «ИНН»: без
+# слова группы цифр не отличить от суммы или артикула. Правило общее у сервиса и guard (guard
+# раньше видел только ИНН подряд и пропускал такую запись, матрица 25.11.2026)
+INN_GROUPED_RE = re.compile(r"(?=\d)(?<![\d.,])\d{2,4}(?:[ \-]\d{2,4}){2,5}(?!\d)")
+INN_GROUPED_LENGTHS = (10, 12)
+# Окно слева, в котором ищется слово «ИНН» (как KEYWORD_WINDOW сервиса)
+INN_KEYWORD_WINDOW = 16
+# Левая граница слова нужна: «инн» встречается внутри слов («длинная»); правой нет:
+# «ИНН:5497 0940 0950» тоже находится
+_INN_WORD_RE = re.compile(r"(?<![а-яёa-z])инн")
+
+
+def has_inn_word_before(text: str, pos: int) -> bool:
+    """Есть ли слово «ИНН» в окне INN_KEYWORD_WINDOW слева от позиции (без учёта регистра)."""
+    window = text[max(0, pos - INN_KEYWORD_WINDOW):pos].lower()
+    return _INN_WORD_RE.search(window) is not None
+
+
 # --- E-mail ----------------------------------------------------------------------
 
 # Кириллица и любой Unicode допустимы в локальной части и домене (IDN: «иван@пример.рф»)
@@ -620,13 +648,15 @@ NICK_RE = re.compile(r"(?<![\w.+\-@])@[A-Za-z][A-Za-z0-9_]{4,31}(?![\w@]|\.[A-Za
 # Ссылка на Telegram: «t.me/ник», «t.me/+инвайт», «t.me/joinchat/…» (с протоколом или без).
 # Слева не слово и не «.»/«@»: «dt.me/x» и «a@t.me/x» ссылкой не считаются.
 TME_RE = re.compile(
+    # первая буква ссылки (см. _PHONE_WORD_FIRST): http, www, t.me, m., vk, instagram, ok, fb
+    r"(?=(?i:[hwtmviof]))(?:"
     r"(?<![\w.@\-])(?i:(?:https?://)?(?:www\.)?(?:t|telegram)\.me)/[A-Za-z0-9_+]"
     r"[A-Za-z0-9_+/\-]{1,63}"
     # Профиль в соцсети («vk.com/ivan.petrov88», «instagram.com/ivan_petrov88»): такой же
     # идентификатор человека, как ссылка Telegram, раньше уходил открытым (матрица 25.11.2026)
     r"|(?<![\w.@\-])(?i:(?:https?://)?(?:www\.|m\.)?"
     r"(?:vk\.com|vkontakte\.ru|instagram\.com|ok\.ru/profile|facebook\.com|fb\.com))"
-    r"/[A-Za-z0-9_][A-Za-z0-9_.]{1,63}(?<!\.)"
+    r"/[A-Za-z0-9_][A-Za-z0-9_.]{1,63}(?<!\.))"
 )
 
 # Логин Skype после слова «skype»/«скайп»: «skype: ivan.petrov88», «Скайп - live:ivan_p».
@@ -650,7 +680,8 @@ _EMAIL_OBF_SEP_RE = re.compile(
     r"[ \t]{0,3}[\[({](?i:at|собака)[\])}][ \t]{0,3}"
     r"|[ \t]{1,3}@[ \t]{1,3}|@[ \t]{1,3}|[ \t]{1,3}(?i:собака)[ \t]{1,3}"
 )
-_EMAIL_OBF_ANCHOR_RE = re.compile(r"@|(?i:собака|[\[({]at[\])}])")
+# Опережающая проверка первого знака - как у телефонных шаблонов (_PHONE_WORD_FIRST)
+_EMAIL_OBF_ANCHOR_RE = re.compile(r"(?=(?i:[@с\[({]))(?:@|(?i:собака|[\[({]at[\])}]))")
 _EMAIL_OBF_DOMAIN_RE = re.compile(
     r"[^\W_][\w\-]{0,62}(?:\.[^\W_][\w\-]{0,62}){0,4}"
     rf"\.(?i:{EMAIL_OBFUSCATED_TLDS})(?![\w\-]|\.[^\W_])"

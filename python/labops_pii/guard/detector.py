@@ -21,12 +21,15 @@ from labops_pii.pii_patterns import (
     CARD_CONTEXT_RE,
     EMAIL_DOMAIN_RUN_RE,
     EMAIL_TLD_RE,
+    INN_GROUPED_LENGTHS,
+    INN_GROUPED_RE,
     PHONE_LOOSE_RE,
     PHONE_RE,
     find_card_spans,
     find_obfuscated_emails,
     find_snils_spans,
     fold_name_homoglyphs,
+    has_inn_word_before,
     has_street_house,
     is_email_local_char,
     is_luhn_valid,
@@ -43,6 +46,10 @@ DEFAULT_MAX_SCAN_BYTES = 8 * 1024 * 1024
 # Граница домена email по RFC 5321 (255). Локальная часть (до 64) отдельно не режется:
 # достаточно одного допустимого символа слева от «@», длинная часть всё равно найдётся
 EMAIL_DOMAIN_MAX = 255
+
+_NON_DIGITS_RE = re.compile(r"\D")
+# Слово «ИНН» в окне в любом регистре: без него группы цифр как ИНН не разбираются
+_INN_WORD_ANY_RE = re.compile(r"[иИ][нН][нН]")
 
 # Типы находок
 PHONE = "phone"
@@ -372,6 +379,17 @@ def _find_digit_types(clean: str, start: int, end: int) -> set[str]:
         # 05.11.26, отменившее исключение для 10-значного ИНН в одном из профилей (0.7.0)
         if len(digits) != SNILS_LEN and is_valid_inn(digits):
             found.add(INN)
+    if INN not in found and _INN_WORD_ANY_RE.search(clean, start, end):
+        # «ИНН 5497 0940 0950»: группы после слова «ИНН» (правило общее с сервисом)
+        for match in INN_GROUPED_RE.finditer(clean, start, end):
+            digits = _NON_DIGITS_RE.sub("", match.group(0))
+            if (
+                len(digits) in INN_GROUPED_LENGTHS
+                and is_valid_inn(digits)
+                and has_inn_word_before(clean, match.start())
+            ):
+                found.add(INN)
+                break
     # СНИЛС по общему правилу: псевдонимизатор маскирует ровно эти находки (R9-A4-04)
     if find_snils_spans(clean, start, end):
         found.add(SNILS)

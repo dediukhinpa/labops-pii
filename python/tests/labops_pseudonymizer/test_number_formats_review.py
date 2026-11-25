@@ -248,3 +248,29 @@ def test_other_document_numbers_are_not_passports(detector: PiiDetector, text: s
 )
 def test_european_names(detector: PiiDetector, text: str, fragment: str) -> None:
     assert _types(detector, text) == [("PERSON", fragment)]
+
+
+@pytest.mark.parametrize(
+    ("text", "kind"),
+    [
+        ("ИНН 5497 0940 0950", "inn"),
+        ("инн: 5497-0940-0950", "inn"),
+        ("СНИЛС 929-134-653-26", "snils"),
+        ("929-134-653-26", "snils"),
+    ],
+)
+def test_guard_sees_grouped_inn_and_dashed_snils(
+    service: Pseudonymizer, text: str, kind: str
+) -> None:
+    """guard видит то же, что маскирует сервис, и замаскированный текст пропускает."""
+    assert kind in find_pii_types(text)
+    masked, _ = service.pseudonymize(f"t-gr-{kind}", text)
+    assert kind not in find_pii_types(masked)
+
+
+@pytest.mark.parametrize(
+    "text",
+    ["Сумма 5497 0940 0950", "длинная 5497 0940 0950", "ИНН 5497 0940 0951", "929-134-653-27"],
+)
+def test_guard_grouped_digits_without_keyword_or_checksum(text: str) -> None:
+    assert not {"inn", "snils"} & find_pii_types(text)
