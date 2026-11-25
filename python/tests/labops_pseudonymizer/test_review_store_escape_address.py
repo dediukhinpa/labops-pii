@@ -81,3 +81,35 @@ def test_address_forms_found(text: str, fragment: str) -> None:
 @pytest.mark.parametrize("text", ["Корпус 15к2 отгружен", "Модель ул. Серия 15к2"])
 def test_house_with_building_is_not_address_without_street(text: str) -> None:
     assert PiiDetector(mask_addresses=True).detect(text) == []
+
+
+@pytest.mark.parametrize(
+    ("text", "fragment"),
+    [
+        ("Адрес: Moscow, Tverskaya st. 7", "Tverskaya st. 7"),
+        ("ul. Tverskaya, 7, apt. 12", "ul. Tverskaya, 7, apt. 12"),
+        ("Nevsky prospekt 28", "Nevsky prospekt 28"),
+        ("Адрес: 221 Baker Street, London", "221 Baker Street"),
+    ],
+)
+def test_latin_address_forms_found(text: str, fragment: str) -> None:
+    detector = PiiDetector(mask_addresses=True)
+    assert [text[d.start:d.end] for d in detector.detect(text)] == [fragment]
+
+
+@pytest.mark.parametrize(
+    "text",
+    ["Python 3 support", "Wall Street Journal 2024", "Chapter 7 Road map", "Moscow 7"],
+)
+def test_latin_text_without_street_is_not_address(text: str) -> None:
+    assert PiiDetector(mask_addresses=True).detect(text) == []
+
+
+def test_latin_addresses_on_different_streets_do_not_share_token(
+    address_service: Pseudonymizer,
+) -> None:
+    """Латинские слова входят в ключ: «Tverskaya st. 7» и «Lenina st. 7» - разные адреса."""
+    texts = ["Склад: Tverskaya st. 7", "Офис: Lenina st. 7"]
+    masked = [address_service.pseudonymize("a3", t)[0] for t in texts]
+    assert masked[0] != masked[1].replace("Офис", "Склад")
+    assert [address_service.restore("a3", m) for m in masked] == texts

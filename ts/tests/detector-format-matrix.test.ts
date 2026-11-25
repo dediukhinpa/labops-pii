@@ -75,6 +75,8 @@ describe('ФИО: короткие формы и латиница', () => {
     ['Ответственный: Sergey Ivanov', 'Sergey Ivanov'],
     ['IVANOV SERGEY', 'IVANOV SERGEY'],
     ['Contact: Hans Müller', 'Hans Müller'],
+    ['Name: Łukasz Dvořák, phone', 'Łukasz Dvořák'],
+    ['Mehmet Yılmaz', 'Mehmet Yılmaz'],
   ])('%s -> %s', (text, expected) => {
     expect(detectPersons(text).map((s) => s.text)).toEqual([expected]);
   });

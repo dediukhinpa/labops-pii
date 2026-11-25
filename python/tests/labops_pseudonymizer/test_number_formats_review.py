@@ -208,3 +208,43 @@ def test_phone_keyword_beats_checksum_only_inn(
     detector: PiiDetector, text: str, kind: str
 ) -> None:
     assert [t for t, _ in _types(detector, text)] == [kind]
+
+
+@pytest.mark.parametrize(
+    ("text", "fragment"),
+    [
+        ("Документ: 4510123456, выдан 01.02.2010", "4510123456"),
+        ("4510 123456 выдан ОВД", "4510 123456"),
+        ("Удостоверение личности 4510-123456", "4510-123456"),
+        ("Серия номер 4510123456 код подразделения 770-001", "4510123456"),
+    ],
+)
+def test_passport_by_issuing_context(detector: PiiDetector, text: str, fragment: str) -> None:
+    """Слова «паспорт» нет, но «выдан»/«код подразделения»/«удостоверение личности» есть."""
+    assert ("PASSPORT", fragment) in _types(detector, text)
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Документ: 4510123456",
+        "Накладная 4510123456 выдана складом",
+        "Справка 4510123456 выдана",
+        "Счёт 4510123456\nвыдан вчера",
+    ],
+)
+def test_other_document_numbers_are_not_passports(detector: PiiDetector, text: str) -> None:
+    assert all(t != "PASSPORT" for t, _ in _types(detector, text))
+
+
+@pytest.mark.parametrize(
+    ("text", "fragment"),
+    [
+        ("Name: Łukasz Dvořák, phone", "Łukasz Dvořák"),
+        ("Kontakt: Jürgen Schmidt", "Jürgen Schmidt"),
+        ("Mehmet Yılmaz", "Mehmet Yılmaz"),
+        ("Contact: Ayşe Öztürk", "Ayşe Öztürk"),
+    ],
+)
+def test_european_names(detector: PiiDetector, text: str, fragment: str) -> None:
+    assert _types(detector, text) == [("PERSON", fragment)]

@@ -257,6 +257,23 @@ PASSPORT_LOOSE_RE = re.compile(
     r"(?:(?:№|N|номер|ном\.)[ \t]{0,3}:?[ \t]{0,3})?\d{6}(?!\d)"
 )
 PASSPORT_KEYWORD_WINDOW = 24
+# Паспорт без слова «паспорт» (матрица 25.11.2026): за серией и номером идёт «выдан», «код
+# подразделения», «дата выдачи» («Документ: 4510123456, выдан 01.02.2010») или слева
+# «удостоверение личности». Слово «документ» само по себе не признак: номера актов и счетов
+# тоже «документы». Между номером и словом нет цифр и перевода строки.
+PASSPORT_AFTER_WINDOW = 40
+PASSPORT_AFTER_RE = re.compile(
+    rf"[^\d\n]{{0,{PASSPORT_AFTER_WINDOW}}}?(?<![а-яё])(?i:выдан|код[ \t]+подразделения|"
+    r"дата[ \t]+выдачи)"
+)
+KW_PASSPORT_IDENTITY = ("удостоверени", "удостоверяющ")
+# «Удостоверение личности 4510-123456»: до начала слова два слова и пробелы
+PASSPORT_IDENTITY_WINDOW = 32
+# Другие документы тоже «выданы»: номер после них - не паспорт («Накладная 4510123456 выдана»)
+KW_OTHER_DOCUMENTS = (
+    "наклад", "счет", "счёт", "акт", "договор", "заказ", "доверен", "справк", "квитанц", "чек",
+    "упд", "ттн", "лиценз", "сертификат", "полис", "пропуск", "диплом", "аттестат",
+)
 # ИНН группами через пробел или дефис («ИНН 5497 0940 0950») - только после слова «ИНН»
 INN_SPACED_RE = re.compile(r"(?<![\d.,])\d{2,4}(?:[ \-]\d{2,4}){2,5}(?!\d)")
 INN_LENGTHS = (10, 12)
@@ -301,14 +318,19 @@ OGRN_FIRST_DIGITS = ("1", "5")
 # (раньше тип выбрасывался, и restore второго возвращал первый, ревью 25.11.2026), а падеж и
 # сокращение типа ключ не меняют
 ADDRESS_STREET_TYPES: dict[str, tuple[str, ...]] = {
-    "ул": ("улица", "улице", "улицу", "улицы", "улицей", "ул"),
+    "ул": ("улица", "улице", "улицу", "улицы", "улицей", "ул", "ul", "ulitsa", "ulica", "street",
+           "str", "st"),
     "пр": ("проспект", "проспекта", "проспекте", "проспекту", "проспектом", "просп", "пр",
-           "пр-т", "пр-кт"),
-    "пер": ("переулок", "переулка", "переулке", "переулку", "переулком", "пер"),
-    "бр": ("бульвар", "бульвара", "бульваре", "бульвару", "бульваром", "б-р", "бул"),
-    "наб": ("набережная", "набережной", "набережную", "наб"),
-    "ш": ("шоссе", "ш"),
-    "пл": ("площадь", "площади", "площадью", "пл"),
+           "пр-т", "пр-кт", "pr", "prosp", "prospekt", "prospect", "avenue", "ave"),
+    "пер": ("переулок", "переулка", "переулке", "переулку", "переулком", "пер", "per",
+            "pereulok", "lane", "ln"),
+    "бр": ("бульвар", "бульвара", "бульваре", "бульвару", "бульваром", "б-р", "бул", "bul",
+           "bulvar", "boulevard", "blvd"),
+    "наб": ("набережная", "набережной", "набережную", "наб", "nab", "naberezhnaya",
+            "embankment", "emb"),
+    "ш": ("шоссе", "ш", "sh", "shosse", "highway"),
+    "дор": ("road", "rd"),
+    "пл": ("площадь", "площади", "площадью", "пл", "pl", "ploshchad", "square", "sq"),
     "прд": ("проезд", "проезда", "проезде", "проезду", "проездом", "пр-д"),
     "туп": ("тупик", "тупика", "тупике", "тупику", "тупиком"),
     "ал": ("аллея", "аллеи", "аллее", "аллею", "аллеей"),
@@ -320,15 +342,19 @@ ADDRESS_STREET_TYPE_CODES = {
 # Префикс кода типа улицы в ключе: не буква, с названием улицы не совпадёт
 ADDRESS_STREET_TYPE_PREFIX = "#"
 ADDRESS_NOISE_WORDS = frozenset({"д", "дом", "влд", "владение", "по", "на", "реки", "канала",
-                                 "озера"})
+                                 "озера", "d", "dom", "bld", "building", "house", "h", "no"})
 # Квартира, корпус и т.п. в ключе записываются одной буквенной меткой перед номером
 ADDRESS_SUFFIX_CODES = {
     "корп": "к", "корпус": "к", "к": "к", "стр": "с", "строение": "с", "с": "с",
     "лит": "л", "литера": "л", "кв": "кв", "квартира": "кв", "оф": "оф", "офис": "оф",
     "пом": "пом", "помещение": "пом", "комн": "комн", "комната": "комн", "эт": "эт",
-    "этаж": "эт",
+    "этаж": "эт", "apt": "кв", "ap": "кв", "apartment": "кв", "kv": "кв", "office": "оф",
+    "of": "оф", "suite": "оф", "ste": "оф",
 }
-ADDRESS_TOKEN_RE = re.compile(r"[А-Яа-яЁё]+(?:-[А-Яа-яЁё]+)*|\d+(?:-\d+)?[А-Яа-я]?")
+# Латинские слова тоже в ключе: иначе «Tverskaya st. 7» и «Lenina st. 7» дали бы один ключ «7»
+ADDRESS_TOKEN_RE = re.compile(
+    r"[А-Яа-яЁё]+(?:-[А-Яа-яЁё]+)*|[A-Za-z]+(?:-[A-Za-z]+)*|\d+(?:-\d+)?[А-Яа-яA-Za-z]?"
+)
 
 KW_INN = ("инн",)
 KW_OGRN = ("огрн",)
@@ -359,6 +385,25 @@ def _keyword_before(
     if not word_start:
         return any(w in window for w in words)
     return any(re.search(rf"(?<![а-яёa-z]){re.escape(w)}", window) for w in words)
+
+
+def _passport_context(text: str, start: int, end: int, window_size: int) -> bool:
+    """Серия и номер в контексте паспорта: слово «паспорт»/«серия» или «удостоверение
+    личности» слева либо «выдан»/«код подразделения»/«дата выдачи» справа.
+
+    Args:
+        text: Текст.
+        start: Начало номера.
+        end: Конец номера.
+        window_size: Окно слева для слова «паспорт»/«серия».
+    """
+    if _keyword_before(text, start, KW_PASSPORT, window_size) or _keyword_before(
+        text, start, KW_PASSPORT_IDENTITY, PASSPORT_IDENTITY_WINDOW
+    ):
+        return True
+    return PASSPORT_AFTER_RE.match(text, end) is not None and not _keyword_before(
+        text, start, KW_OTHER_DOCUMENTS, PASSPORT_IDENTITY_WINDOW, word_start=True
+    )
 
 
 class PiiDetector:
@@ -633,7 +678,7 @@ class PiiDetector:
             digits = DIGITS_RE.sub("", m.group())
             result.append(Detection(m.start(), m.end(), PiiType.PASSPORT, digits, PRIO_PASSPORT))
         for m in PASSPORT_LOOSE_RE.finditer(text):
-            if _keyword_before(text, m.start(), KW_PASSPORT, PASSPORT_KEYWORD_WINDOW):
+            if _passport_context(text, m.start(), m.end(), PASSPORT_KEYWORD_WINDOW):
                 digits = DIGITS_RE.sub("", m.group())
                 result.append(
                     Detection(m.start(), m.end(), PiiType.PASSPORT, digits, PRIO_PASSPORT)
@@ -645,7 +690,7 @@ class PiiDetector:
             ):
                 result.append(Detection(m.start(), m.end(), PiiType.INN, digits, PRIO_INN))
         for m in PASSPORT_KW_RE.finditer(text):
-            if _keyword_before(text, m.start(), KW_PASSPORT):
+            if _passport_context(text, m.start(), m.end(), KEYWORD_WINDOW):
                 result.append(
                     Detection(m.start(), m.end(), PiiType.PASSPORT, m.group(), PRIO_PASSPORT)
                 )

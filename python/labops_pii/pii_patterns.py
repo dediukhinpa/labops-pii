@@ -779,6 +779,28 @@ _ADDR_CONTEXT = (
     r"|(?<![А-Яа-яЁё])(?i:адрес\w{0,6})(?:[ \t]+[а-яё]{2,15}){0,2}(?:[ \t]*[:\-])?[ \t]*)"
 )
 
+# --- Латинская запись адреса (матрица 25.11.2026): «Tverskaya st. 7», «ul. Tverskaya, 7»,
+# «Nevsky prospekt 28», «221 Baker Street». Название - слова с заглавной (одно-два), тип улицы
+# в транслите или по-английски. Без типа улицы латинский адрес не ищется: «Moscow 7» - не адрес
+_LAT_NAME = r"[A-Z][a-z]{1,24}(?:-[A-Z][a-z]{1,24})?(?:[ \t][A-Z][a-z]{1,24}){0,1}"
+_LAT_TYPE_AFTER = (
+    r"(?i:street|str\.?|st\.|avenue|ave\.?|road|rd\.|boulevard|blvd\.?|lane|ln\.|square|"
+    r"sq\.|embankment|emb\.|prospekt|prospect|pr\.|ulitsa|ulica|ul\.|pereulok|per\.|shosse|"
+    r"highway|naberezhnaya|nab\.)"
+)
+_LAT_TYPE_BEFORE = (
+    r"(?i:ul\.?|ulitsa|ulica|pr\.|prosp\.?|prospekt|per\.|pereulok|nab\.|naberezhnaya|pl\.|"
+    r"ploshchad|sh\.|shosse|bul\.|bulvar)"
+)
+_LAT_HOUSE = (
+    r"(?:(?i:d\.|dom|bld\.?|building|house|h\.|no\.?)[ \t]{0,2})?"
+    r"\d{1,4}[A-Za-z]?(?:[-/]\d{1,4})?(?![\dA-Za-z])"
+    r"(?:[ \t]{0,2},?[ \t]{0,2}(?i:apt\.?|ap\.|apartment|kv\.?|office|of\.|suite|ste\.)"
+    r"[ \t]{0,2}\d{1,4}(?!\d))?"
+)
+_LAT_SEP = r"[ \t]{0,2},?[ \t]{1,2}"
+_LAT_US_TYPE = r"(?:Street|St\.|Avenue|Ave\.?|Road|Rd\.|Boulevard|Blvd\.?|Lane|Ln\.)"
+
 ADDRESS_STREET_HOUSE_RE = re.compile(
     # 1) ключевое слово перед названием: «ул. Ленина, д. 5, кв. 12», «по улице Ленина 5»
     rf"{_ADDR_LEFT}(?P<pre>{_ADDR_DESIG}[ \t]*{_ADDR_NAME}{_ADDR_SEP}{_addr_house_part()})"
@@ -790,9 +812,19 @@ ADDRESS_STREET_HOUSE_RE = re.compile(
     rf"{_ADDR_SUFFIXES}{_ADDR_SEP}(?:(?i:по|на)[ \t]+)?{_ADDR_DESIG}[ \t]*{_ADDR_NAME})"
     # 4) без ключевого слова, но в адресном контексте: «г. Москва, Ленина 5»
     rf"|{_ADDR_CONTEXT}(?P<bare>{_ADDR_NAME}{_ADDR_SEP}{_addr_house_part()})"
+    # 5) латиница, тип после названия: «Tverskaya st. 7», «Nevsky prospekt 28, apt. 5»
+    rf"|(?<![A-Za-z0-9])(?P<lat_post>{_LAT_NAME}[ \t]{{1,2}}{_LAT_TYPE_AFTER}{_LAT_SEP}"
+    rf"{_LAT_HOUSE})"
+    # 6) латиница, тип перед названием: «ul. Tverskaya, 7», «pr. Mira, d. 15»
+    rf"|(?<![A-Za-z0-9])(?P<lat_pre>{_LAT_TYPE_BEFORE}[ \t]{{0,2}}{_LAT_NAME}{_LAT_SEP}"
+    rf"{_LAT_HOUSE})"
+    # 7) номер дома впереди: «221 Baker Street», «10 Downing St.»
+    rf"|(?<![A-Za-z0-9.,])(?P<lat_us>\d{{1,5}}[A-Za-z]?[ \t]{{1,2}}{_LAT_NAME}[ \t]{{1,2}}"
+    rf"{_LAT_US_TYPE})"
+    r"(?![A-Za-z])"
 )
 _ADDR_DIGIT_RE = re.compile(r"\d")
-_ADDR_GROUPS = ("pre", "post", "house_first", "bare")
+_ADDR_GROUPS = ("pre", "post", "house_first", "bare", "lat_post", "lat_pre", "lat_us")
 
 # Индекс слева от адреса: «119019, ул. Арбат, д. 1» или «119019, г. Москва, ул. Арбат, 1».
 # Между индексом и адресом допустимы до трёх сегментов без цифр (город, область).

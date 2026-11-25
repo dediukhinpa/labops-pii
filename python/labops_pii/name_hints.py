@@ -153,6 +153,24 @@ _TRANSLIT_PAIRS: dict[str, tuple[str, ...]] = {
     "ье": ("ye", "e"),
     "ья": ("ya", "ia"),
 }
+# Европейские и турецкие имена, в том числе с диакритикой («Łukasz Dvořák», «Jürgen Müller»):
+# раньше латинские имена были только ASCII, и такие ФИО уходили открытыми (матрица
+# 25.11.2026). Как и выше - без совпадений с обычными английскими словами.
+EUROPEAN_FIRST_NAMES = frozenset(
+    "łukasz lukasz paweł pawel michał michal wojciech krzysztof tomasz piotr katarzyna "
+    "małgorzata malgorzata agnieszka magdalena joanna zofia jakub mateusz kacper grzegorz "
+    "andrzej jerzy zbigniew stanisław stanislaw władysław wladyslaw bożena grażyna dorota "
+    "jiří jiri václav vaclav františek frantisek tomáš tomas lukáš lukas jaroslav miroslav "
+    "zdeněk zdenek radek vojtěch ondřej ondrej jana hana lenka věra kateřina katerina tereza "
+    "eliška eliska jürgen günter günther gunther jörg uwe rainer horst gerhard manfred werner "
+    "ulrich matthias sabine ursula petra monika birgit heike renate karin brigitte björn "
+    "bjorn sören søren jørgen jonas moritz niklas tobias florian andreas markus thorsten "
+    "lars nils sven gunnar ingrid astrid sigrid kristina anders henrik åsa "
+    "françois rené andré hélène émilie céline zoé chloé léa inès noémie jérôme sébastien "
+    "stéphane frédéric cédric thierry benoît élodie "
+    "josé jesús ramón raúl sofía lucía maría ángel álvaro joão sérgio gonçalo "
+    "mehmet mustafa ahmet emre hüseyin özlem ayşe fatma zeynep elif burak gökhan serkan".split()
+)
 # Вручную: написания, которые транслитом не получаются
 _EXTRA_LATIN_NAMES = (
     "alexander alexandr alexey alexei alexandra alex aleksey aleksei dmitri dmitriy dmitry "
@@ -197,17 +215,19 @@ def _build_latin_first_names() -> frozenset[str]:
     names: set[str] = set(INTERNATIONAL_FIRST_NAMES) | set(_EXTRA_LATIN_NAMES)
     for name in RU_FIRST_NAMES:
         names |= translit_variants(name)
-    return frozenset(n for n in names if len(n) >= MIN_LATIN_NAME_LEN and n.isascii())
+    ascii_names = {n for n in names if len(n) >= MIN_LATIN_NAME_LEN and n.isascii()}
+    european = {n for n in EUROPEAN_FIRST_NAMES if len(n) >= MIN_LATIN_NAME_LEN}
+    return frozenset(ascii_names | european)
 
 
 LATIN_FIRST_NAMES = _build_latin_first_names()
 
 # --- латинские ФИО -------------------------------------------------------------------------
 
-# Латиница с диакритикой европейских фамилий («Müller», «Łukasz», «Dvořák»): без неё
+# Латиница с диакритикой европейских и турецких фамилий («Müller», «Dvořák», «Yılmaz»): без неё
 # «Hans Müller» уходил открытым целиком (матрица 25.11.2026)
-LATIN_UPPER = "A-ZÀ-ÖØ-ÞĄĆČĎĘĚŁŃŇŐŘŚŠŤŮŰŹŻŽ"
-LATIN_LOWER = "a-zß-öø-ÿąćčďęěłńňőřśšťůűźżž"
+LATIN_UPPER = "A-ZÀ-ÖØ-ÞĄĆČĎĘĚŁŃŇŐŘŚŠŤŮŰŹŻŽĞŞİ"
+LATIN_LOWER = "a-zß-öø-ÿąćčďęěłńňőřśšťůűźżžğşı"
 LATIN_LETTERS = LATIN_UPPER + LATIN_LOWER
 # Слово: «Ivan», «IVAN», «Jean-Pierre»; слева и справа не буква/цифра/знак пути или адреса.
 _LATIN_TITLE = rf"[{LATIN_UPPER}][{LATIN_LOWER}]{{2,19}}"
