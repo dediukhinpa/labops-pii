@@ -792,9 +792,16 @@ class PiiDetector:
             if span.type != "PER":
                 continue
             for piece_start, piece_end in _subtract(span.start, span.stop, tech):
-                found = self._person_from_piece(text, piece_start, piece_end, tech)
-                if found is not None:
-                    result.append(found)
+                # Находка NER через несколько строк (список людей) - по ФИО на строку
+                lines = _split_name_lines(text, piece_start, piece_end)
+                for k, (line_start, line_end) in enumerate(lines):
+                    # Отделённая строка - находка, только если в ней есть словарное имя или
+                    # фамилия: «Буллеты:» под ФИО спикера - заголовок, а не второй человек
+                    if k and not _line_has_name_word(text, line_start, line_end):
+                        continue
+                    found = self._person_from_piece(text, line_start, line_end, tech)
+                    if found is not None:
+                        result.append(found)
         return result
 
     def _person_from_piece(
@@ -1008,24 +1015,64 @@ def _cut_foreign_next_lines(text: str, start: int, end: int) -> int:
     return end
 
 
+def _split_name_lines(text: str, start: int, end: int) -> list[tuple[int, int]]:
+    """Делит находку NER по переводам строк, где следующая строка - уже другое ФИО.
+
+    Natasha отдаёт «Иванов Иван\nПетров Пётр» одним фрагментом. Раньше хвост после перевода
+    просто отрезался (_cut_foreign_next_lines), и второй человек оставался немаскированным;
+    теперь каждая строка - свой фрагмент и своя находка. Строка начинается с первого слова:
+    номер, маркер списка или «|» перед ним в находку не входят.
+    """
+    pieces: list[tuple[int, int]] = []
+    piece_start = start
+    cut = text.find("\n", start, end)
+    while 0 <= cut:
+        word = WORD_RE.search(text, cut, end)
+        if word is None:
+            break
+        if not _continues_name(text, piece_start, cut, word):
+            pieces.append((piece_start, cut))
+            piece_start = word.start()
+        cut = text.find("\n", cut + 1, end)
+    pieces.append((piece_start, end))
+    return pieces
+
+
+def _line_has_name_word(text: str, start: int, end: int) -> bool:
+    """Во фрагменте строки есть слово со словарным разбором имя/фамилия/отчество."""
+    return any(name_gramme(w) is not None for w in WORD_RE.findall(text, start, end))
+
+
 def _continues_name(text: str, start: int, cut: int, word: re.Match[str]) -> bool:
     """Слово после перевода строки продолжает ФИО, а не начинает следующую строку.
 
-    «Имя: Диана Арепьева\nБуллеты:» (шаблон слайда, 25.11.2026): «Буллеты» нет в словаре,
-    is_surname_candidate пропускал его как возможную фамилию, и под одним токеном оказывалось
-    «Имя Фамилия\nБуллеты». Модель видела токен вместо имени спикера и сочинила фамилию, а
-    при обратной подстановке в слайд попадало лишнее слово. Поэтому:
-    - слово с двоеточием после него - заголовок строки («Опыт:», «Буллеты:»), не часть ФИО;
-    - словарное имя/отчество/фамилия продолжает ФИО всегда («Иванов Иван\nИванович»);
-    - слово, которое только похоже на фамилию (нет в словаре), продолжает ФИО лишь после
-      одного слова: фамилии ещё нет, и перенос мог разорвать «Иван\nКрутоголов».
+    Перенос внутри одного ФИО редок: отчество на следующей строке («Белоусова Анна\nСергеевна»)
+    или имя и фамилия, разорванные переносом («Анна\nБелоусова»). Всё остальное - новая строка,
+    и склейка давала один токен на несколько строк:
+    - «Имя: Диана Арепьева\nБуллеты:» (шаблон слайда, 25.11.2026): заголовок строки уходил под
+      токен ФИО, модель не видела имени спикера и сочиняла фамилию, в слайд попадало «Буллеты»;
+    - список людей по строке на каждого («Иванов Иван\nПетров Пётр», вывод `uniq -c`
+      «      2 Петров») становился одним токеном: модель не могла назвать никого по отдельности,
+      а при восстановлении в ответ шёл кусок списка с числами и отступами (25.11.2026).
+    Поэтому строка продолжает ФИО, только если она начинается прямо со слова (без цифр, маркеров
+    списка, «|»), слово - не заголовок с двоеточием, и вместе с предыдущим это одно ФИО:
+    после двух и более слов - только отчество; после одного слова - пара «имя + фамилия».
     """
+    if text[cut:word.start()].strip():
+        return False  # «      2 Петров», «– Петров», «| Петров»: новая строка списка или таблицы
     if text[word.end():word.end() + 2].lstrip(" \t").startswith(":"):
         return False
-    if name_gramme(word.group()) is not None:
+    gramme = name_gramme(word.group())
+    if gramme == "Patr":
         return True
     words_before = WORD_RE.findall(text, start, cut)
-    return len(words_before) <= 1 and is_surname_candidate(word.group())
+    if len(words_before) != 1:
+        return False  # перед переводом уже полное ФИО: следующая строка - другой человек
+    before = name_gramme(words_before[0])
+    surname_like = gramme == "Surn" or (gramme is None and is_surname_candidate(word.group()))
+    return (before == "Name" and surname_like) or (
+        gramme == "Name" and (before == "Surn" or is_surname_candidate(words_before[0]))
+    )
 
 
 def _trim_non_name_words(text: str, start: int, end: int) -> tuple[int, int]:
